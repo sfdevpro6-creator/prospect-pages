@@ -34,7 +34,7 @@ exports.handler = async (event) => {
     let html = await siteRes.text();
 
     const statLabels = {
-      baseball: { batting_avg: 'Batting Avg', home_runs: 'Home Runs', rbis: 'RBIs', stolen_bases: 'Stolen Bases', era: 'ERA', pitching_velo: 'Pitching Velo', exit_velo: 'Exit Velo (mph)', fielding_pct: 'Fielding %' },
+      baseball: { batting_avg: 'Batting Avg', home_runs: 'Home Runs', rbis: 'RBIs', stolen_bases: 'Stolen Bases', era: 'ERA', pitching_velo: 'Pitching Velo', exit_velo: 'Exit Velo (mph)', fielding_pct: 'Fielding %', sixty_yard: '60-Yard Dash' },
       softball: { batting_avg: 'Batting Avg', home_runs: 'Home Runs', era: 'ERA', fielding_pct: 'Fielding %', pitching_velo: 'Pitching Velo', stolen_bases: 'Stolen Bases', slugging_pct: 'Slugging %' },
       basketball: { ppg: 'Points/Game', apg: 'Assists/Game', rpg: 'Rebounds/Game', spg: 'Steals/Game', fg_pct: 'FG %', three_pct: '3PT %', ft_pct: 'FT %' },
       football: { pass_yards: 'Pass Yards', touchdowns: 'Touchdowns', comp_pct: 'Comp %', rush_yards: 'Rush Yards', tackles: 'Tackles', interceptions: 'INTs', forty_yard: '40-Yard' },
