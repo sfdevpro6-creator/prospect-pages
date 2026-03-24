@@ -327,7 +327,7 @@ function CollegeDirectory({profile, onNavigateEmail, onBatchEmail}) {
 }
 
 // ── EMAIL BUILDER (with batch support) ──
-function EmailBuilder({profile}) {
+function EmailBuilder({profile, user}) {
   const [colleges, setColleges] = useState([]);
   const [selectedCollege, setSelectedCollege] = useState(null);
   const [selectedCoach, setSelectedCoach] = useState(null);
@@ -384,12 +384,20 @@ function EmailBuilder({profile}) {
     return {subject,body,full:text};
   };
 
+  const logOutreach=async(college,emailT,result,coach)=>{
+    if(!user?.id)return;
+    try{
+      await supaFetch("/rest/v1/outreach_log",{method:"POST",body:{user_id:user.id,college_id:college.id||null,college_name:college.name,coach_name:coach?.name||null,coach_email:coach?.email||null,email_type:emailT,status:"drafted",subject:result.subject,body:result.body}});
+    }catch(e){console.log("Log outreach:",e);}
+  };
+
   const generateEmail=async()=>{
     if(!selectedCollege||!profile)return;
     setGenerating(true);setGeneratedEmail(null);
     try{
       const result=await callApi(buildPrompt(selectedCollege,emailType,customNote,selectedCoach));
       setGeneratedEmail(result);
+      await logOutreach(selectedCollege,emailType,result,selectedCoach);
     }catch(e){setGeneratedEmail({subject:"Error",body:`Failed: ${e.message}`,full:""});}
     setGenerating(false);
   };
@@ -402,6 +410,7 @@ function EmailBuilder({profile}) {
       try{
         const result=await callApi(buildPrompt(batchQueue[i],emailType,customNote));
         setBatchResults(prev=>[...prev,{college:batchQueue[i],...result,error:false}]);
+        await logOutreach(batchQueue[i],emailType,result,null);
       }catch(e){
         setBatchResults(prev=>[...prev,{college:batchQueue[i],subject:"Error",body:e.message,full:"",error:true}]);
       }
@@ -552,6 +561,196 @@ function EmailBuilder({profile}) {
   );
 }
 
+// ── OUTREACH TRACKER ──
+function OutreachTracker({profile, user}) {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [editingId, setEditingId] = useState(null);
+  const [editNotes, setEditNotes] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editFollowUp, setEditFollowUp] = useState("");
+
+  const STATUSES = [
+    {id:"drafted",label:"Drafted",color:"#5A6B7D",bg:"#5A6B7D20"},
+    {id:"sent",label:"Sent",color:"#3B82F6",bg:"#3B82F620"},
+    {id:"followed_up",label:"Followed Up",color:"#D4A843",bg:"#D4A84320"},
+    {id:"replied",label:"Replied",color:"#22C55E",bg:"#22C55E20"},
+    {id:"no_response",label:"No Response",color:"#EF4444",bg:"#EF444420"},
+    {id:"scheduled_visit",label:"Visit Scheduled",color:"#A855F7",bg:"#A855F720"},
+  ];
+  const getStatus=(id)=>STATUSES.find(s=>s.id===id)||STATUSES[0];
+
+  const loadLogs=async()=>{
+    try{
+      const d=await supaFetch(`/rest/v1/outreach_log?user_id=eq.${user.id}&select=*&order=updated_at.desc&limit=200`);
+      setLogs(d||[]);
+    }catch(e){console.error("Outreach load:",e);}
+    setLoading(false);
+  };
+  useEffect(()=>{loadLogs();},[]);
+
+  const updateLog=async(id, updates)=>{
+    try{
+      await supaFetch(`/rest/v1/outreach_log?id=eq.${id}&user_id=eq.${user.id}`,{method:"PATCH",body:{...updates,updated_at:new Date().toISOString()}});
+      setLogs(prev=>prev.map(l=>l.id===id?{...l,...updates,updated_at:new Date().toISOString()}:l));
+    }catch(e){alert("Error: "+e.message);}
+  };
+
+  const deleteLog=async(id)=>{
+    if(!confirm("Delete this outreach log?"))return;
+    try{
+      await supaFetch(`/rest/v1/outreach_log?id=eq.${id}&user_id=eq.${user.id}`,{method:"DELETE"});
+      setLogs(prev=>prev.filter(l=>l.id!==id));
+    }catch(e){alert("Error: "+e.message);}
+  };
+
+  const markSent=async(id)=>{
+    await updateLog(id,{status:"sent",sent_at:new Date().toISOString()});
+  };
+
+  const startEdit=(log)=>{
+    setEditingId(log.id);
+    setEditStatus(log.status);
+    setEditNotes(log.notes||"");
+    setEditFollowUp(log.follow_up_date||"");
+  };
+  const saveEdit=async()=>{
+    const updates={status:editStatus,notes:editNotes};
+    if(editFollowUp)updates.follow_up_date=editFollowUp;
+    else updates.follow_up_date=null;
+    if(editStatus==="replied"&&!logs.find(l=>l.id===editingId)?.replied_at)updates.replied_at=new Date().toISOString();
+    if(editStatus==="sent"&&!logs.find(l=>l.id===editingId)?.sent_at)updates.sent_at=new Date().toISOString();
+    await updateLog(editingId,updates);
+    setEditingId(null);
+  };
+
+  const filtered=filter==="all"?logs:logs.filter(l=>l.status===filter);
+  const statusCounts={};
+  logs.forEach(l=>{statusCounts[l.status]=(statusCounts[l.status]||0)+1;});
+
+  const today=new Date().toISOString().split("T")[0];
+  const needsFollowUp=logs.filter(l=>l.follow_up_date&&l.follow_up_date<=today&&l.status!=="replied"&&l.status!=="scheduled_visit");
+
+  const formatDate=(d)=>{if(!d)return"";const dt=new Date(d);return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});};
+  const formatFull=(d)=>{if(!d)return"";const dt=new Date(d);return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
+
+  const inp={width:"100%",padding:"10px 14px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:13,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
+
+  return (
+    <div style={{maxWidth:900}}>
+      {/* STATS ROW */}
+      <div style={{display:"flex",gap:12,marginBottom:24,flexWrap:"wrap"}}>
+        {[
+          {l:"Total Outreach",v:logs.length,c:C.cream},
+          {l:"Sent",v:statusCounts.sent||0,c:"#3B82F6"},
+          {l:"Replied",v:statusCounts.replied||0,c:"#22C55E"},
+          {l:"Needs Follow-Up",v:needsFollowUp.length,c:needsFollowUp.length>0?"#EF4444":C.textDim},
+        ].map((s,i)=>(
+          <div key={i} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 18px",flex:"1 1 120px"}}>
+            <div style={{fontSize:26,fontFamily:"'Bebas Neue',sans-serif",color:s.c,letterSpacing:1}}>{s.v}</div>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:1.5,fontWeight:600}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* FOLLOW-UP ALERTS */}
+      {needsFollowUp.length>0&&(
+        <div style={{background:"#EF444415",border:"1px solid #EF444440",borderRadius:10,padding:"16px 20px",marginBottom:20}}>
+          <div style={{fontSize:14,fontWeight:700,color:"#EF4444",marginBottom:8}}>Follow-Up Needed ({needsFollowUp.length})</div>
+          {needsFollowUp.map(l=>(
+            <div key={l.id} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:`1px solid #EF444420`,fontSize:13}}>
+              <span style={{flex:1,color:C.cream}}>{l.college_name}{l.coach_name&&<span style={{color:C.textMuted}}> — {l.coach_name}</span>}</span>
+              <span style={{color:"#EF4444",fontSize:12}}>Due {formatDate(l.follow_up_date)}</span>
+              <button onClick={()=>startEdit(l)} style={{padding:"4px 10px",background:"#EF444430",border:"1px solid #EF444460",borderRadius:5,color:"#EF4444",cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif"}}>Update</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* FILTER BAR */}
+      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <button onClick={()=>setFilter("all")} style={{padding:"8px 14px",background:filter==="all"?C.navyLight:"transparent",border:`1px solid ${filter==="all"?C.borderLight:C.border}`,borderRadius:8,color:filter==="all"?C.cream:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif"}}>All ({logs.length})</button>
+        {STATUSES.map(s=>(statusCounts[s.id]?<button key={s.id} onClick={()=>setFilter(s.id)} style={{padding:"8px 14px",background:filter===s.id?s.bg:"transparent",border:`1px solid ${filter===s.id?s.color+"60":C.border}`,borderRadius:8,color:filter===s.id?s.color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif"}}>{s.label} ({statusCounts[s.id]})</button>:null))}
+      </div>
+
+      {/* LOG LIST */}
+      {loading?<div style={{textAlign:"center",padding:60,color:C.textMuted}}>Loading outreach logs...</div>:filtered.length===0?(
+        <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:48,textAlign:"center"}}>
+          <div style={{color:C.textDim,marginBottom:12}}><Icon name="send" size={48}/></div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2,color:C.textMuted}}>{filter==="all"?"NO OUTREACH YET":"NO MATCHING LOGS"}</div>
+          <div style={{fontSize:13,color:C.textDim,marginTop:8,maxWidth:320,margin:"8px auto 0"}}>
+            {filter==="all"?"Generate emails in the AI Email Builder, and they'll automatically show up here for tracking.":"Try a different filter."}
+          </div>
+        </div>
+      ):(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {filtered.map(log=>{
+            const st=getStatus(log.status);
+            const isEditing=editingId===log.id;
+            return (
+              <div key={log.id} style={{background:C.cardBg,border:`1px solid ${isEditing?C.gold+"60":C.border}`,borderRadius:10,overflow:"hidden",transition:"all 0.15s"}}>
+                <div style={{display:"flex",alignItems:"center",padding:"14px 20px",gap:14}}>
+                  {/* Status Badge */}
+                  <div style={{padding:"4px 10px",background:st.bg,border:`1px solid ${st.color}40`,borderRadius:6,fontSize:11,fontWeight:700,color:st.color,textTransform:"uppercase",letterSpacing:0.5,whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif"}}>{st.label}</div>
+                  {/* School + Coach */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:15,fontWeight:700}}>{log.college_name}</div>
+                    <div style={{fontSize:12,color:C.textMuted}}>
+                      {log.coach_name&&<span>{log.coach_name}</span>}
+                      {log.email_type&&<span style={{marginLeft:8,color:C.textDim}}>({log.email_type})</span>}
+                      {log.sent_at&&<span style={{marginLeft:8}}>Sent {formatDate(log.sent_at)}</span>}
+                    </div>
+                  </div>
+                  {/* Follow-up date */}
+                  {log.follow_up_date&&log.status!=="replied"&&(
+                    <div style={{fontSize:11,color:log.follow_up_date<=today?"#EF4444":C.gold,textAlign:"right",whiteSpace:"nowrap"}}>
+                      Follow up<br/>{formatFull(log.follow_up_date)}
+                    </div>
+                  )}
+                  {/* Actions */}
+                  <div style={{display:"flex",gap:6}}>
+                    {log.status==="drafted"&&<button onClick={()=>markSent(log.id)} style={{padding:"6px 12px",background:"#3B82F620",border:"1px solid #3B82F640",borderRadius:6,color:"#3B82F6",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Barlow',sans-serif"}}>Mark Sent</button>}
+                    <button onClick={()=>isEditing?saveEdit():startEdit(log)} style={{padding:"6px 12px",background:isEditing?C.success+"20":"transparent",border:`1px solid ${isEditing?C.success:C.border}`,borderRadius:6,color:isEditing?C.success:C.textMuted,cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif"}}>{isEditing?"Save":"Edit"}</button>
+                    <button onClick={()=>deleteLog(log.id)} style={{padding:"6px 8px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textDim,cursor:"pointer"}}><Icon name="x" size={12}/></button>
+                  </div>
+                </div>
+                {/* Edit Panel */}
+                {isEditing&&(
+                  <div style={{borderTop:`1px solid ${C.border}`,padding:"16px 20px",background:`${C.navy}80`,display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
+                    <div style={{flex:"1 1 140px"}}>
+                      <label style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>Status</label>
+                      <select value={editStatus} onChange={e=>setEditStatus(e.target.value)} style={{...inp,cursor:"pointer"}}>
+                        {STATUSES.map(s=>(<option key={s.id} value={s.id}>{s.label}</option>))}
+                      </select>
+                    </div>
+                    <div style={{flex:"1 1 140px"}}>
+                      <label style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>Follow-Up Date</label>
+                      <input type="date" value={editFollowUp} onChange={e=>setEditFollowUp(e.target.value)} style={inp}/>
+                    </div>
+                    <div style={{flex:"2 1 240px"}}>
+                      <label style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4}}>Notes</label>
+                      <input value={editNotes} onChange={e=>setEditNotes(e.target.value)} placeholder="Add notes..." style={inp}/>
+                    </div>
+                    <button onClick={()=>setEditingId(null)} style={{padding:"10px 14px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontSize:12,fontFamily:"'Barlow',sans-serif"}}>Cancel</button>
+                  </div>
+                )}
+                {/* Show subject if present */}
+                {log.subject&&!isEditing&&(
+                  <div style={{padding:"0 20px 12px",fontSize:12,color:C.textDim}}>
+                    Subject: {log.subject}
+                    {log.notes&&<span style={{marginLeft:12,color:C.textMuted}}>Note: {log.notes}</span>}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── PROFILE EDITOR ──
 function ProfileEditor({profile, setProfile, user}) {
   const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||""});
@@ -627,7 +826,7 @@ function App() {
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -638,8 +837,8 @@ function App() {
       <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
@@ -647,7 +846,8 @@ function App() {
         </header>
         <div style={{padding:"24px 32px"}}>
           {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}} onBatchEmail={(colleges)=>{setPage("email");window.__batchPrefill=colleges;}}/>}
-          {page==="email"&&<EmailBuilder profile={profile}/>}
+          {page==="email"&&<EmailBuilder profile={profile} user={user}/>}
+          {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
           {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
       </main>
