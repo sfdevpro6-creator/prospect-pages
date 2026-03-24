@@ -803,6 +803,184 @@ function ProfileEditor({profile, setProfile, user}) {
   );
 }
 
+
+// ── STATS EDITOR ──
+function StatsEditor({profile, setProfile, user}) {
+  const [stats, setStats] = useState(profile?.athlete_stats || {});
+  const [measurables, setMeasurables] = useState({
+    athlete_height: profile?.athlete_height || "",
+    athlete_weight: profile?.athlete_weight || "",
+    athlete_bats_throws: profile?.athlete_bats_throws || "",
+    athlete_dominant_hand: profile?.athlete_dominant_hand || "",
+    athlete_dominant_foot: profile?.athlete_dominant_foot || "",
+    athlete_school: profile?.athlete_school || "",
+    athlete_city_state: profile?.athlete_city_state || "",
+    athlete_travel_team: profile?.athlete_travel_team || "",
+    athlete_bio: profile?.athlete_bio || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const sport = profile?.athlete_sport || "baseball";
+
+  const SPORT_STATS = {
+    baseball: [
+      {key:"batting_avg",label:"Batting Avg",placeholder:".350",type:"text"},
+      {key:"home_runs",label:"Home Runs",placeholder:"8",type:"number"},
+      {key:"rbis",label:"RBIs",placeholder:"32",type:"number"},
+      {key:"stolen_bases",label:"Stolen Bases",placeholder:"15",type:"number"},
+      {key:"era",label:"ERA",placeholder:"2.10",type:"text"},
+      {key:"pitching_velo",label:"Pitching Velo (mph)",placeholder:"82",type:"text"},
+      {key:"exit_velo",label:"Exit Velo (mph)",placeholder:"93",type:"text"},
+      {key:"fielding_pct",label:"Fielding %",placeholder:".960",type:"text"},
+    ],
+    softball: [
+      {key:"batting_avg",label:"Batting Avg",placeholder:".425",type:"text"},
+      {key:"home_runs",label:"Home Runs",placeholder:"12",type:"number"},
+      {key:"era",label:"ERA",placeholder:"0.58",type:"text"},
+      {key:"fielding_pct",label:"Fielding %",placeholder:".960",type:"text"},
+      {key:"pitching_velo",label:"Pitching Velo (mph)",placeholder:"62",type:"text"},
+      {key:"stolen_bases",label:"Stolen Bases",placeholder:"18",type:"number"},
+      {key:"slugging_pct",label:"Slugging %",placeholder:".680",type:"text"},
+    ],
+    basketball: [
+      {key:"ppg",label:"Points/Game",placeholder:"18.5",type:"text"},
+      {key:"apg",label:"Assists/Game",placeholder:"6.2",type:"text"},
+      {key:"rpg",label:"Rebounds/Game",placeholder:"4.1",type:"text"},
+      {key:"spg",label:"Steals/Game",placeholder:"2.1",type:"text"},
+      {key:"fg_pct",label:"FG %",placeholder:"46%",type:"text"},
+      {key:"three_pct",label:"3PT %",placeholder:"38%",type:"text"},
+      {key:"ft_pct",label:"FT %",placeholder:"85%",type:"text"},
+    ],
+    football: [
+      {key:"pass_yards",label:"Pass Yards",placeholder:"2850",type:"number"},
+      {key:"touchdowns",label:"Touchdowns",placeholder:"28",type:"number"},
+      {key:"comp_pct",label:"Completion %",placeholder:"68%",type:"text"},
+      {key:"rush_yards",label:"Rush Yards",placeholder:"520",type:"number"},
+      {key:"tackles",label:"Tackles",placeholder:"45",type:"number"},
+      {key:"interceptions",label:"Interceptions",placeholder:"3",type:"number"},
+      {key:"forty_yard",label:"40-Yard Dash",placeholder:"4.55",type:"text"},
+    ],
+    soccer: [
+      {key:"goals",label:"Goals",placeholder:"24",type:"number"},
+      {key:"assists",label:"Assists",placeholder:"18",type:"number"},
+      {key:"shots_per_game",label:"Shots/Game",placeholder:"5.2",type:"text"},
+      {key:"pass_accuracy",label:"Pass Accuracy %",placeholder:"87%",type:"text"},
+      {key:"minutes_played",label:"Minutes Played",placeholder:"1400",type:"number"},
+    ],
+    volleyball: [
+      {key:"kills",label:"Kills",placeholder:"385",type:"number"},
+      {key:"kills_per_set",label:"Kills/Set",placeholder:"4.2",type:"text"},
+      {key:"hit_pct",label:"Hit %",placeholder:".320",type:"text"},
+      {key:"digs",label:"Digs",placeholder:"220",type:"number"},
+      {key:"aces",label:"Aces",placeholder:"52",type:"number"},
+      {key:"blocks",label:"Blocks",placeholder:"38",type:"number"},
+    ],
+    track: [
+      {key:"event_100m",label:"100m (sec)",placeholder:"10.68",type:"text"},
+      {key:"event_200m",label:"200m (sec)",placeholder:"21.45",type:"text"},
+      {key:"event_400m",label:"400m (sec)",placeholder:"48.90",type:"text"},
+      {key:"long_jump",label:"Long Jump",placeholder:"22'4\"",type:"text"},
+      {key:"high_jump",label:"High Jump",placeholder:"6'2\"",type:"text"},
+      {key:"relay_split",label:"Relay Split",placeholder:"48.9",type:"text"},
+    ],
+  };
+
+  const fields = SPORT_STATS[sport] || SPORT_STATS.baseball;
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const saveData = {
+        athlete_stats: stats,
+        ...measurables,
+        updated_at: new Date().toISOString(),
+      };
+      const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, {
+        method: "PATCH",
+        body: saveData,
+        prefer: "return=representation",
+      });
+      if (d?.[0]) setProfile(d[0]);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      alert("Error saving stats: " + e.message);
+    }
+    setSaving(false);
+  };
+
+  const inp = {width:"100%",padding:"12px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
+  const lbl = {fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6};
+
+  return (
+    <div style={{maxWidth:700}}>
+      {/* MEASURABLES */}
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32,marginBottom:20}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:4}}>MEASURABLES</div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:24}}>Physical stats and bio info that appear on your recruiting site.</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div><label style={lbl}>Height</label><input value={measurables.athlete_height} onChange={e=>setMeasurables(m=>({...m,athlete_height:e.target.value}))} placeholder='5\'11"' style={inp}/></div>
+          <div><label style={lbl}>Weight (lbs)</label><input value={measurables.athlete_weight} onChange={e=>setMeasurables(m=>({...m,athlete_weight:e.target.value}))} placeholder="175" style={inp}/></div>
+          {(sport==="baseball"||sport==="softball")&&<div><label style={lbl}>Bats / Throws</label><input value={measurables.athlete_bats_throws} onChange={e=>setMeasurables(m=>({...m,athlete_bats_throws:e.target.value}))} placeholder="R/R" style={inp}/></div>}
+          {(sport==="basketball"||sport==="football"||sport==="volleyball")&&<div><label style={lbl}>Dominant Hand</label><input value={measurables.athlete_dominant_hand} onChange={e=>setMeasurables(m=>({...m,athlete_dominant_hand:e.target.value}))} placeholder="Right-Handed" style={inp}/></div>}
+          {sport==="soccer"&&<div><label style={lbl}>Dominant Foot</label><input value={measurables.athlete_dominant_foot} onChange={e=>setMeasurables(m=>({...m,athlete_dominant_foot:e.target.value}))} placeholder="Right-Footed" style={inp}/></div>}
+          <div><label style={lbl}>High School</label><input value={measurables.athlete_school} onChange={e=>setMeasurables(m=>({...m,athlete_school:e.target.value}))} placeholder="Simi Valley HS" style={inp}/></div>
+          <div><label style={lbl}>City / State</label><input value={measurables.athlete_city_state} onChange={e=>setMeasurables(m=>({...m,athlete_city_state:e.target.value}))} placeholder="Simi Valley, CA" style={inp}/></div>
+          <div style={{gridColumn:"1/-1"}}><label style={lbl}>Travel / Club Team</label><input value={measurables.athlete_travel_team} onChange={e=>setMeasurables(m=>({...m,athlete_travel_team:e.target.value}))} placeholder="Strike One" style={inp}/></div>
+        </div>
+        <div style={{marginTop:16}}><label style={lbl}>Bio</label><textarea value={measurables.athlete_bio} onChange={e=>setMeasurables(m=>({...m,athlete_bio:e.target.value}))} placeholder="A short paragraph about the athlete..." style={{...inp,minHeight:100,resize:"vertical"}}/></div>
+      </div>
+
+      {/* SPORT-SPECIFIC STATS */}
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2}}>{sport.toUpperCase()} STATS</div>
+          <div style={{padding:"4px 12px",background:`${C.red}20`,border:`1px solid ${C.red}40`,borderRadius:6,fontSize:11,fontWeight:700,color:C.red,textTransform:"uppercase",letterSpacing:1,fontFamily:"'Barlow Condensed',sans-serif"}}>{sport}</div>
+        </div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:24}}>These stats appear in the "By The Numbers" section of your recruiting site. Update them anytime.</div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          {fields.map(f=>(
+            <div key={f.key}>
+              <label style={lbl}>{f.label}</label>
+              <input
+                type={f.type==="number"?"number":"text"}
+                value={stats[f.key]||""}
+                onChange={e=>setStats(s=>({...s,[f.key]:e.target.value}))}
+                placeholder={f.placeholder}
+                style={inp}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* LIVE PREVIEW */}
+        {Object.values(stats).some(v=>v) && (
+          <div style={{marginTop:24}}>
+            <div style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Preview (how it looks on your site)</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:8}}>
+              {fields.filter(f=>stats[f.key]).map(f=>(
+                <div key={f.key} style={{background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 12px",textAlign:"center"}}>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,color:C.cream,letterSpacing:1}}>{stats[f.key]}</div>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,letterSpacing:"0.2em",textTransform:"uppercase",color:C.textDim,marginTop:2}}>{f.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={handleSave} disabled={saving} style={{marginTop:28,width:"100%",padding:"14px 0",background:saved?C.success:C.red,border:"none",borderRadius:8,color:C.cream,cursor:saving?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",transition:"background 0.3s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          {saved?<Fragment><Icon name="check" size={18}/> SAVED</Fragment>:saving?"SAVING...":"SAVE STATS"}
+        </button>
+      </div>
+
+      <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
+        <strong style={{color:C.gold}}>How it works:</strong> When you save your stats here, they get stored in your profile. Your recruiting site will pull these stats automatically so coaches always see your latest numbers.
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN APP ──
 function App() {
   const [user, setUser] = useState(null);
@@ -841,7 +1019,7 @@ function App() {
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -852,8 +1030,8 @@ function App() {
       <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
@@ -863,7 +1041,8 @@ function App() {
           {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}} onBatchEmail={(colleges)=>{setPage("email");window.__batchPrefill=colleges;}}/>}
           {page==="email"&&<EmailBuilder profile={profile} user={user}/>}
           {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
-          {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
+          {page==="stats"&&<StatsEditor profile={profile} setProfile={setProfile} user={user}/>}
+              {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
       </main>
     </div>
