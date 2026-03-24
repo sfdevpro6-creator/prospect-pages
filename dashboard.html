@@ -193,13 +193,16 @@ function CollegeDirectory({profile, onNavigateEmail}) {
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [divisionFilter, setDivisionFilter] = useState("");
-  const [sportFilter, setSportFilter] = useState("");
+  const [sportFilter, setSportFilter] = useState(profile?.athlete_sport || "");
   const [expanded, setExpanded] = useState(null);
   const [loadingCoaches, setLoadingCoaches] = useState(null);
 
+  // Auto-update sport filter if profile loads/changes after mount
+  useEffect(()=>{if(profile?.athlete_sport && !sportFilter) setSportFilter(profile.athlete_sport);},[profile?.athlete_sport]);
+
   useEffect(()=>{(async()=>{try{const d=await supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=500");setColleges(d||[]);}catch(e){console.error(e);}setLoading(false);})();},[]);
 
-  const loadCoaches=async(cid)=>{if(coaches[cid])return;setLoadingCoaches(cid);try{const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*&order=is_recruiting_contact.desc,title`);setCoaches(p=>({...p,[cid]:d||[]}));}catch(e){console.error(e);}setLoadingCoaches(null);};
+  const loadCoaches=async(cid)=>{if(coaches[cid])return;setLoadingCoaches(cid);try{const sportQ=profile?.athlete_sport?`&sport=eq.${profile.athlete_sport}`:"";const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*${sportQ}&order=is_recruiting_contact.desc,title`);setCoaches(p=>({...p,[cid]:d||[]}));}catch(e){console.error(e);}setLoadingCoaches(null);};
   const toggleExpand=(id)=>{if(expanded===id){setExpanded(null);return;}setExpanded(id);loadCoaches(id);};
 
   const filtered=colleges.filter(c=>{
@@ -267,7 +270,7 @@ function CollegeDirectory({profile, onNavigateEmail}) {
                 <div style={{borderTop:`1px solid ${C.border}`,padding:"20px 20px 20px 78px",background:`${C.navy}80`}}>
                   {college.athletics_url&&<a href={college.athletics_url} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:12,color:C.gold,textDecoration:"none",marginBottom:16}}><Icon name="globe" size={14}/> Visit Athletics Page</a>}
                   <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:C.textMuted,marginBottom:12}}>Coaching Staff</div>
-                  {loadingCoaches===college.id?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>Loading coaches...</div>:!coaches[college.id]?.length?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>No coaches on file yet. Check the athletics page for contact info.</div>:(
+                  {loadingCoaches===college.id?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>Loading coaches...</div>:!coaches[college.id]?.length?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>{profile?.athlete_sport?`No ${profile.athlete_sport} coaches on file yet.`:"No coaches on file yet."} Check the athletics page for contact info.</div>:(
                     <div style={{display:"flex",flexDirection:"column",gap:8}}>
                       {coaches[college.id].map(coach=>(
                         <div key={coach.id} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",background:C.navyLight,borderRadius:8,border:`1px solid ${C.border}`}}>
@@ -311,7 +314,7 @@ function EmailBuilder({profile}) {
     if(window.__prefill){const{college,coach}=window.__prefill;setSelectedCollege(college);setSelectedCoach(coach);setCollegeSearch(college.name);delete window.__prefill;}
   },[]);
 
-  const loadCoachesForCollege=async(cid)=>{try{const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*&order=is_recruiting_contact.desc`);setCoaches(d||[]);if(d?.length)setSelectedCoach(d.find(c=>c.is_recruiting_contact)||d[0]);}catch(e){console.error(e);}};
+  const loadCoachesForCollege=async(cid)=>{try{const sportQ=profile?.athlete_sport?`&sport=eq.${profile.athlete_sport}`:"";const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*${sportQ}&order=is_recruiting_contact.desc`);setCoaches(d||[]);if(d?.length)setSelectedCoach(d.find(c=>c.is_recruiting_contact)||d[0]);}catch(e){console.error(e);}};
   const selectCollege=(college)=>{setSelectedCollege(college);setCollegeSearch(college.name);loadCoachesForCollege(college.id);};
 
   const generateEmail=async()=>{
