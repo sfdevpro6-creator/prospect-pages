@@ -807,124 +807,16 @@ function ProfileEditor({profile, setProfile, user}) {
 
 
 // ── SITE PUBLISHER ──
-const SPORT_THEMES = {
-  baseball:{bg:"#0a0a0c",bg2:"#111114",card:"#18181c",accent:"#c41e3a",accent2:"#e8364f",fontD:"'Bebas Neue'",gradStart:"#18181c",gradEnd:"#0a0a0c"},
-  softball:{bg:"#faf8f5",bg2:"#f0e8ef",card:"#fff",accent:"#c4387a",accent2:"#e86baa",fontD:"'Raleway'",gradStart:"#faf8f5",gradEnd:"#f0e8ef",light:true},
-  basketball:{bg:"#08080a",bg2:"#0d0d10",card:"#111114",accent:"#ff6b2b",accent2:"#ff9a5c",fontD:"'Oswald'",gradStart:"#181410",gradEnd:"#08080a"},
-  football:{bg:"#060a07",bg2:"#0c140e",card:"#101a14",accent:"#2d8a4e",accent2:"#4ade80",fontD:"'Oswald'",gradStart:"#101a14",gradEnd:"#060a07"},
-  soccer:{bg:"#060810",bg2:"#0c1020",card:"#101828",accent:"#2563eb",accent2:"#60a5fa",fontD:"'Montserrat'",gradStart:"#101828",gradEnd:"#060810"},
-  volleyball:{bg:"#0a0614",bg2:"#120e20",card:"#18122a",accent:"#7c3aed",accent2:"#a78bfa",fontD:"'Raleway'",gradStart:"#18122a",gradEnd:"#0a0614"},
-  track:{bg:"#0c0806",bg2:"#14100a",card:"#1c1610",accent:"#ea580c",accent2:"#fb923c",fontD:"'Bebas Neue'",gradStart:"#1c1610",gradEnd:"#0c0806"},
-};
-const SPORT_STAT_LABELS = {
-  baseball:{batting_avg:"Batting Avg",home_runs:"Home Runs",rbis:"RBIs",stolen_bases:"Stolen Bases",era:"ERA",pitching_velo:"Pitching Velo",exit_velo:"Exit Velo",fielding_pct:"Fielding %"},
-  softball:{batting_avg:"Batting Avg",home_runs:"Home Runs",era:"ERA",fielding_pct:"Fielding %",pitching_velo:"Pitching Velo",stolen_bases:"Stolen Bases",slugging_pct:"Slugging %"},
-  basketball:{ppg:"Points/Game",apg:"Assists/Game",rpg:"Rebounds/Game",spg:"Steals/Game",fg_pct:"FG %",three_pct:"3PT %",ft_pct:"FT %"},
-  football:{pass_yards:"Pass Yards",touchdowns:"Touchdowns",comp_pct:"Comp %",rush_yards:"Rush Yards",tackles:"Tackles",interceptions:"INTs",forty_yard:"40-Yard"},
-  soccer:{goals:"Goals",assists:"Assists",shots_per_game:"Shots/Game",pass_accuracy:"Pass Acc",minutes_played:"Minutes"},
-  volleyball:{kills:"Kills",kills_per_set:"Kills/Set",hit_pct:"Hit %",digs:"Digs",aces:"Aces",blocks:"Blocks"},
-  track:{event_100m:"100m (sec)",event_200m:"200m (sec)",event_400m:"400m (sec)",long_jump:"Long Jump",high_jump:"High Jump",relay_split:"Relay Split"},
-};
-
 async function publishSite(profile, stats, measurables, sport) {
-  const t = SPORT_THEMES[sport] || SPORT_THEMES.baseball;
-  const labels = SPORT_STAT_LABELS[sport] || SPORT_STAT_LABELS.baseball;
-  const name = profile.athlete_name || "Athlete";
-  const nameParts = name.split(" ");
-  const firstName = nameParts[0] || "";
-  const lastName = nameParts.slice(1).join(" ") || "";
-  const pos = profile.athlete_position || "Player";
-  const loc = measurables.athlete_city_state || "";
-  const school = measurables.athlete_school || "High School";
-  const team = measurables.athlete_travel_team || "";
-  const bio = measurables.athlete_bio || `${name} is a dedicated and driven athlete committed to competing at the highest level.`;
-  const gradYear = profile.athlete_grad_year || "2027";
-  const gpa = profile.gpa || "";
-  const height = measurables.athlete_height || "";
-  const weight = measurables.athlete_weight || "";
-  const hand = measurables.athlete_bats_throws || measurables.athlete_dominant_hand || measurables.athlete_dominant_foot || "";
-  const handLabel = (sport==="soccer") ? "Dominant Foot" : (sport==="baseball"||sport==="softball") ? "Bats/Throws" : "Dominant Hand";
-  const email = profile.athlete_email || "";
-  const siteUrl = profile.recruiting_site_url || "";
-  const isLight = t.light;
-  const textCol = isLight ? "#2a2030" : "#f0ece4";
-  const text2Col = isLight ? "#6a6070" : "#9a968e";
-  const mutedCol = isLight ? "#aaa4b0" : "#5c5952";
-  const borderCol = isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.06)";
-  const navBg = isLight ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.85)";
-  const heroH1Col = isLight ? t.card==="transparent"?"#1a1420":"#1a1420" : "#fff";
-
-  const statCards = Object.entries(stats).filter(([k,v])=>v&&labels[k]).map(([k,v])=>`<div class="stat"><div class="stat-val">${v}</div><div class="stat-lbl">${labels[k]}</div></div>`).join("\n");
-  const heroStats = [];
-  if(height) heroStats.push({v:height,l:"Height"});
-  if(weight) heroStats.push({v:weight,l:"Weight"});
-  if(hand) heroStats.push({v:hand,l:handLabel});
-  if(gpa) heroStats.push({v:gpa,l:"GPA"});
-  const heroStatsHtml = heroStats.map(s=>`<div><div class="hs-val">${s.v}</div><div class="hs-lbl">${s.l}</div></div>`).join("");
-
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>${name} | ${sport.charAt(0).toUpperCase()+sport.slice(1)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:${t.bg};--bg2:${t.bg2};--card:${t.card};--accent:${t.accent};--accent2:${t.accent2};--text:${textCol};--text2:${text2Col};--muted:${mutedCol};--border:${borderCol};--font-d:${t.fontD},sans-serif;--font-b:'Barlow',sans-serif;--font-c:'Barlow Condensed',sans-serif}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text)}
-nav{position:fixed;top:0;left:0;right:0;z-index:99;padding:0.8rem 3rem;display:flex;align-items:center;justify-content:space-between;background:${navBg};backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.logo{font-family:var(--font-d);font-weight:700;font-size:1.4rem;letter-spacing:0.06em;color:${isLight?"#1a1420":"#fff"};text-decoration:none;text-transform:uppercase}.logo span{color:var(--accent)}
-.nav-links{display:flex;gap:2rem}.nav-links a{font-family:var(--font-c);font-size:0.8rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text2);text-decoration:none}.nav-links a:hover{color:var(--accent)}
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;background:radial-gradient(ellipse at 30% 50%,${t.gradStart} 0%,${t.gradEnd} 70%)}
-.hero-tag{font-family:var(--font-c);font-weight:700;font-size:0.75rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2rem;display:flex;align-items:center;justify-content:center;gap:1rem}.hero-tag::before,.hero-tag::after{content:'';width:30px;height:1px;background:var(--accent)}
-.hero h1{font-family:var(--font-d);font-weight:700;font-size:clamp(4rem,12vw,9rem);line-height:0.9;color:${heroH1Col};text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.5rem}
-.hero-pos{font-family:var(--font-c);font-size:1.1rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:2rem}
-.hero-stats{display:flex;gap:3rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}.hs-val{font-family:var(--font-d);font-weight:700;font-size:2.5rem;color:${heroH1Col};line-height:1}.hs-lbl{font-family:var(--font-c);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted)}
-.btn-a{font-family:var(--font-c);font-weight:700;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem 2.5rem;background:var(--accent);color:#fff;text-decoration:none;display:inline-block;transition:0.3s;border:none}.btn-a:hover{opacity:0.85}
-.btn-b{font-family:var(--font-c);font-weight:700;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem 2.5rem;background:transparent;color:${isLight?"#1a1420":"#fff"};text-decoration:none;display:inline-block;border:1px solid ${isLight?"rgba(0,0,0,0.2)":"rgba(255,255,255,0.2)"};transition:0.3s}.btn-b:hover{border-color:${isLight?"#1a1420":"#fff"}}
-section{padding:5rem 0}.container{max-width:1100px;margin:0 auto;padding:0 2rem}
-.s-label{font-family:var(--font-c);font-weight:700;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem}
-.s-title{font-family:var(--font-d);font-weight:700;font-size:clamp(2.5rem,5vw,3.5rem);text-transform:uppercase;color:${heroH1Col};margin-bottom:1.5rem}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-top:2rem}
-.stat{background:var(--card);border:1px solid var(--border);padding:2rem;text-align:center;transition:0.3s}.stat:hover{border-color:var(--accent);transform:translateY(-3px)}
-.stat-val{font-family:var(--font-d);font-weight:700;font-size:3rem;color:${heroH1Col}}.stat-lbl{font-family:var(--font-c);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.3rem}
-.film-box{background:var(--card);border:1px solid var(--border);padding:3rem;text-align:center;margin-top:2rem;color:var(--muted);font-family:var(--font-c);letter-spacing:0.15em;text-transform:uppercase;font-size:0.8rem}
-.alt-bg{background:var(--bg2)}
-.about-grid{display:grid;grid-template-columns:280px 1fr;gap:3rem;margin-top:2rem}@media(max-width:900px){.about-grid{grid-template-columns:1fr}}
-.about-photo{aspect-ratio:3/4;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--font-c);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:1.5rem}.info-card{background:var(--card);border:1px solid var(--border);padding:1rem}.info-lbl{font-family:var(--font-c);font-size:0.55rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem}.info-val{font-family:var(--font-c);font-size:0.95rem;font-weight:700;color:var(--text)}
-.bio{font-size:0.95rem;line-height:1.8;color:var(--text2);margin-top:1.2rem}.bio strong{color:var(--text)}
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem}@media(max-width:900px){.contact-grid{grid-template-columns:1fr}}
-.c-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 0;border-bottom:1px solid var(--border)}.c-icon{width:36px;height:36px;background:${isLight?"rgba(196,56,122,0.08)":"rgba(255,255,255,0.03)"};border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}.c-icon svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2}.c-lbl{font-family:var(--font-c);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}.c-val{font-size:0.9rem;color:var(--text)}
-.contact-form{background:var(--card);border:1px solid var(--border);padding:2rem}.contact-form h3{font-family:var(--font-d);font-weight:700;font-size:1.5rem;text-transform:uppercase;color:${heroH1Col};margin-bottom:1rem}
-.fg{margin-bottom:1rem}.fg label{display:block;font-family:var(--font-c);font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem}.fg input,.fg textarea{width:100%;padding:0.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:0.9rem;outline:none}.fg input:focus,.fg textarea:focus{border-color:var(--accent)}.fg textarea{resize:vertical;min-height:80px}
-footer{background:var(--bg2);border-top:1px solid var(--border);padding:2.5rem;text-align:center}.f-logo{font-family:var(--font-d);font-weight:700;font-size:1.3rem;text-transform:uppercase;color:${heroH1Col};margin-bottom:0.4rem}.f-logo span{color:var(--accent)}footer p{font-size:0.75rem;color:var(--muted)}
-</style></head><body>
-<nav><a href="#" class="logo">${firstName} <span>${lastName}</span></a><div class="nav-links"><a href="#stats">Stats</a><a href="#film">Film</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
-<section class="hero"><div>
-<div class="hero-tag">Class of ${gradYear}</div>
-<h1>${firstName}<br>${lastName}</h1>
-<div class="hero-pos">${pos} &bull; ${loc}</div>
-<div class="hero-stats">${heroStatsHtml}</div>
-<div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap"><a href="#film" class="btn-a">Watch Film</a><a href="#contact" class="btn-b">Contact</a></div>
-</div></section>
-${statCards?`<section id="stats"><div class="container"><div class="s-label">Performance</div><div class="s-title">By The Numbers</div><div class="stats-row">${statCards}</div></div></section>`:""}
-<section id="film" class="alt-bg"><div class="container"><div class="s-label">Game Film</div><div class="s-title">Highlights</div><div class="film-box">Game film and highlight clips will appear here</div></div></section>
-<section id="about"><div class="container"><div class="about-grid"><div class="about-photo">Add Headshot</div><div><div class="s-label">Player Profile</div><div class="s-title">About ${firstName}</div>
-<div class="info-grid"><div class="info-card"><div class="info-lbl">Position</div><div class="info-val">${pos}</div></div><div class="info-card"><div class="info-lbl">High School</div><div class="info-val">${school}</div></div><div class="info-card"><div class="info-lbl">Graduation</div><div class="info-val">Class of ${gradYear}</div></div>${team?`<div class="info-card"><div class="info-lbl">Team</div><div class="info-val">${team}</div></div>`:""}</div>
-<p class="bio"><strong>${name}</strong> ${bio}</p></div></div></div></section>
-<section id="contact" class="alt-bg"><div class="container"><div class="s-label">Recruiting</div><div class="s-title">Get In Touch</div>
-<div class="contact-grid"><div>
-${email?`<div class="c-item"><div class="c-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div><div class="c-lbl">Email</div><div class="c-val">${email}</div></div></div>`:""}
-${loc?`<div class="c-item"><div class="c-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="c-lbl">Location</div><div class="c-val">${loc}</div></div></div>`:""}
-</div><div class="contact-form"><h3>Send A Message</h3>
-<form name="contact" method="POST" data-netlify="true"><input type="hidden" name="form-name" value="contact"><div class="fg"><label>Name</label><input name="name" placeholder="Coach Name" required></div><div class="fg"><label>School</label><input name="school" placeholder="University or Program"></div><div class="fg"><label>Email</label><input name="email" type="email" placeholder="coach@university.edu" required></div><div class="fg"><label>Message</label><textarea name="message" placeholder="Let us know how we can connect..."></textarea></div><button type="submit" class="btn-a" style="display:block;text-align:center;width:100%;cursor:pointer">Send Message</button></form>
-</div></div></div></section>
-<footer><div class="f-logo">${firstName} <span>${lastName}</span></div><p>${loc} &bull; Class of ${gradYear}${siteUrl?` &bull; <a href="${siteUrl}" style="color:var(--accent);text-decoration:none">${siteUrl.replace("https://","")}</a>`:""}</p></footer>
-<!-- Generated by Prospect Pages Dashboard on ${new Date().toLocaleDateString()} -->
-</body></html>`;
-
-  // Deploy to the client's Netlify site via API
   const siteId = profile.netlify_site_id;
+  const siteUrl = profile.recruiting_site_url;
+
   if (!siteId) {
     alert("No Netlify Site ID configured in your profile. Contact your Prospect Pages admin.");
+    return { success: false };
+  }
+  if (!siteUrl) {
+    alert("No Recruiting Site URL configured. Set it in your Athlete Profile first.");
     return { success: false };
   }
 
@@ -932,7 +824,7 @@ ${loc?`<div class="c-item"><div class="c-icon"><svg viewBox="0 0 24 24"><path d=
     const res = await fetch("/.netlify/functions/publish-site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ html, siteId }),
+      body: JSON.stringify({ siteId, siteUrl, stats, measurables, sport, profile }),
     });
     const data = await res.json();
     if (data.success) {
