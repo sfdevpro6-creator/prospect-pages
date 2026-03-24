@@ -87,6 +87,7 @@ const Icon = ({ name, size = 18 }) => {
     flag: <Fragment><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></Fragment>,
     sparkle: <Fragment><path d="M12 3v18M5.5 7.5l13 9M5.5 16.5l13-9"/></Fragment>,
     globe: <Fragment><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></Fragment>,
+    film: <Fragment><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></Fragment>,
   };
   return <svg viewBox="0 0 24 24" style={s} xmlns="http://www.w3.org/2000/svg">{paths[name]}</svg>;
 };
@@ -807,7 +808,7 @@ function ProfileEditor({profile, setProfile, user}) {
 
 
 // ── SITE PUBLISHER ──
-async function publishSite(profile, stats, measurables, sport) {
+async function publishSite(profile, stats, measurables, sport, userId) {
   const siteId = profile.netlify_site_id;
   const siteUrl = profile.recruiting_site_url;
 
@@ -821,10 +822,16 @@ async function publishSite(profile, stats, measurables, sport) {
   }
 
   try {
+    // Fetch videos from Supabase to include in publish
+    let videos = [];
+    try {
+      videos = await supaFetch(`/rest/v1/videos?user_id=eq.${userId}&order=sort_order.asc`) || [];
+    } catch(e) { console.log("Videos fetch for publish:", e); }
+
     const res = await fetch("/.netlify/functions/publish-site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ siteId, siteUrl, stats, measurables, sport, profile }),
+      body: JSON.stringify({ siteId, siteUrl, stats, measurables, sport, profile, videos }),
     });
     const data = await res.json();
     if (data.success) {
@@ -1014,12 +1021,12 @@ function StatsEditor({profile, setProfile, user}) {
       </div>
 
       {/* PUBLISH SECTION */}
-      <PublishButton profile={profile} stats={stats} measurables={measurables} sport={sport}/>
+      <PublishButton profile={profile} stats={stats} measurables={measurables} sport={sport} user={user}/>
     </div>
   );
 }
 
-function PublishButton({profile, stats, measurables, sport}) {
+function PublishButton({profile, stats, measurables, sport, user}) {
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
   const [publishUrl, setPublishUrl] = useState("");
@@ -1028,7 +1035,7 @@ function PublishButton({profile, stats, measurables, sport}) {
   const handlePublish = async () => {
     setPublishing(true); setPublished(false); setError("");
     try {
-      const result = await publishSite(profile, stats, measurables, sport);
+      const result = await publishSite(profile, stats, measurables, sport, user?.id);
       if (result.success) {
         setPublished(true);
         setPublishUrl(result.url || "");
@@ -1065,6 +1072,166 @@ function PublishButton({profile, stats, measurables, sport}) {
       {noSiteId&&<div style={{fontSize:12,color:C.gold,marginTop:8,textAlign:"center"}}>Your Netlify Site ID hasn't been configured yet. Contact your Prospect Pages admin.</div>}
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+// ── VIDEO MANAGER ──
+function VideoManager({profile, user}) {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({title:"",category:"",video_url:"",duration:"1:00",meta_text:""});
+  const sport = profile?.athlete_sport || "baseball";
+
+  const SPORT_CATS = {
+    baseball:[{key:"pitching",label:"Pitching"},{key:"hitting",label:"Hitting"},{key:"fielding",label:"Fielding / 1B"}],
+    softball:[{key:"pitching",label:"Pitching"},{key:"hitting",label:"Hitting"},{key:"fielding",label:"Fielding"}],
+    basketball:[{key:"offense",label:"Offense"},{key:"defense",label:"Defense"},{key:"highlights",label:"Highlights"}],
+    football:[{key:"offense",label:"Offense"},{key:"defense",label:"Defense"},{key:"special_teams",label:"Special Teams"}],
+    soccer:[{key:"goals",label:"Goals"},{key:"assists",label:"Assists"},{key:"defense",label:"Defense"}],
+    volleyball:[{key:"offense",label:"Offense"},{key:"defense",label:"Defense"},{key:"serves",label:"Serves"}],
+    track:[{key:"sprints",label:"Sprints"},{key:"jumps",label:"Jumps"},{key:"throws",label:"Throws"}],
+  };
+  const cats = SPORT_CATS[sport] || SPORT_CATS.baseball;
+
+  useEffect(()=>{loadVideos();},[user]);
+
+  const loadVideos = async () => {
+    setLoading(true);
+    try { const d = await supaFetch(`/rest/v1/videos?user_id=eq.${user.id}&order=sort_order.asc`); setVideos(d||[]); }
+    catch(e) { console.log("Load videos:",e); }
+    setLoading(false);
+  };
+
+  const resetForm = () => setForm({title:"",category:cats[0]?.key||"",video_url:"",duration:"1:00",meta_text:""});
+
+  const handleAdd = async () => {
+    if(!form.title||!form.video_url) return alert("Title and Video URL/path are required.");
+    try {
+      await supaFetch("/rest/v1/videos",{method:"POST",body:{user_id:user.id,title:form.title,category:form.category||cats[0].key,video_url:form.video_url,duration:form.duration||"1:00",meta_text:form.meta_text||"",sort_order:videos.length}});
+      resetForm(); setShowAdd(false); await loadVideos();
+    } catch(e) { alert("Error: "+e.message); }
+  };
+
+  const handleEdit = async (id) => {
+    try {
+      await supaFetch(`/rest/v1/videos?id=eq.${id}`,{method:"PATCH",body:{title:form.title,category:form.category,video_url:form.video_url,duration:form.duration,meta_text:form.meta_text,updated_at:new Date().toISOString()}});
+      setEditId(null); resetForm(); await loadVideos();
+    } catch(e) { alert("Error: "+e.message); }
+  };
+
+  const handleDelete = async (id) => {
+    if(!confirm("Delete this video clip?")) return;
+    try { await supaFetch(`/rest/v1/videos?id=eq.${id}`,{method:"DELETE"}); await loadVideos(); }
+    catch(e) { alert("Error: "+e.message); }
+  };
+
+  const handleMove = async (idx, dir) => {
+    const nv = [...videos];
+    const si = idx+dir;
+    if(si<0||si>=nv.length) return;
+    [nv[idx],nv[si]] = [nv[si],nv[idx]];
+    try {
+      await supaFetch(`/rest/v1/videos?id=eq.${nv[idx].id}`,{method:"PATCH",body:{sort_order:idx}});
+      await supaFetch(`/rest/v1/videos?id=eq.${nv[si].id}`,{method:"PATCH",body:{sort_order:si}});
+      setVideos(nv);
+    } catch(e) { alert("Error: "+e.message); }
+  };
+
+  const startEdit = (v) => { setEditId(v.id); setForm({title:v.title,category:v.category,video_url:v.video_url,duration:v.duration||"1:00",meta_text:v.meta_text||""}); };
+
+  const inp={width:"100%",padding:"10px 14px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:13,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
+  const lbl={fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4};
+  const catColor = (cat) => {const m={pitching:"#4A90D9",hitting:"#E6A23C",fielding:"#67C23A",offense:"#E6A23C",defense:"#4A90D9",highlights:"#C41E3A",special_teams:"#67C23A",goals:"#E6A23C",assists:"#4A90D9",serves:"#67C23A",sprints:"#E6A23C",jumps:"#4A90D9",throws:"#67C23A"};return m[cat]||C.gold;};
+
+  const VideoForm = ({onSubmit, submitLabel}) => (
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div><label style={lbl}>Title</label><input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="vs. San Marcos — Pitching" style={inp}/></div>
+        <div><label style={lbl}>Category</label><select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} style={{...inp,cursor:"pointer"}}>{cats.map(c=>(<option key={c.key} value={c.key}>{c.label}</option>))}</select></div>
+      </div>
+      <div><label style={lbl}>Video URL or Path</label><input value={form.video_url} onChange={e=>setForm(f=>({...f,video_url:e.target.value}))} placeholder="videos/pitching-vs-san-marcos.mp4 or https://..." style={inp}/><div style={{fontSize:10,color:C.textDim,marginTop:3}}>Use relative paths like "videos/filename.mp4" for self-hosted, or full URLs for external hosting.</div></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div><label style={lbl}>Duration</label><input value={form.duration} onChange={e=>setForm(f=>({...f,duration:e.target.value}))} placeholder="1:02" style={inp}/></div>
+        <div><label style={lbl}>Description</label><input value={form.meta_text} onChange={e=>setForm(f=>({...f,meta_text:e.target.value}))} placeholder="2026 Varsity" style={inp}/></div>
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={onSubmit} style={{flex:1,padding:"10px 0",background:C.red,border:"none",borderRadius:8,color:C.cream,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase"}}>{submitLabel}</button>
+        <button onClick={()=>{setShowAdd(false);setEditId(null);resetForm();}} style={{padding:"10px 20px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:600,fontSize:13}}>Cancel</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{maxWidth:700}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2}}>GAME FILM</div>
+          <div style={{padding:"4px 12px",background:`${C.red}20`,border:`1px solid ${C.red}40`,borderRadius:6,fontSize:11,fontWeight:700,color:C.red,textTransform:"uppercase",letterSpacing:1,fontFamily:"'Barlow Condensed',sans-serif"}}>{videos.length} clips</div>
+        </div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:24}}>Manage your highlight clips. Reorder, categorize, and publish them to your recruiting site.</div>
+
+        {loading ? <div style={{textAlign:"center",padding:40,color:C.textDim}}>Loading videos...</div> : (
+          <div>
+            {/* Video List */}
+            {videos.map((v,i) => (
+              <div key={v.id} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:editId===v.id?C.navyLight:"transparent",border:`1px solid ${editId===v.id?C.gold+"40":C.border}`,borderRadius:8,marginBottom:8,transition:"all 0.15s"}}>
+                {editId===v.id ? (
+                  <div style={{flex:1}}><VideoForm onSubmit={()=>handleEdit(v.id)} submitLabel="Save Changes"/></div>
+                ) : (
+                  <Fragment>
+                    {/* Reorder buttons */}
+                    <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                      <button onClick={()=>handleMove(i,-1)} disabled={i===0} style={{background:"transparent",border:"none",color:i===0?C.border:C.textMuted,cursor:i===0?"default":"pointer",fontSize:16,padding:"2px 4px",lineHeight:1}}>▲</button>
+                      <button onClick={()=>handleMove(i,1)} disabled={i===videos.length-1} style={{background:"transparent",border:"none",color:i===videos.length-1?C.border:C.textMuted,cursor:i===videos.length-1?"default":"pointer",fontSize:16,padding:"2px 4px",lineHeight:1}}>▼</button>
+                    </div>
+                    {/* Number */}
+                    <div style={{width:28,height:28,borderRadius:"50%",background:C.navyLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:C.textDim,flexShrink:0}}>{String(i+1).padStart(2,"0")}</div>
+                    {/* Info */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:600,color:C.cream,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{v.title}</div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
+                        <span style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:catColor(v.category),background:catColor(v.category)+"18",padding:"2px 8px",borderRadius:4}}>{v.category}</span>
+                        <span style={{fontSize:11,color:C.textDim}}>{v.duration}</span>
+                        {v.meta_text&&<span style={{fontSize:11,color:C.textDim}}>• {v.meta_text}</span>}
+                      </div>
+                    </div>
+                    {/* Actions */}
+                    <div style={{display:"flex",gap:4,flexShrink:0}}>
+                      <button onClick={()=>startEdit(v)} style={{background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",padding:"6px 10px",fontSize:11,fontWeight:600}}>Edit</button>
+                      <button onClick={()=>handleDelete(v.id)} style={{background:"transparent",border:`1px solid ${C.red}30`,borderRadius:6,color:C.red,cursor:"pointer",padding:"6px 10px",fontSize:11,fontWeight:600}}>✕</button>
+                    </div>
+                  </Fragment>
+                )}
+              </div>
+            ))}
+
+            {videos.length===0&&!showAdd&&(
+              <div style={{textAlign:"center",padding:"40px 20px",color:C.textDim}}>
+                <div style={{fontSize:36,marginBottom:8}}>🎬</div>
+                <div style={{fontSize:14,marginBottom:4}}>No video clips yet</div>
+                <div style={{fontSize:12}}>Add your first highlight clip below</div>
+              </div>
+            )}
+
+            {/* Add Form */}
+            {showAdd ? (
+              <div style={{background:C.navyLight,border:`1px solid ${C.gold}40`,borderRadius:8,padding:16,marginTop:8}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:12,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:1}}>Add New Clip</div>
+                <VideoForm onSubmit={handleAdd} submitLabel="Add Clip"/>
+              </div>
+            ) : (
+              <button onClick={()=>{resetForm();setForm(f=>({...f,category:cats[0]?.key||""}));setShowAdd(true);}} style={{width:"100%",padding:"12px 0",background:"transparent",border:`2px dashed ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",marginTop:8,transition:"all 0.15s"}} onMouseOver={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseOut={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.textMuted;}}>+ Add Video Clip</button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
+        <strong style={{color:C.gold}}>How video files work:</strong> The video URL should match the file path on your Netlify site. Upload video files to your site's <code style={{background:C.navyLight,padding:"1px 6px",borderRadius:3,fontSize:12}}>videos/</code> folder via Netlify deploy, then add the path here (e.g. "videos/pitching-reel.mp4"). Hit Publish on the My Stats page to update your live site.
+      </div>
     </div>
   );
 }
@@ -1107,7 +1274,7 @@ function App() {
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -1118,8 +1285,8 @@ function App() {
       <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
@@ -1130,6 +1297,7 @@ function App() {
           {page==="email"&&<EmailBuilder profile={profile} user={user}/>}
           {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
           {page==="stats"&&<StatsEditor profile={profile} setProfile={setProfile} user={user}/>}
+          {page==="videos"&&<VideoManager profile={profile} user={user}/>}
               {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
       </main>
