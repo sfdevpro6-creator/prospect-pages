@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sofia Reyes | Soccer</title><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060810;--bg2:#0c1020;--card:#101828;--accent:#2563eb;--accent2:#60a5fa;--text:#f0ece4;--text2:#9a968e;--muted:#5c5952;--border:rgba(255,255,255,0.06);--font-d:'Montserrat',sans-serif;--font-b:'Barlow',sans-serif;--font-c:'Barlow Condensed',sans-serif}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text)}
+nav{position:fixed;top:32px;left:0;right:0;z-index:99;padding:0.8rem 3rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-family:var(--font-d);font-weight:700;font-size:1.4rem;letter-spacing:0.06em;color:#fff;text-decoration:none;text-transform:uppercase}.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:2rem}.nav-links a{font-family:var(--font-c);font-size:0.8rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--text2);text-decoration:none}.nav-links a:hover{color:var(--accent)}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;background:radial-gradient(ellipse at 30% 50%,#101828 0%,#060810 70%)}
+.hero-tag{font-family:var(--font-c);font-weight:700;font-size:0.75rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2rem;display:flex;align-items:center;justify-content:center;gap:1rem}.hero-tag::before,.hero-tag::after{content:'';width:30px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--font-d);font-weight:700;font-size:clamp(4rem,12vw,9rem);line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.5rem}
+.hero-pos{font-family:var(--font-c);font-size:1.1rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text2);margin-bottom:2rem}
+.hero-stats{display:flex;gap:3rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}.hs-val{font-family:var(--font-d);font-weight:700;font-size:2.5rem;color:#fff;line-height:1}.hs-lbl{font-family:var(--font-c);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted)}
+.btn-a{font-family:var(--font-c);font-weight:700;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem 2.5rem;background:var(--accent);color:#fff;text-decoration:none;display:inline-block;transition:0.3s;border:none}.btn-a:hover{opacity:0.85}
+.btn-b{font-family:var(--font-c);font-weight:700;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem 2.5rem;background:transparent;color:#fff;text-decoration:none;display:inline-block;border:1px solid rgba(255,255,255,0.2);transition:0.3s}.btn-b:hover{border-color:#fff}
+section{padding:5rem 0}.container{max-width:1100px;margin:0 auto;padding:0 2rem}
+.s-label{font-family:var(--font-c);font-weight:700;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem}
+.s-title{font-family:var(--font-d);font-weight:700;font-size:clamp(2.5rem,5vw,3.5rem);text-transform:uppercase;color:#fff;margin-bottom:1.5rem}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-top:2rem}
+.stat{background:var(--card);border:1px solid var(--border);padding:2rem;text-align:center;transition:0.3s}.stat:hover{border-color:var(--accent);transform:translateY(-3px)}
+.stat-val{font-family:var(--font-d);font-weight:700;font-size:3rem;color:#fff}.stat-lbl{font-family:var(--font-c);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.3rem}
+.film-box{background:var(--card);border:1px solid var(--border);padding:3rem;text-align:center;margin-top:2rem;color:var(--muted);font-family:var(--font-c);letter-spacing:0.15em;text-transform:uppercase;font-size:0.8rem}
+.alt-bg{background:var(--bg2)}
+.about-grid{display:grid;grid-template-columns:280px 1fr;gap:3rem;margin-top:2rem}@media(max-width:900px){.about-grid{grid-template-columns:1fr}}
+.about-photo{aspect-ratio:3/4;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--font-c);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:1.5rem}.info-card{background:var(--card);border:1px solid var(--border);padding:1rem}.info-lbl{font-family:var(--font-c);font-size:0.55rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem}.info-val{font-family:var(--font-c);font-size:0.95rem;font-weight:700;color:var(--text)}
+.bio{font-size:0.95rem;line-height:1.8;color:var(--text2);margin-top:1.2rem}.bio strong{color:var(--text)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem}@media(max-width:900px){.contact-grid{grid-template-columns:1fr}}
+.c-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 0;border-bottom:1px solid var(--border)}.c-icon{width:36px;height:36px;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}.c-icon svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2}.c-lbl{font-family:var(--font-c);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}.c-val{font-size:0.9rem;color:var(--text)}
+.contact-form{background:var(--card);border:1px solid var(--border);padding:2rem}.contact-form h3{font-family:var(--font-d);font-weight:700;font-size:1.5rem;text-transform:uppercase;color:#fff;margin-bottom:1rem}
+.fg{margin-bottom:1rem}.fg label{display:block;font-family:var(--font-c);font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem}.fg input,.fg textarea{width:100%;padding:0.7rem;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-b);font-size:0.9rem;outline:none}.fg input:focus,.fg textarea:focus{border-color:var(--accent)}.fg textarea{resize:vertical;min-height:80px}
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:2.5rem;text-align:center}.f-logo{font-family:var(--font-d);font-weight:700;font-size:1.3rem;text-transform:uppercase;color:#fff;margin-bottom:0.4rem}.f-logo span{color:var(--accent)}footer p{font-size:0.75rem;color:var(--muted)}
+</style></head><body>
+<div style="background:#2563eb;text-align:center;padding:0.6rem;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#fff;">Demo Site by <a href="https://prospectpages.net" style="color:#fff;text-decoration:underline">Prospect Pages</a> — <a href="https://prospectpages.net#get-started" style="color:#fff;text-decoration:underline">Get one for your athlete →</a></div>
+<nav><a href="#" class="logo">SOFIA <span>REYES</span></a><div class="nav-links"><a href="#stats">Stats</a><a href="#film">Film</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
+<section class="hero">
+<div>
+<div class="hero-tag">Class of 2028</div>
+<h1>SOFIA<br>REYES</h1>
+<div class="hero-pos">Forward • Midfielder &bull; San Diego, CA</div>
+<div class="hero-stats"><div><div class="hs-val">5'6"</div><div class="hs-lbl">Height</div></div><div><div class="hs-val">130</div><div class="hs-lbl">Weight</div></div><div><div class="hs-val">Right-Footed</div><div class="hs-lbl">Dominant Foot</div></div><div><div class="hs-val">3.9</div><div class="hs-lbl">GPA</div></div></div>
+<div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap"><a href="#film" class="btn-a">Watch Film</a><a href="#contact" class="btn-b">Contact</a></div>
+</div></section>
+<section id="stats"><div class="container"><div class="s-label">Performance</div><div class="s-title">By The Numbers</div>
+<div class="stats-row"><div class="stat"><div class="stat-val">24</div><div class="stat-lbl">Goals</div></div><div class="stat"><div class="stat-val">18</div><div class="stat-lbl">Assists</div></div><div class="stat"><div class="stat-val">5.2</div><div class="stat-lbl">Shots/Game</div></div><div class="stat"><div class="stat-val">87%</div><div class="stat-lbl">Pass Acc</div></div><div class="stat"><div class="stat-val">42</div><div class="stat-lbl">Points</div></div></div></div></section>
+<section id="film" class="alt-bg"><div class="container"><div class="s-label">Game Film</div><div class="s-title">Highlights</div><div class="film-box">Game film and highlight clips will appear here</div></div></section>
+<section id="about"><div class="container"><div class="about-grid"><div class="about-photo">Add Headshot</div><div><div class="s-label">Player Profile</div><div class="s-title">About Sofia</div>
+<div class="info-grid"><div class="info-card"><div class="info-lbl">Position</div><div class="info-val">Forward / Attacking Mid</div></div><div class="info-card"><div class="info-lbl">High School</div><div class="info-val">Del Norte HS</div></div><div class="info-card"><div class="info-lbl">Graduation</div><div class="info-val">Class of 2028</div></div><div class="info-card"><div class="info-lbl">Team</div><div class="info-val">Surf SC</div></div></div>
+<p class="bio"><strong>Sofia Reyes</strong> is a technically gifted attacker from San Diego. With elite pace, creative playmaking, and a natural instinct for goal, Sofia is a nightmare for opposing defenses.</p></div></div></div></section>
+<section id="contact" class="alt-bg"><div class="container"><div class="s-label">Recruiting</div><div class="s-title">Get In Touch</div><p style="color:var(--text2);margin-bottom:1.5rem">Demo site. <a href="https://prospectpages.net#get-started" style="color:var(--accent)">Get one for your athlete →</a></p>
+<div class="contact-grid"><div>
+<div class="c-item"><div class="c-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div><div class="c-lbl">Email</div><div class="c-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b5d4c1ddd9d0c1d0f5d0d8d4dcd99bd6dad8">[email&#160;protected]</a></div></div></div>
+<div class="c-item"><div class="c-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="c-lbl">Location</div><div class="c-val">San Diego, CA</div></div></div>
+</div><div class="contact-form"><h3>Send A Message</h3><p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem">Demo — <a href="https://prospectpages.net#get-started" style="color:var(--accent)">Get yours →</a></p>
+<div class="fg"><label>Name</label><input placeholder="Coach Name" disabled></div><div class="fg"><label>Email</label><input placeholder="coach@university.edu" disabled></div><div class="fg"><label>Message</label><textarea placeholder="Demo — not active" disabled></textarea></div>
+<a href="https://prospectpages.net#get-started" class="btn-a" style="display:block;text-align:center;width:100%">Get Your Athlete's Site →</a>
+</div></div></div></section>
+<footer><div class="f-logo">SOFIA <span>REYES</span></div><p>San Diego, CA &bull; Class of 2028 &bull; Demo by <a href="ht
