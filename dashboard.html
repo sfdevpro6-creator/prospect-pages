@@ -361,7 +361,7 @@ function EmailBuilder({profile, user}) {
   const selectCollege=(college)=>{setSelectedCollege(college);setCollegeSearch(college.name);loadCoachesForCollege(college.id);};
 
   const buildPrompt=(college, emailT, note, coach)=>{
-    const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
+    const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nEmail: ${profile.athlete_email||""}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
     const schoolInfo=`School: ${college.name}\nLocation: ${college.city}, ${college.state}\nDivision: ${college.division}\nConference: ${college.conference||"N/A"}`;
     const coachInfo=coach?`\nCoach: ${coach.name}, ${coach.title}`:"";
     const typePrompts={
@@ -753,7 +753,7 @@ function OutreachTracker({profile, user}) {
 
 // ── PROFILE EDITOR ──
 function ProfileEditor({profile, setProfile, user}) {
-  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||""});
+  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||""});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const handleSave=async()=>{setSaving(true);try{const saveData={...form,athlete_grad_year:form.athlete_grad_year?parseInt(form.athlete_grad_year,10):null,updated_at:new Date().toISOString()};const d=await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`,{method:"PATCH",body:saveData,prefer:"return=representation"});if(d?.[0])setProfile(d[0]);setSaved(true);setTimeout(()=>setSaved(false),2500);}catch(e){alert("Error: "+e.message);}setSaving(false);};
@@ -767,6 +767,7 @@ function ProfileEditor({profile, setProfile, user}) {
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
           <div><label style={lbl}>Parent / Account Name</label><input value={form.full_name} onChange={e=>setForm(f=>({...f,full_name:e.target.value}))} placeholder="David Medina" style={inp}/></div>
           <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Athlete Name</label><input value={form.athlete_name} onChange={e=>setForm(f=>({...f,athlete_name:e.target.value}))} placeholder="Devin Medina" style={inp}/></div><div style={{flex:1}}><label style={lbl}>Graduation Year</label><input type="number" value={form.athlete_grad_year} onChange={e=>setForm(f=>({...f,athlete_grad_year:e.target.value}))} placeholder="2027" style={inp}/></div></div>
+          <div><label style={lbl}>Athlete Email</label><input type="email" value={form.athlete_email} onChange={e=>setForm(f=>({...f,athlete_email:e.target.value}))} placeholder="athlete@email.com" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This email gets included in the signature of every generated email</div></div>
           <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Sport</label><select value={form.athlete_sport} onChange={e=>setForm(f=>({...f,athlete_sport:e.target.value}))} style={{...inp,cursor:"pointer"}}>{["baseball","softball","basketball","football","soccer","volleyball","track"].map(s=>(<option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>))}</select></div><div style={{flex:1}}><label style={lbl}>Position(s)</label><input value={form.athlete_position} onChange={e=>setForm(f=>({...f,athlete_position:e.target.value}))} placeholder="LHP / 1B" style={inp}/></div></div>
           <div><label style={lbl}>Recruiting Site URL</label><input value={form.recruiting_site_url} onChange={e=>setForm(f=>({...f,recruiting_site_url:e.target.value}))} placeholder="https://dmedina.me" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This link gets included in every generated email</div></div>
         </div>
@@ -780,6 +781,7 @@ function ProfileEditor({profile, setProfile, user}) {
           <div style={{padding:"16px 20px",background:C.navyLight,borderRadius:8,fontSize:14,lineHeight:1.8,border:`1px solid ${C.border}`}}>
             <div style={{fontWeight:700}}>{profile.athlete_name}</div>
             <div style={{color:C.textMuted}}>Class of {profile.athlete_grad_year} | {profile.athlete_position}</div>
+            {profile.athlete_email&&<div style={{color:C.cream}}>{profile.athlete_email}</div>}
             {profile.recruiting_site_url&&<div style={{color:C.gold}}>{profile.recruiting_site_url}</div>}
           </div>
         </div>
