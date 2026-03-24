@@ -90,11 +90,18 @@ const Icon = ({ name, size = 18 }) => {
 };
 
 const PPLogo = ({ size = 36 }) => (
-  <svg viewBox="0 0 100 120" width={size} height={size * 1.2} xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C41E3A"/><stop offset="100%" stopColor="#8B1528"/></linearGradient></defs>
-    <path d="M50 2 L95 22 L95 65 Q95 95 50 118 Q5 95 5 65 L5 22 Z" fill="url(#shieldGrad)" stroke="#0D1B2A" strokeWidth="3"/>
-    <text x="50" y="72" textAnchor="middle" fontFamily="'Bebas Neue',sans-serif" fontSize="52" fontWeight="700" fill="#F5F0E8" letterSpacing="2">PP</text>
-    <line x1="50" y1="28" x2="50" y2="88" stroke="#F5F0E8" strokeWidth="2" opacity="0.3"/>
+  <svg viewBox="0 0 100 100" width={size} height={size} xmlns="http://www.w3.org/2000/svg">
+    <defs><clipPath id="shieldClip"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z"/></clipPath></defs>
+    <g transform="translate(0,2)">
+      <path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" strokeWidth="2.5"/>
+      <rect x="50" y="2" width="40" height="90" fill="#b22234" clipPath="url(#shieldClip)" opacity="0.18"/>
+      <g transform="translate(50,48)">
+        <rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/>
+        <path d="M-4,-28 L-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M4,-28 L4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+        <rect x="-6" y="-2" width="12" height="3" rx="1" fill="#b22234"/>
+      </g>
+    </g>
   </svg>
 );
 
