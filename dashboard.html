@@ -188,7 +188,7 @@ function AuthScreen({ onAuth }) {
 }
 
 // ── COLLEGE DIRECTORY ──
-function CollegeDirectory({profile, onNavigateEmail}) {
+function CollegeDirectory({profile, onNavigateEmail, onBatchEmail}) {
   const [colleges, setColleges] = useState([]);
   const [coaches, setCoaches] = useState({});
   const [loading, setLoading] = useState(true);
@@ -198,11 +198,24 @@ function CollegeDirectory({profile, onNavigateEmail}) {
   const [sportFilter, setSportFilter] = useState(profile?.athlete_sport || "");
   const [expanded, setExpanded] = useState(null);
   const [loadingCoaches, setLoadingCoaches] = useState(null);
+  const [selected, setSelected] = useState(new Set());
+
+  const toggleSelect = (e, collegeId) => {
+    e.stopPropagation();
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(collegeId)) next.delete(collegeId);
+      else next.add(collegeId);
+      return next;
+    });
+  };
+  const selectAllVisible = () => { setSelected(new Set(filtered.map(c=>c.id))); };
+  const clearSelection = () => { setSelected(new Set()); };
 
   // Auto-update sport filter if profile loads/changes after mount
   useEffect(()=>{if(profile?.athlete_sport && !sportFilter) setSportFilter(profile.athlete_sport);},[profile?.athlete_sport]);
 
-  useEffect(()=>{(async()=>{try{const d=await supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=500");setColleges(d||[]);}catch(e){console.error(e);}setLoading(false);})();},[]);
+  useEffect(()=>{(async()=>{try{const d=await supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=2000");setColleges(d||[]);}catch(e){console.error(e);}setLoading(false);})();},[]);
 
   const loadCoaches=async(cid)=>{if(coaches[cid])return;setLoadingCoaches(cid);try{const sportQ=profile?.athlete_sport?`&sport=eq.${profile.athlete_sport}`:"";const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*${sportQ}&order=is_recruiting_contact.desc,title`);setCoaches(p=>({...p,[cid]:d||[]}));}catch(e){console.error(e);}setLoadingCoaches(null);};
   const toggleExpand=(id)=>{if(expanded===id){setExpanded(null);return;}setExpanded(id);loadCoaches(id);};
@@ -251,12 +264,17 @@ function CollegeDirectory({profile, onNavigateEmail}) {
           </button>
         )}
       </div>
-      <div style={{fontSize:13,color:C.textMuted,marginBottom:12,fontWeight:600}}>Showing {filtered.length} of {colleges.length} programs</div>
+      <div style={{fontSize:13,color:C.textMuted,marginBottom:12,fontWeight:600,display:"flex",alignItems:"center",gap:12}}>
+        <span>Showing {filtered.length} of {colleges.length} programs</span>
+        {filtered.length>0&&<button onClick={selected.size===filtered.length?clearSelection:selectAllVisible} style={{padding:"4px 10px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.gold,cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif"}}>{selected.size===filtered.length?"Deselect All":`Select All ${filtered.length}`}</button>}
+        {selected.size>0&&<span style={{color:C.gold}}>{selected.size} selected</span>}
+      </div>
       {loading?<div style={{textAlign:"center",padding:60,color:C.textMuted}}>Loading programs...</div>:filtered.length===0?<div style={{textAlign:"center",padding:60,color:C.textMuted}}>No programs match your filters.</div>:(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{display:"flex",flexDirection:"column",gap:8,paddingBottom:selected.size>0?80:0}}>
           {filtered.map(college=>(
-            <div key={college.id} style={{background:C.cardBg,border:`1px solid ${expanded===college.id?C.borderLight:C.border}`,borderRadius:10,overflow:"hidden",transition:"border-color 0.15s"}}>
+            <div key={college.id} style={{background:selected.has(college.id)?`${C.red}10`:C.cardBg,border:`1px solid ${selected.has(college.id)?C.red+"60":expanded===college.id?C.borderLight:C.border}`,borderRadius:10,overflow:"hidden",transition:"all 0.15s"}}>
               <button onClick={()=>toggleExpand(college.id)} style={{display:"flex",alignItems:"center",width:"100%",padding:"16px 20px",background:"transparent",border:"none",color:C.cream,cursor:"pointer",textAlign:"left",fontFamily:"'Barlow',sans-serif",gap:16}}>
+                <div onClick={(e)=>toggleSelect(e,college.id)} style={{width:22,height:22,borderRadius:4,border:`2px solid ${selected.has(college.id)?C.red:C.border}`,background:selected.has(college.id)?C.red:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",transition:"all 0.15s"}}>{selected.has(college.id)&&<Icon name="check" size={14}/>}</div>
                 <div style={{width:42,height:42,borderRadius:8,background:C.navyLight,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Bebas Neue',sans-serif",fontSize:16,color:divColor(college.division),border:`1px solid ${C.border}`,flexShrink:0}}>{college.division}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:16,fontWeight:700}}>{college.name}</div>
@@ -294,11 +312,21 @@ function CollegeDirectory({profile, onNavigateEmail}) {
           ))}
         </div>
       )}
+      {selected.size>0&&(
+        <div style={{position:"fixed",bottom:0,left:240,right:0,padding:"14px 32px",background:C.navyMid,borderTop:`2px solid ${C.red}`,display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:50}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.gold,letterSpacing:1}}>{selected.size}</div>
+            <span style={{fontSize:14,color:C.cream}}>school{selected.size!==1?"s":""} selected</span>
+            <button onClick={clearSelection} style={{padding:"6px 12px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:12,fontFamily:"'Barlow',sans-serif"}}>Clear</button>
+          </div>
+          <button onClick={()=>{const batchColleges=colleges.filter(c=>selected.has(c.id));onBatchEmail(batchColleges);}} style={{padding:"12px 28px",background:C.red,border:"none",borderRadius:8,color:C.cream,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15,letterSpacing:2,textTransform:"uppercase",display:"flex",alignItems:"center",gap:8}}><Icon name="send" size={16}/> DRAFT EMAILS FOR {selected.size} SCHOOL{selected.size!==1?"S":""}</button>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── EMAIL BUILDER ──
+// ── EMAIL BUILDER (with batch support) ──
 function EmailBuilder({profile}) {
   const [colleges, setColleges] = useState([]);
   const [selectedCollege, setSelectedCollege] = useState(null);
@@ -310,21 +338,32 @@ function EmailBuilder({profile}) {
   const [copied, setCopied] = useState(false);
   const [collegeSearch, setCollegeSearch] = useState("");
   const [customNote, setCustomNote] = useState("");
+  // Batch state
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchQueue, setBatchQueue] = useState([]);
+  const [batchResults, setBatchResults] = useState([]);
+  const [batchIndex, setBatchIndex] = useState(-1);
+  const [batchRunning, setBatchRunning] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState(-1);
 
   useEffect(()=>{
-    supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=500").then(d=>setColleges(d||[])).catch(console.error);
-    if(window.__prefill){const{college,coach}=window.__prefill;setSelectedCollege(college);setSelectedCoach(coach);setCollegeSearch(college.name);delete window.__prefill;}
+    supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=2000").then(d=>setColleges(d||[])).catch(console.error);
+    if(window.__batchPrefill){
+      setBatchMode(true);
+      setBatchQueue(window.__batchPrefill);
+      delete window.__batchPrefill;
+    } else if(window.__prefill){
+      const{college,coach}=window.__prefill;setSelectedCollege(college);setSelectedCoach(coach);setCollegeSearch(college.name);delete window.__prefill;
+    }
   },[]);
 
   const loadCoachesForCollege=async(cid)=>{try{const sportQ=profile?.athlete_sport?`&sport=eq.${profile.athlete_sport}`:"";const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*${sportQ}&order=is_recruiting_contact.desc`);setCoaches(d||[]);if(d?.length)setSelectedCoach(d.find(c=>c.is_recruiting_contact)||d[0]);}catch(e){console.error(e);}};
   const selectCollege=(college)=>{setSelectedCollege(college);setCollegeSearch(college.name);loadCoachesForCollege(college.id);};
 
-  const generateEmail=async()=>{
-    if(!selectedCollege||!profile)return;
-    setGenerating(true);setGeneratedEmail(null);
+  const buildPrompt=(college, emailT, note, coach)=>{
     const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
-    const schoolInfo=`School: ${selectedCollege.name}\nLocation: ${selectedCollege.city}, ${selectedCollege.state}\nDivision: ${selectedCollege.division}\nConference: ${selectedCollege.conference||"N/A"}`;
-    const coachInfo=selectedCoach?`Coach: ${selectedCoach.name}, ${selectedCoach.title}`:"";
+    const schoolInfo=`School: ${college.name}\nLocation: ${college.city}, ${college.state}\nDivision: ${college.division}\nConference: ${college.conference||"N/A"}`;
+    const coachInfo=coach?`\nCoach: ${coach.name}, ${coach.title}`:"";
     const typePrompts={
       initial:"Write an initial recruiting outreach email from the athlete to the college coach. Keep it professional but personable. Include the athlete's key info and link to their recruiting site. Confident but respectful. Under 200 words.",
       followup:"Write a follow-up email (2-3 weeks after initial contact). Reference they previously reached out, reiterate interest, mention new accomplishments. Under 150 words.",
@@ -332,23 +371,126 @@ function EmailBuilder({profile}) {
       visit_request:"Write an email requesting an unofficial visit to campus. Express genuine interest. Under 150 words.",
       parent_intro:"Write an email from the athlete's parent introducing their child. Mention accomplishments, character, and link to recruiting site. Warm parent tone, not salesy. Under 200 words.",
     };
-    const prompt=`You are writing a college recruiting email for a student-athlete. Generate ONLY the email with a subject line. No preamble.\n\n${typePrompts[emailType]}\n\nATHLETE INFO:\n${athleteInfo}\n\nSCHOOL INFO:\n${schoolInfo}\n${coachInfo}\n\n${customNote?`PERSONAL NOTE TO INCLUDE: ${customNote}`:""}\n\nFormat:\nSUBJECT: [subject line]\n\n[email body]\n\n[signature with athlete name, class year, position, contact email, recruiting site URL]`;
+    return `You are writing a college recruiting email for a student-athlete. Generate ONLY the email with a subject line. No preamble.\n\n${typePrompts[emailT]}\n\nATHLETE INFO:\n${athleteInfo}\n\nSCHOOL INFO:\n${schoolInfo}${coachInfo}\n\n${note?`PERSONAL NOTE TO INCLUDE: ${note}`:""}\n\nFormat:\nSUBJECT: [subject line]\n\n[email body]\n\n[signature with athlete name, class year, position, contact email, recruiting site URL]`;
+  };
+
+  const callApi=async(prompt)=>{
+    const response=await fetch("/.netlify/functions/generate-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});
+    const data=await response.json();
+    const text=data.content?.map(c=>c.text||"").join("")||"Error generating email";
+    const subjectMatch=text.match(/SUBJECT:\s*(.+)/);
+    const subject=subjectMatch?subjectMatch[1].trim():"Recruiting Introduction";
+    const body=text.replace(/SUBJECT:\s*.+\n+/,"").trim();
+    return {subject,body,full:text};
+  };
+
+  const generateEmail=async()=>{
+    if(!selectedCollege||!profile)return;
+    setGenerating(true);setGeneratedEmail(null);
     try{
-      const response=await fetch("/.netlify/functions/generate-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});
-      const data=await response.json();
-      const text=data.content?.map(c=>c.text||"").join("")||"Error generating email";
-      const subjectMatch=text.match(/SUBJECT:\s*(.+)/);
-      const subject=subjectMatch?subjectMatch[1].trim():"Recruiting Introduction";
-      const body=text.replace(/SUBJECT:\s*.+\n+/,"").trim();
-      setGeneratedEmail({subject,body,full:text});
+      const result=await callApi(buildPrompt(selectedCollege,emailType,customNote,selectedCoach));
+      setGeneratedEmail(result);
     }catch(e){setGeneratedEmail({subject:"Error",body:`Failed: ${e.message}`,full:""});}
     setGenerating(false);
   };
 
-  const copyAll=(text)=>{navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),2000);};
+  const runBatch=async()=>{
+    if(!profile?.athlete_name||batchQueue.length===0)return;
+    setBatchRunning(true);setBatchResults([]);
+    for(let i=0;i<batchQueue.length;i++){
+      setBatchIndex(i);
+      try{
+        const result=await callApi(buildPrompt(batchQueue[i],emailType,customNote));
+        setBatchResults(prev=>[...prev,{college:batchQueue[i],...result,error:false}]);
+      }catch(e){
+        setBatchResults(prev=>[...prev,{college:batchQueue[i],subject:"Error",body:e.message,full:"",error:true}]);
+      }
+      // Small delay to avoid rate limiting
+      if(i<batchQueue.length-1) await new Promise(r=>setTimeout(r,500));
+    }
+    setBatchIndex(-1);setBatchRunning(false);
+  };
+
+  const copyAll=(text,idx)=>{navigator.clipboard.writeText(text);if(idx!==undefined){setCopiedIdx(idx);setTimeout(()=>setCopiedIdx(-1),2000);}else{setCopied(true);setTimeout(()=>setCopied(false),2000);}};
+  const copyAllBatch=()=>{
+    const allText=batchResults.filter(r=>!r.error).map(r=>`--- ${r.college.name} ---\nSubject: ${r.subject}\n\n${r.body}`).join("\n\n═══════════════════════\n\n");
+    navigator.clipboard.writeText(allText);setCopied(true);setTimeout(()=>setCopied(false),2000);
+  };
+
   const filteredColleges=collegeSearch&&!selectedCollege?colleges.filter(c=>c.name.toLowerCase().includes(collegeSearch.toLowerCase())).slice(0,8):[];
   const inp={width:"100%",padding:"12px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
   const missingProfile=!profile?.athlete_name;
+
+  // ── BATCH MODE UI ──
+  if(batchMode){
+    return (
+      <div style={{maxWidth:900}}>
+        {missingProfile&&<div style={{padding:"16px 20px",background:`${C.gold}15`,border:`1px solid ${C.gold}40`,borderRadius:10,marginBottom:24,display:"flex",alignItems:"center",gap:12}}><Icon name="flag" size={18}/><div><div style={{fontSize:14,fontWeight:600,color:C.gold}}>Complete your athlete profile first</div><div style={{fontSize:12,color:C.textMuted}}>The AI uses your athlete's info to personalize emails.</div></div></div>}
+        <div style={{display:"flex",gap:24,flexWrap:"wrap",marginBottom:24}}>
+          <div style={{flex:"1 1 300px",background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24}}>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2,marginBottom:16}}>BATCH EMAIL QUEUE</div>
+            <div style={{fontSize:13,color:C.textMuted,marginBottom:16}}>{batchQueue.length} school{batchQueue.length!==1?"s":""} queued for email generation</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:200,overflow:"auto",marginBottom:20}}>
+              {batchQueue.map((c,i)=>(
+                <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:batchIndex===i?`${C.gold}20`:C.navyLight,borderRadius:6,border:`1px solid ${batchIndex===i?C.gold:C.border}`,fontSize:13}}>
+                  {batchResults[i]?batchResults[i].error?<span style={{color:"#EF4444"}}>✗</span>:<span style={{color:C.success}}>✓</span>:batchIndex===i?<span style={{color:C.gold}}>⟳</span>:<span style={{color:C.textDim}}>○</span>}
+                  <span style={{flex:1}}>{c.name}</span>
+                  <span style={{fontSize:11,color:C.textDim}}>{c.division}</span>
+                  <button onClick={()=>setBatchQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"transparent",border:"none",color:C.textDim,cursor:"pointer",padding:2}}><Icon name="x" size={14}/></button>
+                </div>
+              ))}
+            </div>
+            <label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8}}>Email Type</label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
+              {[{id:"initial",l:"Initial Outreach"},{id:"followup",l:"Follow-Up"},{id:"camp_interest",l:"Camp Interest"},{id:"visit_request",l:"Visit Request"},{id:"parent_intro",l:"Parent Intro"}].map(type=>(
+                <button key={type.id} onClick={()=>setEmailType(type.id)} disabled={batchRunning} style={{padding:"8px 14px",background:emailType===type.id?`${C.red}30`:"transparent",border:`1px solid ${emailType===type.id?C.red:C.border}`,borderRadius:6,cursor:batchRunning?"not-allowed":"pointer",color:C.cream,fontFamily:"'Barlow',sans-serif",fontSize:12,fontWeight:600}}>{type.l}</button>
+              ))}
+            </div>
+            <label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Personal Touch (optional, applies to all)</label>
+            <textarea placeholder="E.g. 'I attended your camp last summer'" value={customNote} onChange={e=>setCustomNote(e.target.value)} disabled={batchRunning} style={{...inp,minHeight:60,resize:"vertical",marginBottom:20}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={runBatch} disabled={batchRunning||missingProfile||batchQueue.length===0} style={{flex:1,padding:"14px 0",background:(batchRunning||missingProfile)?C.textDim:C.red,border:"none",borderRadius:8,color:C.cream,cursor:(batchRunning||missingProfile)?"not-allowed":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:15,letterSpacing:2,textTransform:"uppercase",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                {batchRunning?`GENERATING ${batchIndex+1} OF ${batchQueue.length}...`:<Fragment><Icon name="sparkle" size={18}/> GENERATE ALL</Fragment>}
+              </button>
+              <button onClick={()=>{setBatchMode(false);setBatchQueue([]);setBatchResults([]);}} disabled={batchRunning} style={{padding:"14px 20px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.textMuted,cursor:batchRunning?"not-allowed":"pointer",fontFamily:"'Barlow',sans-serif",fontSize:13}}>Cancel</button>
+            </div>
+          </div>
+          <div style={{flex:"2 1 400px"}}>
+            {batchResults.length>0?(
+              <div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2}}>GENERATED EMAILS ({batchResults.filter(r=>!r.error).length}/{batchQueue.length})</div>
+                  {batchResults.length>1&&<button onClick={copyAllBatch} style={{padding:"8px 14px",background:copied?C.success:C.navyLight,border:`1px solid ${copied?C.success:C.border}`,borderRadius:6,color:C.cream,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif",display:"flex",alignItems:"center",gap:6,transition:"all 0.2s"}}><Icon name={copied?"check":"copy"} size={14}/>{copied?"Copied All!":"Copy All"}</button>}
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:12,maxHeight:"calc(100vh - 260px)",overflow:"auto"}}>
+                  {batchResults.map((result,i)=>(
+                    <div key={i} style={{background:C.cardBg,border:`1px solid ${result.error?"#EF444440":C.border}`,borderRadius:10,padding:20}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",color:result.error?"#EF4444":C.gold}}>{result.college.name}</div>
+                        {!result.error&&<button onClick={()=>copyAll(`Subject: ${result.subject}\n\n${result.body}`,i)} style={{padding:"6px 10px",background:copiedIdx===i?C.success:C.navyLight,border:`1px solid ${copiedIdx===i?C.success:C.border}`,borderRadius:5,color:C.cream,cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif",display:"flex",alignItems:"center",gap:4}}><Icon name={copiedIdx===i?"check":"copy"} size={12}/>{copiedIdx===i?"Copied":"Copy"}</button>}
+                      </div>
+                      {result.error?<div style={{fontSize:13,color:"#EF4444"}}>{result.body}</div>:(
+                        <Fragment>
+                          <div style={{fontSize:12,color:C.textMuted,marginBottom:4}}>Subject: <span style={{color:C.cream,fontWeight:600}}>{result.subject}</span></div>
+                          <div style={{padding:"10px 14px",background:C.navyLight,borderRadius:6,fontSize:13,lineHeight:1.6,border:`1px solid ${C.border}`,whiteSpace:"pre-wrap",maxHeight:200,overflow:"auto"}}>{result.body}</div>
+                        </Fragment>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ):(
+              <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:40,textAlign:"center",minHeight:300,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                <div style={{color:C.textDim,marginBottom:12}}><Icon name="send" size={48}/></div>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2,color:C.textMuted}}>BATCH EMAIL PREVIEW</div>
+                <div style={{fontSize:13,color:C.textDim,marginTop:8,maxWidth:300}}>Choose an email type, then hit Generate All. Emails will be created for each school in your queue.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{maxWidth:800}}>
@@ -504,7 +646,7 @@ function App() {
           </div>
         </header>
         <div style={{padding:"24px 32px"}}>
-          {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}}/>}
+          {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}} onBatchEmail={(colleges)=>{setPage("email");window.__batchPrefill=colleges;}}/>}
           {page==="email"&&<EmailBuilder profile={profile}/>}
           {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
