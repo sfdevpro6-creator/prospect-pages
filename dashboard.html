@@ -826,7 +826,7 @@ const SPORT_STAT_LABELS = {
   track:{event_100m:"100m (sec)",event_200m:"200m (sec)",event_400m:"400m (sec)",long_jump:"Long Jump",high_jump:"High Jump",relay_split:"Relay Split"},
 };
 
-function publishSite(profile, stats, measurables, sport) {
+async function publishSite(profile, stats, measurables, sport) {
   const t = SPORT_THEMES[sport] || SPORT_THEMES.baseball;
   const labels = SPORT_STAT_LABELS[sport] || SPORT_STAT_LABELS.baseball;
   const name = profile.athlete_name || "Athlete";
