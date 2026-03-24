@@ -105,12 +105,13 @@ const PPLogo = ({ size = 36 }) => (
   </svg>
 );
 
-// ── AUTH SCREEN ──
+// ── AUTH SCREEN (Invite Code Gated) ──
 function AuthScreen({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmMsg, setConfirmMsg] = useState("");
@@ -118,9 +119,30 @@ function AuthScreen({ onAuth }) {
     setError(""); setLoading(true); setConfirmMsg("");
     try {
       if (mode === "signup") {
+        // Validate invite code first
+        if (!inviteCode.trim()) { setError("An invite code is required. You receive this when your Prospect Pages site is built."); setLoading(false); return; }
+        const codes = await supaFetch(`/rest/v1/invite_codes?code=eq.${encodeURIComponent(inviteCode.trim().toUpperCase())}&select=*`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
+        if (!codes?.length) { setError("Invalid invite code. Please check the code you received from Prospect Pages."); setLoading(false); return; }
+        if (codes[0].used_by) { setError("This invite code has already been used. Contact david@prospectpages.college if you need help."); setLoading(false); return; }
+        const codeData = codes[0];
+        // Code is valid, create account
         const res = await authApi.signUp(email, password, fullName);
-        if (res?.access_token) onAuth(res.access_token, res.user);
-        else if (res?.id) { setConfirmMsg("Check your email to confirm, then sign in."); setMode("login"); }
+        if (res?.access_token) {
+          // Mark code as used
+          try { await supaFetch(`/rest/v1/invite_codes?id=eq.${codeData.id}`, { method: "PATCH", body: { used_by: res.user.id, used_at: new Date().toISOString(), client_email: email }, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } }); } catch(e) { console.log("Code claim:", e); }
+          // Auto-populate profile with invite code data
+          try {
+            await new Promise(r => setTimeout(r, 500)); // Wait for trigger
+            const profileData = {};
+            if (codeData.client_name) profileData.full_name = codeData.client_name;
+            if (codeData.sport) profileData.athlete_sport = codeData.sport;
+            if (codeData.athlete_site_url) profileData.recruiting_site_url = codeData.athlete_site_url;
+            if (Object.keys(profileData).length) {
+              await supaFetch(`/rest/v1/profiles?id=eq.${res.user.id}`, { method: "PATCH", body: profileData, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
+            }
+          } catch(e) { console.log("Profile prefill:", e); }
+          onAuth(res.access_token, res.user);
+        } else if (res?.id) { setConfirmMsg("Check your email to confirm, then sign in."); setMode("login"); }
       } else {
         const res = await authApi.signIn(email, password);
         if (res?.access_token) onAuth(res.access_token, res.user);
@@ -146,11 +168,16 @@ function AuthScreen({ onAuth }) {
           {confirmMsg&&<div style={{padding:"12px 16px",background:"#22C55E20",border:"1px solid #22C55E40",borderRadius:8,fontSize:13,color:C.success,marginBottom:16}}>{confirmMsg}</div>}
           {error&&<div style={{padding:"12px 16px",background:"#C41E3A20",border:"1px solid #C41E3A40",borderRadius:8,fontSize:13,color:C.red,marginBottom:16}}>{error}</div>}
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {mode==="signup"&&<input placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)} style={inp}/>}
+            {mode==="signup"&&<Fragment>
+              <input placeholder="Invite Code (e.g. PP-ABC123)" value={inviteCode} onChange={e=>setInviteCode(e.target.value.toUpperCase())} style={{...inp,letterSpacing:2,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:600,textAlign:"center",fontSize:18,background:`${C.navyLight}`,border:`1px solid ${C.gold}40`}} maxLength={10}/>
+              <div style={{fontSize:11,color:C.textDim,textAlign:"center",marginTop:-6,marginBottom:4}}>Enter the code you received when your site was built</div>
+              <input placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)} style={inp}/>
+            </Fragment>}
             <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} style={inp}/>
             <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
             <button onClick={handleSubmit} disabled={loading} style={{padding:"14px 0",background:C.red,border:"none",borderRadius:8,color:C.cream,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",cursor:loading?"wait":"pointer",opacity:loading?0.7:1,marginTop:4}}>{loading?"...":mode==="login"?"SIGN IN":"CREATE ACCOUNT"}</button>
           </div>
+          {mode==="signup"&&<p style={{textAlign:"center",fontSize:11,color:C.textDim,marginTop:16}}>Don't have a code? Visit <a href="https://prospectpages.net" style={{color:C.gold,textDecoration:"none"}}>ProspectPages.net</a> to get started.</p>}
         </div>
         <p style={{textAlign:"center",fontSize:12,color:C.textDim,marginTop:20}}>Powered by ProspectPages.net</p>
       </div>
