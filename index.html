@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3S7DQZCWK4"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-3S7DQZCWK4");</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospect Pages — Custom Recruiting Websites for High School Athletes</title>
+<meta name="description" content="Professional recruiting websites for high school athletes. Game film, stats, timeline, and coach contact — all on a custom domain. $400 flat. No payment until you see the finished site.">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/svg+xml" href="/logo-icon.svg">
+<link rel="apple-touch-icon" sizes="192x192" href="/logo-icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800;900&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#002868;--navy-dark:#001d4a;--red:#b22234;--red-dark:#8b1a29;
+  --cream:#f5f3ef;--white:#ffffff;--text:#1a1a2e;--text2:#4a4a5a;--muted:#8a8a9a;
+  --border:rgba(0,0,0,0.07);--gold:#c9a84c;
+  --r-sm:6px;--r-md:12px;--r-lg:20px;--r-xl:28px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0.7rem 2.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,29,74,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05);transition:all 0.4s}
+nav.scrolled{background:rgba(0,29,74,0.98);box-shadow:0 4px 30px rgba(0,0,0,0.2)}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.08em;color:#fff;text-decoration:none;display:flex;align-items:center;gap:0.6rem}
+.nav-logo span{color:#f0e6c8}
+.nav-shield{width:34px;height:34px;flex-shrink:0}
+.nav-links{display:flex;gap:1.6rem;align-items:center}
+.nav-links>a,.nav-faq>a{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.65);text-decoration:none;transition:color 0.3s;padding:0.3rem 0}
+.nav-links>a:hover,.nav-faq>a:hover{color:#fff}
+.nav-cta{background:var(--red)!important;color:#fff!important;padding:0.5rem 1.3rem!important;border-radius:var(--r-xl)!important;transition:all 0.3s!important}
+.nav-cta:hover{background:var(--red-dark)!important;transform:translateY(-1px);box-shadow:0 4px 15px rgba(178,34,52,0.4)!important}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px}
+.nav-toggle span{width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s}
+
+/* FAQ dropdown */
+.nav-faq{position:relative;display:flex;align-items:center}
+.nav-faq>a{cursor:pointer;display:flex;align-items:center;gap:0.35rem;user-select:none}
+.nav-faq>a::after{content:'';width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4px solid rgba(255,255,255,0.4);transition:transform 0.3s}
+.nav-faq.faq-open>a::after{transform:rotate(180deg)}
+.faq-drop{position:absolute;top:calc(100% + 10px);right:-40px;width:420px;background:#fff;border-radius:var(--r-md);box-shadow:0 20px 60px rgba(0,0,0,0.18),0 0 0 1px rgba(0,0,0,0.04);opacity:0;visibility:hidden;transform:translateY(8px);transition:all 0.3s cubic-bezier(0.16,1,0.3,1);overflow:visible;pointer-events:none;z-index:300}
+.faq-drop::after{content:'';position:absolute;top:-6px;right:52px;width:12px;height:12px;background:#fff;transform:rotate(45deg);border-radius:2px}
+.nav-faq.faq-open .faq-drop{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+.faq-drop-header{padding:1.2rem 1.5rem 0.8rem;border-bottom:1px solid var(--border)}
+.faq-drop-header h4{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--navy);letter-spacing:0.03em}
+.faq-drop-body{max-height:400px;overflow-y:auto;padding:0.4rem 0}
+.faq-drop-body::-webkit-scrollbar{width:4px}.faq-drop-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:4px}
+.faq-drop-item{padding:0.85rem 1.5rem;cursor:pointer;transition:background 0.2s;border-bottom:1px solid rgba(0,0,0,0.04)}
+.faq-drop-item:last-child{border-bottom:none}
+.faq-drop-item:hover{background:rgba(0,40,104,0.02)}
+.faq-drop-q{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.faq-drop-q::after{content:'+';font-family:'Barlow',sans-serif;font-size:1.1rem;color:var(--muted);transition:all 0.3s;flex-shrink:0;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(0,0,0,0.04)}
+.faq-drop-item.open .faq-drop-q::after{content:'−';color:var(--red);background:rgba(178,34,52,0.08)}
+.faq-drop-a{font-size:0.82rem;color:var(--text2);line-height:1.65;max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.3s,opacity 0.3s;opacity:0}
+.faq-drop-item.open .faq-drop-a{max-height:200px;padding-top:0.6rem;opacity:1}
+
+@media(max-width:768px){
+  .nav-links{display:none;position:fixed;inset:0;background:rgba(0,29,74,0.98);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:2rem;z-index:200}
+  .nav-links.open{display:flex}
+  .nav-toggle{display:flex;z-index:201}
+  .nav-faq>a::after{display:none}
+  .faq-drop{position:static;width:100%;background:transparent;box-shadow:none;opacity:1;visibility:visible;transform:none;pointer-events:auto;max-height:0;overflow:hidden;transition:max-height 0.4s;border-radius:0}
+  .faq-drop::after{display:none}
+  .faq-drop-header{display:none}
+  .faq-drop-body{padding:0;max-height:none;overflow:visible}
+  .faq-drop-item{padding:0.7rem 1.2rem;border-color:rgba(255,255,255,0.06)}
+  .faq-drop-q{color:rgba(255,255,255,0.85);font-size:0.8rem}
+  .faq-drop-q::after{color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.08)}
+  .faq-drop-item.open .faq-drop-q::after{color:var(--red);background:rgba(178,34,52,0.2)}
+  .faq-drop-a{color:rgba(255,255,255,0.5)}
+  .nav-faq.mob-open .faq-drop{max-height:800px}
+}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;align-items:center;background:linear-gradient(160deg,#001030 0%,#001d4a 30%,#002868 60%,#003080 100%);position:relative;overflow:hidden;padding-top:60px}
+.hero::before{content:'';position:absolute;top:-200px;right:-300px;width:900px;height:900px;background:radial-gradient(circle,rgba(178,34,52,0.1) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,0.03) 0%,transparent 70%);pointer-events:none}
+.hero-lines{position:absolute;inset:0;opacity:0.025;background:repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(255,255,255,0.5) 80px,rgba(255,255,255,0.5) 81px)}
+.hero-inner{max-width:1200px;margin:0 auto;padding:0 2.5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:2}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr;text-align:center}}
+.hero-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--red);margin-bottom:1.2rem;display:flex;align-items:center;gap:1rem}
+.hero-eyebrow::before{content:'';width:35px;height:2px;background:var(--red);border-radius:2px}
+@media(max-width:900px){.hero-eyebrow{justify-content:center}.hero-eyebrow::before{display:none}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,5.5rem);line-height:0.95;color:#fff;letter-spacing:0.02em;margin-bottom:1.2rem}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero-sub{font-size:1.15rem;color:rgba(255,255,255,0.6);line-height:1.7;max-width:500px;margin-bottom:2rem}
+@media(max-width:900px){.hero-sub{margin:0 auto 2rem}}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+@media(max-width:900px){.hero-ctas{justify-content:center}}
+.btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem 2.5rem;text-decoration:none;display:inline-block;transition:all 0.3s;cursor:pointer;border:none;border-radius:var(--r-xl)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark);transform:translateY(-2px);box-shadow:0 8px 30px rgba(178,34,52,0.35)}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.25)}.btn-outline:hover{border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.05);transform:translateY(-2px)}
+.hero-price{margin-top:1.5rem;display:flex;align-items:baseline;gap:0.5rem}
+.hero-price .amount{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff}
+.hero-price .detail{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:0.1em;color:rgba(255,255,255,0.45);text-transform:uppercase}
+@media(max-width:900px){.hero-price{justify-content:center}}
+
+/* Demo mockup */
+.hero-demo{position:relative}
+.demo-browser{background:#111;border-radius:var(--r-lg);overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.5)}
+.demo-bar{background:#1a1a22;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem}
+.demo-dot{width:8px;height:8px;border-radius:50%}
+.demo-dot:nth-child(1){background:#ff5f57}.demo-dot:nth-child(2){background:#ffbd2e}.demo-dot:nth-child(3){background:#28ca41}
+.demo-url{font-family:'Barlow',sans-serif;font-size:0.65rem;color:#666;margin-left:0.8rem;background:#0d0d12;padding:0.25rem 0.8rem;border-radius:10px;flex:1}
+.demo-iframe{width:100%;height:420px;border:none}
+@media(max-width:900px){.demo-iframe{height:300px}}
+
+/* ─── SECTIONS ─── */
+section{padding:6rem 0}
+.container{max-width:1100px;margin:0 auto;padding:0 2.5rem}
+.section-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--red);margin-bottom:0.6rem}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);color:var(--navy);line-height:1;margin-bottom:0.8rem}
+.section-sub{font-size:1rem;color:var(--text2);line-height:1.7;max-width:600px}
+.text-center{text-align:center}
+.text-center .section-sub{margin:0 auto}
+
+/* ─── FEATURES ─── */
+.features-section{background:var(--cream)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+@media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+.feature-card{background:var(--white);border:1px solid var(--border);padding:2.5rem 2rem;transition:all 0.4s;position:relative;overflow:hidden;text-align:center;border-radius:var(--r-md)}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 16px 48px rgba(0,0,0,0.08)}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--navy),var(--red));opacity:0;transition:opacity 0.4s;border-radius:var(--r-md) var(--r-md) 0 0}
+.feature-card:hover::before{opacity:1}
+.feature-icon{width:60px;height:60px;background:linear-gradient(135deg,rgba(0,40,104,0.06),rgba(0,40,104,0.02));border:1.5px solid rgba(0,40,104,0.08);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;transition:all 0.4s}
+.feature-card:hover .feature-icon{background:linear-gradient(135deg,rgba(0,40,104,0.1),rgba(178,34,52,0.05));border-color:rgba(0,40,104,0.15);transform:scale(1.05)}
+.feature-card h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:0.03em;color:var(--text);margin-bottom:0.5rem}
+.feature-card p{font-size:0.88rem;color:var(--text2);line-height:1.6}
+
+/* ─── DEMO ─── */
+.demo-section{background:var(--navy);color:#fff;overflow:hidden;position:relative}
+.demo-section::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(178,34,52,0.08),transparent 70%);pointer-events:none}
+.demo-section .section-eyebrow{color:rgba(255,255,255,0.45)}
+.demo-section .section-title{color:#fff}
+.demo-section .section-sub{color:rgba(255,255,255,0.55)}
+.demo-full{margin-top:3rem;border-radius:var(--r-lg);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06)}
+.demo-full-bar{background:#1a1a22;padding:0.6rem 1rem;display:flex;align-items:center;gap:0.5rem}
+.demo-full iframe{width:100%;height:600px;border:none}
+@media(max-width:768px){.demo-full iframe{height:400px}}
+
+/* ─── PROCESS ─── */
+.process-section{background:var(--white)}
+.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:3rem}
+@media(max-width:768px){.process-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.process-grid{grid-template-columns:1fr}}
+.process-step{text-align:center;padding:2.2rem 1.5rem;background:var(--cream);border:1px solid var(--border);position:relative;border-radius:var(--r-md);transition:all 0.3s}
+.process-step:hover{transform:translateY(-4px);box-shadow:0 12px 35px rgba(0,0,0,0.06)}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--navy);line-height:1;margin-bottom:0.5rem;opacity:0.15}
+.process-step h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text);margin-bottom:0.4rem}
+.process-step p{font-size:0.82rem;color:var(--text2);line-height:1.5}
+
+/* ─── PRICING ─── */
+.pricing-section{background:var(--cream)}
+.pricing-card{max-width:500px;margin:3rem auto 0;background:var(--white);border:1px solid var(--border);overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,0.07);border-radius:var(--r-lg)}
+.pricing-header{background:linear-gradient(135deg,var(--navy) 0%,#003080 100%);padding:2.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.pricing-header::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(178,34,52,0.2),transparent 70%);pointer-events:none}
+.pricing-amount{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:#fff;line-height:1}
+.pricing-amount span{font-size:2.5rem;vertical-align:top;line-height:1.8}
+.pricing-label{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:0.3rem}
+.pricing-body{padding:2rem}
+.pricing-feature{display:flex;align-items:flex-start;gap:0.8rem;padding:0.65rem 0;border-bottom:1px solid rgba(0,0,0,0.04)}
+.pricing-feature:last-child{border-bottom:none}
+.pricing-check{width:22px;height:22px;background:linear-gradient(135deg,rgba(0,40,104,0.08),rgba(0,40,104,0.03));border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.65rem;color:var(--navy);font-weight:700}
+.pricing-feature span{font-size:0.88rem;color:var(--text2);line-height:1.4}
+.pricing-highlight{background:rgba(178,34,52,0.03);border:1px solid rgba(178,34,52,0.1);padding:1rem 1.5rem;margin:1.5rem 0 0;text-align:center;border-radius:var(--r-sm)}
+.pricing-highlight p{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--red)}
+.pricing-highlight small{font-size:0.78rem;color:var(--muted);display:block;margin-top:0.3rem;text-transform:none;font-weight:400;letter-spacing:0}
+.pricing-cta{text-align:center;margin-top:1.5rem}
+.pricing-cta .btn{width:100%}
+
+/* ─── FORM SECTION ─── */
+.form-section{background:var(--navy);color:#fff;padding:5rem 0;position:relative;overflow:hidden}
+.form-section::before{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(178,34,52,0.1),transparent 70%);pointer-events:none}
+.form-section .section-eyebrow{color:rgba(255,255,255,0.45)}
+.form-section .section-title{color:#fff}
+.form-section .section-sub{color:rgba(255,255,255,0.55)}
+.form-card{background:var(--white);padding:2.5rem;margin-top:3rem;max-width:700px;margin-left:auto;margin-right:auto;box-shadow:0 16px 60px rgba(0,0,0,0.25);border-radius:var(--r-lg)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem}
+.fg label .req{color:var(--red)}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.7rem 0.9rem;background:#f9f8f6;border:1px solid #e0deda;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;border-radius:var(--r-sm);transition:all 0.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,40,104,0.08)}
+.fg textarea{resize:vertical;min-height:70px}
+.form-divider{border:none;border-top:1px solid #eeecea;margin:1.5rem 0}
+.form-section-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--navy);margin-bottom:1rem}
+.btn-submit{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.18em;text-transform:uppercase;padding:1rem;background:var(--navy);color:#fff;border:none;cursor:pointer;width:100%;margin-top:0.5rem;transition:all 0.3s;border-radius:var(--r-xl)}
+.btn-submit:hover{background:var(--navy-dark);transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,40,104,0.3)}
+
+/* ─── SPORT PICKER ─── */
+.sport-pick{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:1rem 0.5rem;text-align:center;cursor:pointer;transition:all 0.3s;border-radius:var(--r-md)}
+.sport-pick:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-3px);background:rgba(255,255,255,0.06)}
+.sport-pick.active{border-color:var(--red);background:rgba(178,34,52,0.1);box-shadow:0 0 0 1px var(--red),0 8px 25px rgba(178,34,52,0.15)}
+.sp-icon{font-size:1.6rem;margin-bottom:0.3rem}
+.sp-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:#fff}
+.sp-tag{font-size:0.6rem;color:rgba(255,255,255,0.3);margin-top:0.15rem}
+.sport-pick.active .sp-tag{color:rgba(255,255,255,0.6)}
+
+/* ─── ABOUT ─── */
+.about-section{background:linear-gradient(160deg,#001030 0%,#001d4a 40%,#002260 100%);padding:6rem 0;position:relative;overflow:hidden}
+.about-section::before{content:'';position:absolute;top:-100px;right:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(178,34,52,0.07),transparent 70%);pointer-events:none}
+.about-section::after{content:'';position:absolute;bottom:-150px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,0.02),transparent 70%);pointer-events:none}
+.about-inner{max-width:700px;margin:0 auto;position:relative;z-index:1}
+.about-body p{font-size:1rem;color:rgba(255,255,255,0.6);line-height:1.85;margin-bottom:1.3rem}
+.about-body p:last-child{margin-bottom:0}
+.about-body p:nth-child(5){font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:0.02em;color:var(--red)}
+.about-body p:last-child{color:rgba(255,255,255,0.75);font-weight:500}
+
+/* ─── FOOTER ─── */
+footer{background:#001030;padding:3.5rem 2.5rem;text-align:center;position:relative}
+footer::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--navy),var(--red),var(--navy))}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.08em;color:#fff;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:center;gap:0.6rem}
+.footer-logo span{color:#f0e6c8}
+.footer-shield{width:38px;height:38px}
+footer p{font-size:0.8rem;color:rgba(255,255,255,0.35);line-height:1.6}
+footer a{color:rgba(255,255,255,0.55);text-decoration:none;transition:color 0.3s}
+footer a:hover{color:#fff}
+
+/* ─── SCROLL REVEAL ─── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:0.1s}.reveal-d2{transition-delay:0.2s}.reveal-d3{transition-delay:0.3s}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg class="nav-shield" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="navShield"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z"/></clipPath></defs><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" stroke-width="2.5"/><rect x="50" y="2" width="40" height="90" fill="#b22234" clip-path="url(#navShield)" opacity="0.18"/><g transform="translate(50,48)"><rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/><path d="M-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="-6" y="-2" width="12" height="3" rx="1" fill="#b22234"/></g></svg>
+    PROSPECT <span>PAGES</span>
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="#features">Features</a>
+    <a href="#demo">Demos</a>
+    <a href="#process">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#about">About</a>
+    <div class="nav-faq" id="navFaq">
+      <a>FAQ</a>
+      <div class="faq-drop">
+        <div class="faq-drop-header"><h4>Frequently Asked Questions</h4></div>
+        <div class="faq-drop-body">
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">What sports do you build sites for?</div>
+            <div class="faq-drop-a">We build recruiting sites for any sport — baseball, softball, basketball, football, soccer, volleyball, track, and more. The layout adapts to whatever sport your athlete plays.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">How long does it take to build?</div>
+            <div class="faq-drop-a">1-2 business days from the time we receive your form submission and photos/videos. Rush delivery is available if needed.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">Do I really not pay until I see it?</div>
+            <div class="faq-drop-a">Correct. We build the entire site, send you a preview link, and you only pay if you love it. Payment is due within 48 hours of delivery. If it's not paid, the site comes down.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">What do I need to provide?</div>
+            <div class="faq-drop-a">Fill out our intake form with your athlete's info (stats, contact, coach references) and upload your photos and game film on our upload page. The more content you send, the better the site looks.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">Can I update the site after it's built?</div>
+            <div class="faq-drop-a">Yes! Send us updated stats, new photos, or additional game film anytime and we'll update the site for you. Updates are included at no extra charge.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">What about the custom domain?</div>
+            <div class="faq-drop-a">We'll purchase and set up a custom domain for your athlete (like FirstnameLastname.com). The first year of your domain and hosting is included in the $400. We handle all the technical setup.</div>
+          </div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')">
+            <div class="faq-drop-q">Is there a monthly or annual fee?</div>
+            <div class="faq-drop-a">Your $400 covers the full site build plus the first year of hosting and your custom domain. After year one, it's $100/year to keep the site live and the domain active. No monthly fees.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a href="#get-started" class="nav-cta">Get Started</a>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-lines"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Custom Recruiting Websites</div>
+      <h1>YOUR KID<br>DESERVES TO<br>BE <em>SEEN</em></h1>
+      <p class="hero-sub">Professional recruiting websites for high school athletes. Game film, stats, coach contact, and a custom domain — everything a college coach needs to find your kid, in one link.</p>
+      <div class="hero-ctas">
+        <a href="#get-started" class="btn btn-red">Get Started</a>
+        <a href="#demo" class="btn btn-outline">See Live Demo</a>
+      </div>
+    </div>
+    <div class="hero-demo">
+      <div class="demo-browser">
+        <div class="demo-bar">
+          <div class="demo-dot"></div><div class="demo-dot"></div><div class="demo-dot"></div>
+          <div class="demo-url">dmedina.me</div>
+        </div>
+        <iframe class="demo-iframe" src="https://dmedina.me" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features-section" id="features">
+  <div class="container text-center">
+    <div class="section-eyebrow reveal">What You Get</div>
+    <h2 class="section-title reveal">EVERYTHING A COACH NEEDS<br>IN ONE LINK</h2>
+    <p class="section-sub reveal">Each site is custom-built around your athlete — their story, their colors, their brand. Not a template.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-d1">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+        <h3>Game Film & Highlights</h3>
+        <p>Video playlist with category tabs — pitching, hitting, fielding. Coaches click and watch right on the site.</p>
+      </div>
+      <div class="feature-card reveal reveal-d2">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+        <h3>Stats Dashboard</h3>
+        <p>Key measurables front and center — batting avg, exit velo, pitching velocity, GPA, height, weight.</p>
+      </div>
+      <div class="feature-card reveal reveal-d3">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+        <h3>Mobile-Optimized</h3>
+        <p>Looks sharp on any device. Coaches browse on phones between games — your kid's site needs to perform.</p>
+      </div>
+      <div class="feature-card reveal reveal-d1">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <h3>Custom Domain</h3>
+        <p>Your athlete gets their own URL — like FirstnameLastname.com. Professional and easy to share.</p>
+      </div>
+      <div class="feature-card reveal reveal-d2">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <h3>Coach Contact Form</h3>
+        <p>Built-in message form so coaches can reach out directly. Every submission goes straight to your email.</p>
+      </div>
+      <div class="feature-card reveal reveal-d3">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></div>
+        <h3>Full Player Profile</h3>
+        <p>Bio, achievements, coach references, timeline of progression — the complete recruiting package.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LIVE DEMO ═══ -->
+<section class="demo-section" id="demo">
+  <div class="container text-center">
+    <div class="section-eyebrow reveal">Live Examples</div>
+    <h2 class="section-title reveal">SEE IT IN ACTION</h2>
+    <p class="section-sub reveal">Click any sport below to preview a demo recruiting site. This is exactly what your athlete will get.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-top:2.5rem;" id="sportPicker">
+      <div class="sport-pick active" onclick="switchDemo(this,'https://dmedina.me','dmedina.me — Live Baseball Client')">
+        <div class="sp-icon">⚾</div><div class="sp-name">Baseball</div><div class="sp-tag">Live Site</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/softball','Softball Demo — Isabella Martinez')">
+        <div class="sp-icon">🥎</div><div class="sp-name">Softball</div><div class="sp-tag">Demo</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/basketball','Basketball Demo — Marcus Thompson')">
+        <div class="sp-icon">🏀</div><div class="sp-name">Basketball</div><div class="sp-tag">Demo</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/football','Football Demo — Jordan Williams')">
+        <div class="sp-icon">🏈</div><div class="sp-name">Football</div><div class="sp-tag">Demo</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/soccer','Soccer Demo — Sofia Reyes')">
+        <div class="sp-icon">⚽</div><div class="sp-name">Soccer</div><div class="sp-tag">Demo</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/volleyball','Volleyball Demo — Ava Chen')">
+        <div class="sp-icon">🏐</div><div class="sp-name">Volleyball</div><div class="sp-tag">Demo</div>
+      </div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/track','Track &amp; Field Demo — Elijah Brooks')">
+        <div class="sp-icon">🏃</div><div class="sp-name">Track</div><div class="sp-tag">Demo</div>
+      </div>
+    </div>
+    <div class="demo-full" style="margin-top:2rem;">
+      <div class="demo-full-bar">
+        <div class="demo-dot" style="background:#ff5f57"></div>
+        <div class="demo-dot" style="background:#ffbd2e"></div>
+        <div class="demo-dot" style="background:#28ca41"></div>
+        <div class="demo-url" id="demoUrl" style="font-size:0.7rem;color:#888;background:#0d0d12;padding:0.3rem 1rem;border-radius:10px;margin-left:0.8rem">dmedina.me — Live Baseball Client</div>
+      </div>
+      <iframe src="https://dmedina.me" loading="lazy" id="demoFrame"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROCESS ═══ -->
+<section class="process-section" id="process">
+  <div class="container text-center">
+    <div class="section-eyebrow reveal">How It Works</div>
+    <h2 class="section-title reveal">4 SIMPLE STEPS</h2>
+    <p class="section-sub reveal">From signup to a live recruiting site in 1-2 business days.</p>
+    <div class="process-grid">
+      <div class="process-step reveal"><div class="step-num">01</div><h3>Fill Out The Form</h3><p>Send us your athlete's info including stats, contact, coach references, and preferences.</p></div>
+      <div class="process-step reveal reveal-d1"><div class="step-num">02</div><h3>Upload Photos & Film</h3><p>Upload action shots, headshots, and game film directly on our site. Tag each file so we know where it goes.</p></div>
+      <div class="process-step reveal reveal-d2"><div class="step-num">03</div><h3>We Build The Site</h3><p>Your athlete's custom recruiting website is delivered within 1-2 business days.</p></div>
+      <div class="process-step reveal reveal-d3"><div class="step-num">04</div><h3>Review & Go Live</h3><p>You see the finished site before paying. Once approved, it goes live on a custom domain.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing-section" id="pricing">
+  <div class="container text-center">
+    <div class="section-eyebrow reveal">Pricing</div>
+    <h2 class="section-title reveal">ONE PRICE. EVERYTHING INCLUDED.</h2>
+    <p class="section-sub reveal">No subscriptions, no hidden fees, no surprises.</p>
+    <div class="pricing-card reveal">
+      <div class="pricing-header">
+        <div class="pricing-amount"><span>$</span>400</div>
+        <div class="pricing-label">One-Time Flat Rate</div>
+      </div>
+      <div class="pricing-body">
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Fully custom recruiting website — not a template</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom domain (YourKidsName.com)</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Game film / highlight video player with categories</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stats dashboard with key measurables</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Player bio, achievements, and progression timeline</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Coach references section</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Built-in coach contact form</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Mobile-optimized — looks great on any device</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom colors to match school or travel team</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Google Analytics tracking included</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>First year of hosting & custom domain included</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stat & bio updates included at no extra cost</span></div>
+        <div class="pricing-highlight"><p>No Payment Until You See The Finished Site</p><small>You only pay after you've reviewed and approved. Payment due within 48 hours.</small></div>
+        <div class="pricing-highlight" style="margin-top:0.8rem;"><p style="font-size:0.75rem;">After Year 1: $100/year renewal</p><small>Keeps your site live, domain active, and hosting maintained.</small></div>
+        <div class="pricing-cta"><a href="#get-started" class="btn btn-red">Get Started Now</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ABOUT ═══ -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-inner">
+      <div class="about-text">
+        <div class="section-eyebrow reveal">Our Story</div>
+        <h2 class="section-title reveal" style="color:#fff">WHY WE BUILT THIS</h2>
+        <div class="about-body reveal">
+          <p>We're not a tech startup. We're not a recruiting agency charging thousands of dollars. We're parents. We've sat in those bleachers. We've driven the hours to the tournaments. We've watched our kids pour everything they have into their sport. Before school, after school, weekends, summers. All because they have a dream of playing at the next level.</p>
+          <p>And we've also watched the reality of what it actually takes to get recruited.</p>
+          <p>It takes money. A lot of it. Showcase after showcase at $300-$500 a pop. Travel ball seasons that run $5,000 or more. Recruiting platforms with monthly subscriptions. Training facilities, private coaches, camps, exposure tournaments. All of it stacking up while your kid is just trying to get seen by the right coach at the right time.</p>
+          <p>The truth is, the system rewards the families that can afford to put their kid everywhere. And if you can't? If you're working overtime just to cover league fees and equipment? Your kid doesn't get seen. Not because they're not talented enough. Not because they haven't earned it. But because they weren't standing in the right place, and the right place costs money most families don't have.</p>
+          <p>That's not right. And that's why Prospect Pages exists.</p>
+          <p>We built this so that every kid who has put in the work has a fighting chance at being noticed. A professional recruiting website with their name, their stats, their film, and their story, all on their own domain and ready to send to any college coach in the country. Not buried in a database behind a paywall. Not a template that looks like everyone else's. A real site that makes a coach stop scrolling and pay attention.</p>
+          <p>Other companies charge $1,000 to $5,000 for this. We charge $400 because this was never about making money off families who are already stretched thin. It was about giving their kid a shot.</p>
+          <p>Your kid has done the hard part. They've put in the reps, the early mornings, the late nights, the sacrifice. They've earned the right to be seen. We're just here to make sure they are.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GET STARTED FORM ═══ -->
+<section class="form-section" id="get-started">
+  <div class="container text-center">
+    <div class="section-eyebrow">Ready?</div>
+    <h2 class="section-title" style="color:#fff">LET'S BUILD YOUR ATHLETE'S SITE</h2>
+    <p class="section-sub">Fill out the form below and we'll get started. After submitting, you'll be able to <strong style="color:#fff">upload your photos and game film</strong> directly on the next page.</p>
+    <div class="form-card">
+      <form action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="5fa35adf-581a-4cfe-afa6-8b8811ed2219">
+        <input type="hidden" name="subject" value="New Prospect Pages Submission">
+        <input type="hidden" name="cc" value="sfdevpro6@gmail.com">
+        <input type="hidden" name="from_name" value="Prospect Pages">
+        <input type="hidden" name="redirect" value="https://prospectpages.net/thanks.html">
+        <div class="form-section-label">Parent / Guardian</div>
+        <div class="form-row">
+          <div class="fg"><label>Name <span class="req">*</span></label><input type="text" name="parent_name" required placeholder="Your full name"></div>
+          <div class="fg"><label>Email <span class="req">*</span></label><input type="email" name="parent_email" required placeholder="your@email.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Phone <span class="req">*</span></label><input type="tel" name="parent_phone" required placeholder="(555) 555-1234"></div>
+          <div class="fg"><label>Preferred Contact</label><select name="contact_method"><option value="email">Email</option><option value="text">Text</option><option value="call">Phone Call</option></select></div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-section-label">Athlete Details</div>
+        <div class="form-row">
+          <div class="fg"><label>First Name <span class="req">*</span></label><input type="text" name="athlete_first" required placeholder="First name"></div>
+          <div class="fg"><label>Last Name <span class="req">*</span></label><input type="text" name="athlete_last" required placeholder="Last name"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Sport <span class="req">*</span></label><select name="sport" required><option value="">Select...</option><option>Baseball</option><option>Softball</option><option>Basketball</option><option>Football</option><option>Soccer</option><option>Volleyball</option><option>Track & Field</option><option>Other</option></select></div>
+          <div class="fg"><label>Position(s) <span class="req">*</span></label><input type="text" name="position" required placeholder="e.g. Pitcher / 1st Base"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Grad Year <span class="req">*</span></label><select name="grad_year" required><option value="">Select...</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option></select></div>
+          <div class="fg"><label>High School <span class="req">*</span></label><input type="text" name="high_school" required placeholder="School name"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>City / State <span class="req">*</span></label><input type="text" name="location" required placeholder="e.g. Simi Valley, CA"></div>
+          <div class="fg"><label>Travel Team</label><input type="text" name="travel_team" placeholder="Team name"></div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-section-label">Measurables</div>
+        <div class="form-row">
+          <div class="fg"><label>Height <span class="req">*</span></label><input type="text" name="height" required placeholder="e.g. 6'0"></div>
+          <div class="fg"><label>Weight <span class="req">*</span></label><input type="text" name="weight" required placeholder="e.g. 190 lbs"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Bats / Throws</label><select name="bats_throws"><option value="">Select...</option><option>R/R</option><option>L/L</option><option>R/L</option><option>L/R</option><option>Switch/R</option><option>Switch/L</option><option>N/A</option></select></div>
+          <div class="fg"><label>GPA</label><input type="text" name="gpa" placeholder="e.g. 3.4"></div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-section-label">Stats & Achievements</div>
+        <div class="fg"><label>Key Stats</label><textarea name="stats" rows="3" placeholder="Exit Velo, Batting Avg, Pitching Velo, 60 time, etc."></textarea></div>
+        <div class="fg"><label>Achievements / Awards</label><textarea name="achievements" rows="3" placeholder="All-League, Varsity starter, Showcase invites, etc."></textarea></div>
+        <hr class="form-divider">
+        <div class="form-section-label">Preferences</div>
+        <div class="form-row">
+          <div class="fg"><label>Color Scheme</label><select name="color_scheme"><option>Match school colors</option><option>Match travel team colors</option><option>Dark / Cinematic</option><option>Custom</option></select></div>
+          <div class="fg"><label>School/Team Colors</label><input type="text" name="colors" placeholder="e.g. Maroon and Gold"></div>
+        </div>
+        <div class="fg"><label>Anything Else?</label><textarea name="notes" rows="2" placeholder="Special requests, story, etc."></textarea></div>
+        <button type="submit" class="btn-submit">Submit & Get Started</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-logo">
+    <svg class="footer-shield" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="ftShield"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z"/></clipPath></defs><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" stroke-width="2.5"/><rect x="50" y="2" width="40" height="90" fill="#b22234" clip-path="url(#ftShield)" opacity="0.18"/><g transform="translate(50,48)"><rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/><path d="M-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="-6" y="-2" width="12" height="3" rx="1" fill="#b22234"/></g></svg>
+    PROSPECT <span>PAGES</span>
+  </div>
+  <p>Custom Recruiting Websites for High School Athletes</p>
+  <p style="margin-top:0.8rem">$400 Flat &bull; No Payment Until You See The Finished Site</p>
+  <p style="margin-top:1.5rem"><a href="mailto:david@prospectpages.college">david@prospectpages.college</a></p>
+</footer>
+
+<!-- ═══ FLOATING CONTACT WIDGET ═══ -->
+<style>
+.qw-btn{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;width:56px;height:56px;border-radius:50%;background:var(--red);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(178,34,52,0.4);display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+.qw-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(178,34,52,0.5)}
+.qw-btn svg{transition:transform 0.3s}
+.qw-btn.active svg{transform:rotate(45deg)}
+.qw-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--red);animation:qw-ping 2.5s cubic-bezier(0,0,0.2,1) infinite;pointer-events:none}
+@keyframes qw-ping{0%{transform:scale(1);opacity:0.6}100%{transform:scale(1.8);opacity:0}}
+.qw-label{position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);background:var(--navy);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.45rem 0.9rem;border-radius:var(--r-xl);white-space:nowrap;box-shadow:0 4px 15px rgba(0,0,0,0.15);opacity:1;transition:opacity 0.3s;pointer-events:none}
+.qw-label::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left-color:var(--navy)}
+.qw-btn.active .qw-label,.qw-btn.active .qw-pulse{opacity:0;pointer-events:none}
+.qw-panel{position:fixed;bottom:5.5rem;right:1.5rem;z-index:499;width:340px;max-height:calc(100vh - 7rem);background:#fff;border-radius:var(--r-lg);box-shadow:0 20px 60px rgba(0,0,0,0.2),0 0 0 1px rgba(0,0,0,0.04);transform:translateY(12px) scale(0.96);opacity:0;visibility:hidden;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);overflow:hidden;display:flex;flex-direction:column}
+.qw-panel.open{transform:translateY(0) scale(1);opacity:1;visibility:visible}
+.qw-header{background:linear-gradient(135deg,var(--navy),#003080);padding:1.2rem 1.4rem;flex-shrink:0}
+.qw-header h4{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;letter-spacing:0.03em;line-height:1.1}
+.qw-header p{font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:0.3rem;line-height:1.4}
+.qw-body{padding:1.2rem 1.4rem;overflow-y:auto;flex:1}
+.qw-fg{margin-bottom:0.9rem}
+.qw-fg label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.25rem}
+.qw-fg label .req{color:var(--red)}
+.qw-fg input,.qw-fg textarea{width:100%;padding:0.6rem 0.75rem;background:#f9f8f6;border:1px solid #e0deda;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.85rem;outline:none;border-radius:var(--r-sm);transition:all 0.2s}
+.qw-fg input:focus,.qw-fg textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,40,104,0.08)}
+.qw-fg textarea{resize:vertical;min-height:70px}
+.qw-fg .qw-optional{font-size:0.55rem;color:var(--red);font-weight:600;letter-spacing:0.1em;margin-left:0.3rem;text-transform:none}
+.qw-submit{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.8rem;background:var(--red);color:#fff;border:none;cursor:pointer;width:100%;border-radius:var(--r-xl);transition:all 0.3s}
+.qw-submit:hover{background:var(--red-dark);transform:translateY(-1px);box-shadow:0 4px 15px rgba(178,34,52,0.3)}
+.qw-or{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin:0.6rem 0;display:flex;align-items:center;gap:0.6rem}
+.qw-or::before,.qw-or::after{content:'';flex:1;height:1px;background:#e5e5e5}
+.qw-call{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.65rem;background:rgba(0,40,104,0.03);border:1px solid rgba(0,40,104,0.08);border-radius:var(--r-sm);text-decoration:none;transition:all 0.2s}
+.qw-call:hover{background:rgba(0,40,104,0.07);border-color:rgba(0,40,104,0.15)}
+.qw-call span{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;color:var(--navy)}
+.qw-success{display:none;text-align:center;padding:2.5rem 1.5rem}
+.qw-success svg{margin-bottom:1rem}
+.qw-success h4{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--navy);margin-bottom:0.4rem}
+.qw-success p{font-size:0.85rem;color:var(--text2);line-height:1.5}
+@media(max-width:420px){.qw-panel{right:0.75rem;left:0.75rem;width:auto;bottom:5rem}.qw-btn{bottom:1rem;right:1rem;width:50px;height:50px}}
+</style>
+
+<button class="qw-btn" id="qwBtn" aria-label="Have questions?">
+  <span class="qw-pulse"></span>
+  <span class="qw-label">Have Questions?</span>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+
+<div class="qw-panel" id="qwPanel">
+  <div class="qw-header">
+    <h4>HAVE QUESTIONS?</h4>
+    <p>Send us a message and we'll get back to you fast.</p>
+  </div>
+  <div class="qw-body">
+    <form id="qwForm" action="https://api.web3forms.com/submit" method="POST">
+      <input type="hidden" name="access_key" value="5fa35adf-581a-4cfe-afa6-8b8811ed2219">
+      <input type="hidden" name="subject" value="Quick Question — Prospect Pages">
+      <input type="hidden" name="cc" value="sfdevpro6@gmail.com">
+      <input type="hidden" name="from_name" value="Prospect Pages Question">
+      <div class="qw-fg"><label>Name <span class="req">*</span></label><input type="text" name="name" required placeholder="Your name"></div>
+      <div class="qw-fg"><label>Phone <span class="qw-optional">*one required</span></label><input type="tel" name="phone" id="qwPhone" placeholder="(555) 555-1234"></div>
+      <div class="qw-fg"><label>Email <span class="qw-optional">*one required</span></label><input type="email" name="email" id="qwEmail" placeholder="your@email.com"></div>
+      <div class="qw-fg"><label>Message <span class="req">*</span></label><textarea name="message" required placeholder="What can we help with?"></textarea></div>
+      <button type="submit" class="qw-submit">Send Message</button>
+    </form>
+    <div class="qw-or">or</div>
+    <a href="tel:+18054042630" class="qw-call">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#002868" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>Call (805) 404-2630</span>
+    </a>
+  </div>
+  <div class="qw-success" id="qwSuccess">
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="#002868" stroke-width="2"/><path d="M15 24.5l6 6 12-12" stroke="#002868" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h4>MESSAGE SENT!</h4>
+    <p>We'll get back to you shortly.<br>You can also call us anytime.</p>
+  </div>
+</div>
+
+<script>
+// Mobile nav
+document.getElementById('navToggle').addEventListener('click',function(){
+  document.getElementById('navLinks').classList.toggle('open');
+});
+document.querySelectorAll('.nav-links>a').forEach(function(a){
+  a.addEventListener('click',function(){document.getElementById('navLinks').classList.remove('open')});
+});
+
+// FAQ dropdown toggle (click-based)
+(function(){
+  var faqNav = document.getElementById('navFaq');
+  var faqLink = faqNav.querySelector('a');
+  faqLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.innerWidth <= 768) {
+      faqNav.classList.toggle('mob-open');
+    } else {
+      faqNav.classList.toggle('faq-open');
+    }
+  });
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!faqNav.contains(e.target)) {
+      faqNav.classList.remove('faq-open');
+    }
+  });
+  // Don't close when clicking inside the dropdown
+  faqNav.querySelector('.faq-drop').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+})();
+
+// Nav scroll
+window.addEventListener('scroll',function(){
+  document.querySelector('nav').classList.toggle('scrolled',window.scrollY>60);
+});
+
+// Demo switcher
+function switchDemo(el, url, label) {
+  document.querySelectorAll('.sport-pick').forEach(function(p){p.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('demoUrl').textContent = label;
+  document.getElementById('demoFrame').src = url;
+}
+
+// Scroll reveal
+(function(){
+  var els=document.querySelectorAll('.reveal');
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+  },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+  els.forEach(function(el){obs.observe(el);});
+})();
+
+// Quick question widget
+(function(){
+  var btn=document.getElementById('qwBtn'),panel=document.getElementById('qwPanel'),form=document.getElementById('qwForm'),success=document.getElementById('qwSuccess');
+  btn.addEventListener('click',function(){
+    var isOpen=panel.classList.contains('open');
+    panel.classList.toggle('open');btn.classList.toggle('active');
+    if(!isOpen){form.style.display='';success.style.display='none';}
+  });
+  document.addEventListener('click',function(e){
+    if(!panel.contains(e.target)&&!btn.contains(e.target)&&panel.classList.contains('open')){
+      panel.classList.remove('open');btn.classList.remove('active');
+    }
+  });
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var phone=document.getElementById('qwPhone'),email=document.getElementById('qwEmail');
+    phone.style.borderColor='';email.style.borderColor='';
+    if(!phone.value.trim()&&!email.value.trim()){
+      phone.style.borderColor='var(--red)';email.style.borderColor='var(--red)';
+      phone.setAttribute('placeholder','Phone or email required');
+      email.setAttribute('placeholder','Phone or email required');
+      return;
+    }
+    var data=new FormData(form);
+    fetch('https://api.web3forms.com/submit',{method:'POST',body:data})
+    .then(function(r){return r.json()})
+    .then(function(d){if(d.success){form.style.display='none';success.style.display='block';form.reset();}})
+    .catch(function(){form.style.display='none';success.style.display='block';form.reset();});
+  });
+  ['qwPhone','qwEmail'].forEach(function(id){
+    document.getElementById(id).addEventListener('input',function(){
+      document.getElementById('qwPhone').style.borderColor='';
+      document.getElementById('qwEmail').style.borderColor='';
+      document.getElementById('qwPhone').placeholder='(555) 555-1234';
+      document.getElementById('qwEmail').placeholder='your@email.com';
+    });
+  });
+  setTimeout(function(){var l=btn.querySelector('.qw-label');if(l&&!btn.classList.contains('active'))l.style.opacity='0';},6000);
+  btn.addEventListener('mouseenter',function(){var l=btn.querySelector('.qw-label');if(l&&!btn.classList.contains('active'))l.style.opacity='1';});
+  btn.addEventListener('mouseleave',function(){var l=btn.querySelector('.qw-label');if(l&&!btn.classList.contains('active'))l.style.opacity='0';});
+})();
+</script>
+</body>
+</html>

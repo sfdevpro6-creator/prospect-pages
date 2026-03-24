@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospect Pages | Recruiting Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 100 120' xmlns='http://www.w3.org/2000/svg'><path d='M50 2 L95 22 L95 65 Q95 95 50 118 Q5 95 5 65 L5 22 Z' fill='%23C41E3A'/><text x='50' y='72' text-anchor='middle' font-family='sans-serif' font-size='52' font-weight='700' fill='%23F5F0E8'>PP</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0D1B2A; overflow: hidden; }
+  ::placeholder { color: #5A6B7D; }
+  select option { background: #1B2D45; color: #F5F0E8; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1E3048; border-radius: 3px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef, Fragment } = React;
+
+const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_axuGAsFPyrmkew9R8QD31w_4pv_pKs6";
+
+const supaFetch = async (path, opts = {}) => {
+  const token = localStorage.getItem("pp_token");
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    ...opts,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${token || SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "return=representation",
+      ...opts.headers,
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.msg || err.message || err.error_description || res.statusText);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+};
+
+const authApi = {
+  signUp: (email, password, fullName) =>
+    supaFetch("/auth/v1/signup", { method: "POST", body: { email, password, data: { full_name: fullName } }, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }),
+  signIn: (email, password) =>
+    supaFetch("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password }, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }),
+  getUser: () => supaFetch("/auth/v1/user"),
+};
+
+const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+const STATE_NAMES = {AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming"};
+const DIVISIONS = ["D1","D2","D3","NAIA","JUCO"];
+
+const C = {
+  navy:"#0D1B2A", navyLight:"#1B2D45", navyMid:"#162438",
+  red:"#C41E3A", redHover:"#D4293F", cream:"#F5F0E8", creamDim:"#E8E0D4",
+  gold:"#D4A843", textMuted:"#8899AA", textDim:"#5A6B7D",
+  border:"#1E3048", borderLight:"#2A3F5A", cardBg:"#12233A",
+  success:"#22C55E", warn:"#EAB308",
+};
+
+const Icon = ({ name, size = 18 }) => {
+  const s = { width: size, height: size, strokeWidth: 1.8, fill: "none", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" };
+  const paths = {
+    search: <Fragment><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Fragment>,
+    school: <Fragment><path d="M2 10l10-7 10 7"/><path d="M22 10v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8"/><rect x="9" y="14" width="6" height="8"/></Fragment>,
+    mail: <Fragment><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></Fragment>,
+    send: <Fragment><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></Fragment>,
+    x: <Fragment><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Fragment>,
+    chevron: <Fragment><polyline points="9 18 15 12 9 6"/></Fragment>,
+    star: <Fragment><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Fragment>,
+    user: <Fragment><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></Fragment>,
+    logout: <Fragment><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Fragment>,
+    copy: <Fragment><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></Fragment>,
+    check: <Fragment><polyline points="20 6 9 17 4 12"/></Fragment>,
+    flag: <Fragment><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></Fragment>,
+    sparkle: <Fragment><path d="M12 3v18M5.5 7.5l13 9M5.5 16.5l13-9"/></Fragment>,
+    globe: <Fragment><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></Fragment>,
+  };
+  return <svg viewBox="0 0 24 24" style={s} xmlns="http://www.w3.org/2000/svg">{paths[name]}</svg>;
+};
+
+const PPLogo = ({ size = 36 }) => (
+  <svg viewBox="0 0 100 120" width={size} height={size * 1.2} xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C41E3A"/><stop offset="100%" stopColor="#8B1528"/></linearGradient></defs>
+    <path d="M50 2 L95 22 L95 65 Q95 95 50 118 Q5 95 5 65 L5 22 Z" fill="url(#shieldGrad)" stroke="#0D1B2A" strokeWidth="3"/>
+    <text x="50" y="72" textAnchor="middle" fontFamily="'Bebas Neue',sans-serif" fontSize="52" fontWeight="700" fill="#F5F0E8" letterSpacing="2">PP</text>
+    <line x1="50" y1="28" x2="50" y2="88" stroke="#F5F0E8" strokeWidth="2" opacity="0.3"/>
+  </svg>
+);
+
+// ── AUTH SCREEN ──
+function AuthScreen({ onAuth }) {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [confirmMsg, setConfirmMsg] = useState("");
+  const handleSubmit = async () => {
+    setError(""); setLoading(true); setConfirmMsg("");
+    try {
+      if (mode === "signup") {
+        const res = await authApi.signUp(email, password, fullName);
+        if (res?.access_token) onAuth(res.access_token, res.user);
+        else if (res?.id) { setConfirmMsg("Check your email to confirm, then sign in."); setMode("login"); }
+      } else {
+        const res = await authApi.signIn(email, password);
+        if (res?.access_token) onAuth(res.access_token, res.user);
+      }
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+  const inp = { width:"100%",padding:"14px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:15,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box" };
+  return (
+    <div style={{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow',sans-serif",color:C.cream}}>
+      <div style={{width:420,padding:40}}>
+        <div style={{textAlign:"center",marginBottom:40}}>
+          <PPLogo size={52}/>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,letterSpacing:4,marginTop:16}}>PROSPECT PAGES</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,letterSpacing:3,color:C.textMuted,textTransform:"uppercase"}}>Recruiting Dashboard</div>
+        </div>
+        <div style={{background:C.cardBg,borderRadius:12,padding:32,border:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",marginBottom:24,background:C.navyLight,borderRadius:8,padding:3}}>
+            {["login","signup"].map(m=>(
+              <button key={m} onClick={()=>{setMode(m);setError("");setConfirmMsg("");}} style={{flex:1,padding:"10px 0",border:"none",borderRadius:6,cursor:"pointer",background:mode===m?C.red:"transparent",color:C.cream,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:2,textTransform:"uppercase"}}>{m==="login"?"Sign In":"Sign Up"}</button>
+            ))}
+          </div>
+          {confirmMsg&&<div style={{padding:"12px 16px",background:"#22C55E20",border:"1px solid #22C55E40",borderRadius:8,fontSize:13,color:C.success,marginBottom:16}}>{confirmMsg}</div>}
+          {error&&<div style={{padding:"12px 16px",background:"#C41E3A20",border:"1px solid #C41E3A40",borderRadius:8,fontSize:13,color:C.red,marginBottom:16}}>{error}</div>}
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {mode==="signup"&&<input placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)} style={inp}/>}
+            <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} style={inp}/>
+            <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+            <button onClick={handleSubmit} disabled={loading} style={{padding:"14px 0",background:C.red,border:"none",borderRadius:8,color:C.cream,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",cursor:loading?"wait":"pointer",opacity:loading?0.7:1,marginTop:4}}>{loading?"...":mode==="login"?"SIGN IN":"CREATE ACCOUNT"}</button>
+          </div>
+        </div>
+        <p style={{textAlign:"center",fontSize:12,color:C.textDim,marginTop:20}}>Powered by ProspectPages.net</p>
+      </div>
+    </div>
+  );
+}
+
+// ── COLLEGE DIRECTORY ──
+function CollegeDirectory({profile, onNavigateEmail}) {
+  const [colleges, setColleges] = useState([]);
+  const [coaches, setCoaches] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
+  const [divisionFilter, setDivisionFilter] = useState("");
+  const [sportFilter, setSportFilter] = useState("");
+  const [expanded, setExpanded] = useState(null);
+  const [loadingCoaches, setLoadingCoaches] = useState(null);
+
+  useEffect(()=>{(async()=>{try{const d=await supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=500");setColleges(d||[]);}catch(e){console.error(e);}setLoading(false);})();},[]);
+
+  const loadCoaches=async(cid)=>{if(coaches[cid])return;setLoadingCoaches(cid);try{const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*&order=is_recruiting_contact.desc,title`);setCoaches(p=>({...p,[cid]:d||[]}));}catch(e){console.error(e);}setLoadingCoaches(null);};
+  const toggleExpand=(id)=>{if(expanded===id){setExpanded(null);return;}setExpanded(id);loadCoaches(id);};
+
+  const filtered=colleges.filter(c=>{
+    if(search&&!c.name.toLowerCase().includes(search.toLowerCase())&&!c.city?.toLowerCase().includes(search.toLowerCase()))return false;
+    if(stateFilter&&c.state!==stateFilter)return false;
+    if(divisionFilter&&c.division!==divisionFilter)return false;
+    if(sportFilter&&!c.sports?.includes(sportFilter))return false;
+    return true;
+  });
+  const stateCounts={};const divCounts={};
+  colleges.forEach(c=>{stateCounts[c.state]=(stateCounts[c.state]||0)+1;divCounts[c.division]=(divCounts[c.division]||0)+1;});
+  const sel={padding:"10px 14px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:13,fontFamily:"'Barlow',sans-serif",outline:"none",cursor:"pointer",minWidth:130};
+  const divColor=(d)=>({D1:"#C41E3A",D2:"#3B82F6",D3:"#22C55E",NAIA:"#D4A843",JUCO:"#A855F7"}[d]||C.textMuted);
+
+  return (
+    <div>
+      <div style={{display:"flex",gap:16,marginBottom:24,flexWrap:"wrap"}}>
+        {[{l:"Total Programs",v:colleges.length,c:C.cream},{l:"States Covered",v:Object.keys(stateCounts).length,c:C.gold},{l:"D1 Programs",v:divCounts.D1||0,c:"#C41E3A"},{l:"D2 Programs",v:divCounts.D2||0,c:"#3B82F6"},{l:"JUCO Programs",v:divCounts.JUCO||0,c:"#A855F7"}].map((s,i)=>(
+          <div key={i} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 20px",flex:"1 1 140px"}}>
+            <div style={{fontSize:28,fontFamily:"'Bebas Neue',sans-serif",color:s.c,letterSpacing:1}}>{s.v}</div>
+            <div style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:1.5,fontWeight:600}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap",alignItems:"center",background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 20px"}}>
+        <div style={{flex:"1 1 240px"}}>
+          <input placeholder="Search by name or city..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:"100%",padding:"10px 14px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <select value={stateFilter} onChange={e=>setStateFilter(e.target.value)} style={sel}>
+          <option value="">All States</option>
+          {US_STATES.filter(s=>stateCounts[s]).sort((a,b)=>(stateCounts[b]||0)-(stateCounts[a]||0)).map(s=>(<option key={s} value={s}>{STATE_NAMES[s]} ({stateCounts[s]})</option>))}
+        </select>
+        <select value={divisionFilter} onChange={e=>setDivisionFilter(e.target.value)} style={sel}>
+          <option value="">All Divisions</option>
+          {DIVISIONS.map(d=>(<option key={d} value={d}>{d} ({divCounts[d]||0})</option>))}
+        </select>
+        <select value={sportFilter} onChange={e=>setSportFilter(e.target.value)} style={sel}>
+          <option value="">All Sports</option>
+          {["baseball","softball","basketball","football","soccer","volleyball","track"].map(s=>(<option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>))}
+        </select>
+        {(stateFilter||divisionFilter||sportFilter||search)&&(
+          <button onClick={()=>{setSearch("");setStateFilter("");setDivisionFilter("");setSportFilter("");}} style={{padding:"10px 16px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif",display:"flex",alignItems:"center",gap:6}}>
+            <Icon name="x" size={14}/> Clear
+          </button>
+        )}
+      </div>
+      <div style={{fontSize:13,color:C.textMuted,marginBottom:12,fontWeight:600}}>Showing {filtered.length} of {colleges.length} programs</div>
+      {loading?<div style={{textAlign:"center",padding:60,color:C.textMuted}}>Loading programs...</div>:filtered.length===0?<div style={{textAlign:"center",padding:60,color:C.textMuted}}>No programs match your filters.</div>:(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {filtered.map(college=>(
+            <div key={college.id} style={{background:C.cardBg,border:`1px solid ${expanded===college.id?C.borderLight:C.border}`,borderRadius:10,overflow:"hidden",transition:"border-color 0.15s"}}>
+              <button onClick={()=>toggleExpand(college.id)} style={{display:"flex",alignItems:"center",width:"100%",padding:"16px 20px",background:"transparent",border:"none",color:C.cream,cursor:"pointer",textAlign:"left",fontFamily:"'Barlow',sans-serif",gap:16}}>
+                <div style={{width:42,height:42,borderRadius:8,background:C.navyLight,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Bebas Neue',sans-serif",fontSize:16,color:divColor(college.division),border:`1px solid ${C.border}`,flexShrink:0}}>{college.division}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:16,fontWeight:700}}>{college.name}</div>
+                  <div style={{fontSize:12,color:C.textMuted}}>{college.city}, {STATE_NAMES[college.state]||college.state}{college.conference&&<span style={{marginLeft:8,color:C.gold}}>({college.conference})</span>}</div>
+                </div>
+                <div style={{display:"flex",gap:4,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end"}}>
+                  {college.sports?.slice(0,4).map(s=>(<span key={s} style={{padding:"3px 8px",background:C.navyLight,borderRadius:4,fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:0.5,border:`1px solid ${C.border}`}}>{s}</span>))}
+                  {college.sports?.length>4&&<span style={{fontSize:10,color:C.textDim,padding:"3px 4px"}}>+{college.sports.length-4}</span>}
+                </div>
+                <span style={{transform:expanded===college.id?"rotate(90deg)":"rotate(0)",transition:"transform 0.2s",color:C.textDim}}><Icon name="chevron" size={16}/></span>
+              </button>
+              {expanded===college.id&&(
+                <div style={{borderTop:`1px solid ${C.border}`,padding:"20px 20px 20px 78px",background:`${C.navy}80`}}>
+                  {college.athletics_url&&<a href={college.athletics_url} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:12,color:C.gold,textDecoration:"none",marginBottom:16}}><Icon name="globe" size={14}/> Visit Athletics Page</a>}
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:C.textMuted,marginBottom:12}}>Coaching Staff</div>
+                  {loadingCoaches===college.id?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>Loading coaches...</div>:!coaches[college.id]?.length?<div style={{fontSize:13,color:C.textDim,padding:"8px 0"}}>No coaches on file yet. Check the athletics page for contact info.</div>:(
+                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      {coaches[college.id].map(coach=>(
+                        <div key={coach.id} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",background:C.navyLight,borderRadius:8,border:`1px solid ${C.border}`}}>
+                          <div style={{width:36,height:36,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:coach.is_recruiting_contact?`${C.red}30`:C.border,color:coach.is_recruiting_contact?C.red:C.textMuted,flexShrink:0}}><Icon name={coach.is_recruiting_contact?"star":"user"} size={16}/></div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:14,fontWeight:600}}>{coach.name}{coach.is_recruiting_contact&&<span style={{fontSize:10,color:C.red,marginLeft:8,textTransform:"uppercase",letterSpacing:1}}>Recruiting Contact</span>}</div>
+                            <div style={{fontSize:12,color:C.textMuted}}>{coach.title}</div>
+                            {coach.email&&<div style={{fontSize:12,color:C.gold,marginTop:2}}>{coach.email}</div>}
+                          </div>
+                          <button onClick={(e)=>{e.stopPropagation();onNavigateEmail(college,coach);}} style={{padding:"8px 14px",background:C.red,border:"none",borderRadius:6,color:C.cream,cursor:"pointer",fontSize:11,fontWeight:700,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1.5,textTransform:"uppercase",display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap"}}><Icon name="mail" size={13}/> Draft Email</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={()=>{const f=prompt("Know updated coach info? Enter the coach name and their current email/title:");if(f)alert("Thanks! Flagged for review.");}} style={{marginTop:12,padding:"8px 14px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textDim,cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif",display:"flex",alignItems:"center",gap:6}}><Icon name="flag" size={13}/> Flag Outdated Info</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── EMAIL BUILDER ──
+function EmailBuilder({profile}) {
+  const [colleges, setColleges] = useState([]);
+  const [selectedCollege, setSelectedCollege] = useState(null);
+  const [selectedCoach, setSelectedCoach] = useState(null);
+  const [coaches, setCoaches] = useState([]);
+  const [emailType, setEmailType] = useState("initial");
+  const [generating, setGenerating] = useState(false);
+  const [generatedEmail, setGeneratedEmail] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [customNote, setCustomNote] = useState("");
+
+  useEffect(()=>{
+    supaFetch("/rest/v1/colleges?select=*&order=state,name&limit=500").then(d=>setColleges(d||[])).catch(console.error);
+    if(window.__prefill){const{college,coach}=window.__prefill;setSelectedCollege(college);setSelectedCoach(coach);setCollegeSearch(college.name);delete window.__prefill;}
+  },[]);
+
+  const loadCoachesForCollege=async(cid)=>{try{const d=await supaFetch(`/rest/v1/coaches?college_id=eq.${cid}&select=*&order=is_recruiting_contact.desc`);setCoaches(d||[]);if(d?.length)setSelectedCoach(d.find(c=>c.is_recruiting_contact)||d[0]);}catch(e){console.error(e);}};
+  const selectCollege=(college)=>{setSelectedCollege(college);setCollegeSearch(college.name);loadCoachesForCollege(college.id);};
+
+  const generateEmail=async()=>{
+    if(!selectedCollege||!profile)return;
+    setGenerating(true);setGeneratedEmail(null);
+    const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
+    const schoolInfo=`School: ${selectedCollege.name}\nLocation: ${selectedCollege.city}, ${selectedCollege.state}\nDivision: ${selectedCollege.division}\nConference: ${selectedCollege.conference||"N/A"}`;
+    const coachInfo=selectedCoach?`Coach: ${selectedCoach.name}, ${selectedCoach.title}`:"";
+    const typePrompts={
+      initial:"Write an initial recruiting outreach email from the athlete to the college coach. Keep it professional but personable. Include the athlete's key info and link to their recruiting site. Confident but respectful. Under 200 words.",
+      followup:"Write a follow-up email (2-3 weeks after initial contact). Reference they previously reached out, reiterate interest, mention new accomplishments. Under 150 words.",
+      camp_interest:"Write an email expressing interest in attending the school's camp or showcase. Ask about dates, costs. Under 150 words.",
+      visit_request:"Write an email requesting an unofficial visit to campus. Express genuine interest. Under 150 words.",
+      parent_intro:"Write an email from the athlete's parent introducing their child. Mention accomplishments, character, and link to recruiting site. Warm parent tone, not salesy. Under 200 words.",
+    };
+    const prompt=`You are writing a college recruiting email for a student-athlete. Generate ONLY the email with a subject line. No preamble.\n\n${typePrompts[emailType]}\n\nATHLETE INFO:\n${athleteInfo}\n\nSCHOOL INFO:\n${schoolInfo}\n${coachInfo}\n\n${customNote?`PERSONAL NOTE TO INCLUDE: ${customNote}`:""}\n\nFormat:\nSUBJECT: [subject line]\n\n[email body]\n\n[signature with athlete name, class year, position, contact email, recruiting site URL]`;
+    try{
+      const response=await fetch("/.netlify/functions/generate-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});
+      const data=await response.json();
+      const text=data.content?.map(c=>c.text||"").join("")||"Error generating email";
+      const subjectMatch=text.match(/SUBJECT:\s*(.+)/);
+      const subject=subjectMatch?subjectMatch[1].trim():"Recruiting Introduction";
+      const body=text.replace(/SUBJECT:\s*.+\n+/,"").trim();
+      setGeneratedEmail({subject,body,full:text});
+    }catch(e){setGeneratedEmail({subject:"Error",body:`Failed: ${e.message}`,full:""});}
+    setGenerating(false);
+  };
+
+  const copyAll=(text)=>{navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),2000);};
+  const filteredColleges=collegeSearch&&!selectedCollege?colleges.filter(c=>c.name.toLowerCase().includes(collegeSearch.toLowerCase())).slice(0,8):[];
+  const inp={width:"100%",padding:"12px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
+  const missingProfile=!profile?.athlete_name;
+
+  return (
+    <div style={{maxWidth:800}}>
+      {missingProfile&&<div style={{padding:"16px 20px",background:`${C.gold}15`,border:`1px solid ${C.gold}40`,borderRadius:10,marginBottom:24,display:"flex",alignItems:"center",gap:12}}><Icon name="flag" size={18}/><div><div style={{fontSize:14,fontWeight:600,color:C.gold}}>Complete your athlete profile first</div><div style={{fontSize:12,color:C.textMuted}}>The AI uses your athlete's info to personalize emails.</div></div></div>}
+      <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
+        <div style={{flex:"1 1 340px"}}>
+          <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24}}>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2,marginBottom:20}}>CONFIGURE EMAIL</div>
+            <label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Target School</label>
+            <div style={{position:"relative",marginBottom:16}}>
+              <input placeholder="Search for a college..." value={collegeSearch} onChange={e=>{setCollegeSearch(e.target.value);if(selectedCollege){setSelectedCollege(null);setCoaches([]);setSelectedCoach(null);}}} style={inp}/>
+              {filteredColleges.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:10,background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,maxHeight:240,overflow:"auto",marginTop:4}}>
+                  {filteredColleges.map(c=>(<button key={c.id} onClick={()=>selectCollege(c)} style={{display:"block",width:"100%",textAlign:"left",padding:"10px 16px",background:"transparent",border:"none",color:C.cream,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontSize:13,borderBottom:`1px solid ${C.border}`}}><div style={{fontWeight:600}}>{c.name}</div><div style={{fontSize:11,color:C.textMuted}}>{c.city}, {c.state} · {c.division}</div></button>))}
+                </div>
+              )}
+            </div>
+            {coaches.length>0&&<Fragment><label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Send To</label><select value={selectedCoach?.id||""} onChange={e=>setSelectedCoach(coaches.find(c=>c.id===+e.target.value))} style={{...inp,marginBottom:16,cursor:"pointer"}}>{coaches.map(c=>(<option key={c.id} value={c.id}>{c.name} - {c.title}</option>))}</select></Fragment>}
+            <label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:8}}>Email Type</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
+              {[{id:"initial",l:"Initial Outreach",d:"First contact"},{id:"followup",l:"Follow-Up",d:"Check in after 2-3 weeks"},{id:"camp_interest",l:"Camp Interest",d:"Ask about camps"},{id:"visit_request",l:"Visit Request",d:"Request unofficial visit"},{id:"parent_intro",l:"Parent Introduction",d:"Parent email on behalf"}].map(type=>(
+                <button key={type.id} onClick={()=>setEmailType(type.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:emailType===type.id?`${C.red}20`:"transparent",border:`1px solid ${emailType===type.id?C.red:C.border}`,borderRadius:8,cursor:"pointer",textAlign:"left",color:C.cream,fontFamily:"'Barlow',sans-serif"}}>
+                  <div style={{width:16,height:16,borderRadius:"50%",flexShrink:0,border:`2px solid ${emailType===type.id?C.red:C.textDim}`,background:emailType===type.id?C.red:"transparent"}}/>
+                  <div><div style={{fontSize:13,fontWeight:600}}>{type.l}</div><div style={{fontSize:11,color:C.textMuted}}>{type.d}</div></div>
+                </button>
+              ))}
+            </div>
+            <label style={{fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6}}>Personal Touch (optional)</label>
+            <textarea placeholder="E.g. 'I attended your camp last summer'" value={customNote} onChange={e=>setCustomNote(e.target.value)} style={{...inp,minHeight:70,resize:"vertical",marginBottom:20}}/>
+            <button onClick={generateEmail} disabled={generating||!selectedCollege||missingProfile} style={{width:"100%",padding:"14px 0",background:(generating||!selectedCollege||missingProfile)?C.textDim:C.red,border:"none",borderRadius:8,color:C.cream,cursor:(generating||!selectedCollege||missingProfile)?"not-allowed":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              {generating?"Generating...":<Fragment><Icon name="sparkle" size={18}/> GENERATE EMAIL</Fragment>}
+            </button>
+          </div>
+        </div>
+        <div style={{flex:"1 1 340px"}}>
+          {generatedEmail?(
+            <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2}}>GENERATED EMAIL</div>
+                <button onClick={()=>copyAll(generatedEmail.full||`Subject: ${generatedEmail.subject}\n\n${generatedEmail.body}`)} style={{padding:"8px 14px",background:copied?C.success:C.navyLight,border:`1px solid ${copied?C.success:C.border}`,borderRadius:6,color:C.cream,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif",display:"flex",alignItems:"center",gap:6,transition:"all 0.2s"}}><Icon name={copied?"check":"copy"} size={14}/>{copied?"Copied!":"Copy All"}</button>
+              </div>
+              <div style={{marginBottom:16}}><div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Subject</div><div style={{padding:"10px 14px",background:C.navyLight,borderRadius:6,fontSize:14,fontWeight:600,border:`1px solid ${C.border}`}}>{generatedEmail.subject}</div></div>
+              <div style={{marginBottom:16}}><div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Body</div><div style={{padding:"14px 16px",background:C.navyLight,borderRadius:6,fontSize:14,lineHeight:1.7,border:`1px solid ${C.border}`,whiteSpace:"pre-wrap",maxHeight:400,overflow:"auto"}}>{generatedEmail.body}</div></div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={generateEmail} style={{flex:1,padding:"10px 0",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.cream,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif"}}>Regenerate</button>
+                {selectedCoach?.email&&<a href={`mailto:${selectedCoach.email}?subject=${encodeURIComponent(generatedEmail.subject)}&body=${encodeURIComponent(generatedEmail.body)}`} style={{flex:1,padding:"10px 0",background:C.red,border:"none",borderRadius:6,color:C.cream,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Barlow',sans-serif",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><Icon name="send" size={14}/> Open in Mail</a>}
+              </div>
+            </div>
+          ):(
+            <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:40,textAlign:"center",minHeight:300,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+              <div style={{color:C.textDim,marginBottom:12}}><Icon name="mail" size={48}/></div>
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2,color:C.textMuted}}>YOUR EMAIL PREVIEW</div>
+              <div style={{fontSize:13,color:C.textDim,marginTop:8,maxWidth:280}}>Select a school and email type, then hit generate.</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PROFILE EDITOR ──
+function ProfileEditor({profile, setProfile, user}) {
+  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||""});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const handleSave=async()=>{setSaving(true);try{const saveData={...form,athlete_grad_year:form.athlete_grad_year?parseInt(form.athlete_grad_year,10):null,updated_at:new Date().toISOString()};const d=await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`,{method:"PATCH",body:saveData,prefer:"return=representation"});if(d?.[0])setProfile(d[0]);setSaved(true);setTimeout(()=>setSaved(false),2500);}catch(e){alert("Error: "+e.message);}setSaving(false);};
+  const inp={width:"100%",padding:"12px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box"};
+  const lbl={fontSize:12,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:6};
+  return (
+    <div style={{maxWidth:600}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:4}}>ATHLETE PROFILE</div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:28}}>This info is used by the AI to personalize your outreach emails.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:18}}>
+          <div><label style={lbl}>Parent / Account Name</label><input value={form.full_name} onChange={e=>setForm(f=>({...f,full_name:e.target.value}))} placeholder="David Medina" style={inp}/></div>
+          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Athlete Name</label><input value={form.athlete_name} onChange={e=>setForm(f=>({...f,athlete_name:e.target.value}))} placeholder="Devin Medina" style={inp}/></div><div style={{flex:1}}><label style={lbl}>Graduation Year</label><input type="number" value={form.athlete_grad_year} onChange={e=>setForm(f=>({...f,athlete_grad_year:e.target.value}))} placeholder="2027" style={inp}/></div></div>
+          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Sport</label><select value={form.athlete_sport} onChange={e=>setForm(f=>({...f,athlete_sport:e.target.value}))} style={{...inp,cursor:"pointer"}}>{["baseball","softball","basketball","football","soccer","volleyball","track"].map(s=>(<option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>))}</select></div><div style={{flex:1}}><label style={lbl}>Position(s)</label><input value={form.athlete_position} onChange={e=>setForm(f=>({...f,athlete_position:e.target.value}))} placeholder="LHP / 1B" style={inp}/></div></div>
+          <div><label style={lbl}>Recruiting Site URL</label><input value={form.recruiting_site_url} onChange={e=>setForm(f=>({...f,recruiting_site_url:e.target.value}))} placeholder="https://dmedina.me" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This link gets included in every generated email</div></div>
+        </div>
+        <button onClick={handleSave} disabled={saving} style={{marginTop:28,width:"100%",padding:"14px 0",background:saved?C.success:C.red,border:"none",borderRadius:8,color:C.cream,cursor:saving?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",transition:"background 0.3s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          {saved?<Fragment><Icon name="check" size={18}/> SAVED</Fragment>:saving?"SAVING...":"SAVE PROFILE"}
+        </button>
+      </div>
+      {profile?.athlete_name&&(
+        <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24,marginTop:16}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:C.textMuted,marginBottom:12}}>Email Signature Preview</div>
+          <div style={{padding:"16px 20px",background:C.navyLight,borderRadius:8,fontSize:14,lineHeight:1.8,border:`1px solid ${C.border}`}}>
+            <div style={{fontWeight:700}}>{profile.athlete_name}</div>
+            <div style={{color:C.textMuted}}>Class of {profile.athlete_grad_year} | {profile.athlete_position}</div>
+            {profile.recruiting_site_url&&<div style={{color:C.gold}}>{profile.recruiting_site_url}</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── MAIN APP ──
+function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState("colleges");
+  const [profile, setProfile] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const loadProfile=async(u)=>{
+    const uid=typeof u==="string"?u:u?.id;
+    const email=typeof u==="string"?"":u?.email||"";
+    try{
+      const data=await supaFetch(`/rest/v1/profiles?id=eq.${uid}&select=*`);
+      if(data?.[0]){setProfile(data[0]);}
+      else{try{const created=await supaFetch("/rest/v1/profiles",{method:"POST",body:{id:uid,email:email,full_name:""},prefer:"return=representation"});if(created?.[0])setProfile(created[0]);}catch(e){console.log("Auto-create:",e);}}
+    }catch(e){console.log("Profile load:",e);}
+  };
+
+  useEffect(()=>{
+    const token=localStorage.getItem("pp_token");
+    if(token){authApi.getUser().then(async(u)=>{setUser(u);await loadProfile(u);}).catch(()=>{localStorage.removeItem("pp_token");}).finally(()=>setLoading(false));}
+    else{setLoading(false);}
+  },[]);
+
+  const handleAuth=async(token,userData)=>{localStorage.setItem("pp_token",token);setUser(userData);await loadProfile(userData);setLoading(false);};
+  const handleLogout=()=>{localStorage.removeItem("pp_token");setUser(null);setProfile(null);};
+
+  if(loading)return(<div style={{background:C.navy,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{textAlign:"center"}}><PPLogo size={48}/><div style={{color:C.cream,fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:3,marginTop:16}}>LOADING...</div></div></div>);
+  if(!user)return <AuthScreen onAuth={handleAuth}/>;
+
+  return (
+    <div style={{display:"flex",minHeight:"100vh",background:C.navy,fontFamily:"'Barlow',sans-serif",color:C.cream}}>
+      <aside style={{width:sidebarOpen?240:64,transition:"width 0.25s ease",background:C.navyMid,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0,overflow:"hidden"}}>
+        <div style={{padding:"20px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:`1px solid ${C.border}`}}>
+          <PPLogo size={28}/>
+          {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
+        </div>
+        <nav style={{flex:1,padding:"12px 8px"}}>
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+            <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
+          ))}
+        </nav>
+        <div style={{padding:"12px 8px",borderTop:`1px solid ${C.border}`}}>
+          <button onClick={handleLogout} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:"transparent",border:"none",borderRadius:8,color:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"}}><Icon name="logout" size={16}/>{sidebarOpen&&<span>Sign Out</span>}</button>
+        </div>
+      </aside>
+      <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
+        <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
+          <div>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
+          </div>
+        </header>
+        <div style={{padding:"24px 32px"}}>
+          {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}}/>}
+          {page==="email"&&<EmailBuilder profile={profile}/>}
+          {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
