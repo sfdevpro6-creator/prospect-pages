@@ -879,8 +879,8 @@ function StatsEditor({profile, setProfile, user}) {
       {key:"event_100m",label:"100m (sec)",placeholder:"10.68",type:"text"},
       {key:"event_200m",label:"200m (sec)",placeholder:"21.45",type:"text"},
       {key:"event_400m",label:"400m (sec)",placeholder:"48.90",type:"text"},
-      {key:"long_jump",label:"Long Jump",placeholder:"22'4\"",type:"text"},
-      {key:"high_jump",label:"High Jump",placeholder:"6'2\"",type:"text"},
+      {key:"long_jump",label:"Long Jump",placeholder:"22ft 4in",type:"text"},
+      {key:"high_jump",label:"High Jump",placeholder:"6ft 2in",type:"text"},
       {key:"relay_split",label:"Relay Split",placeholder:"48.9",type:"text"},
     ],
   };
@@ -919,7 +919,7 @@ function StatsEditor({profile, setProfile, user}) {
         <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:4}}>MEASURABLES</div>
         <div style={{fontSize:13,color:C.textMuted,marginBottom:24}}>Physical stats and bio info that appear on your recruiting site.</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-          <div><label style={lbl}>Height</label><input value={measurables.athlete_height} onChange={e=>setMeasurables(m=>({...m,athlete_height:e.target.value}))} placeholder='5\'11"' style={inp}/></div>
+          <div><label style={lbl}>Height</label><input value={measurables.athlete_height} onChange={e=>setMeasurables(m=>({...m,athlete_height:e.target.value}))} placeholder="5ft 11in" style={inp}/></div>
           <div><label style={lbl}>Weight (lbs)</label><input value={measurables.athlete_weight} onChange={e=>setMeasurables(m=>({...m,athlete_weight:e.target.value}))} placeholder="175" style={inp}/></div>
           {(sport==="baseball"||sport==="softball")&&<div><label style={lbl}>Bats / Throws</label><input value={measurables.athlete_bats_throws} onChange={e=>setMeasurables(m=>({...m,athlete_bats_throws:e.target.value}))} placeholder="R/R" style={inp}/></div>}
           {(sport==="basketball"||sport==="football"||sport==="volleyball")&&<div><label style={lbl}>Dominant Hand</label><input value={measurables.athlete_dominant_hand} onChange={e=>setMeasurables(m=>({...m,athlete_dominant_hand:e.target.value}))} placeholder="Right-Handed" style={inp}/></div>}
