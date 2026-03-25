@@ -168,7 +168,7 @@ function injectPhotos(html, photos) {
     // Match either the original gradient OR a previously injected photo URL
     result = result.replace(
       /\.hero-bg\s*\{[^}]*\}/,
-      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center center / cover no-repeat;\n}`
+      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
     );
     // Darken the overlay slightly more for text readability over a photo
     result = result.replace(
