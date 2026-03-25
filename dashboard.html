@@ -175,11 +175,38 @@ function AuthScreen({ onAuth }) {
                   profileData.recruiting_site_url = sUrl;
                 }
                 // Convert intake stats array [{label, value}] to keyed object for dashboard
+                // Uses explicit mapping since intake labels don't slug to dashboard keys
+                const STAT_LABEL_MAP = {
+                  "batting avg": "batting_avg", "home runs": "home_runs", "rbis": "rbis",
+                  "stolen bases": "stolen_bases", "era": "era",
+                  "pitching velo (mph)": "pitching_velo", "pitching velo": "pitching_velo",
+                  "exit velo (mph)": "exit_velo", "exit velo": "exit_velo",
+                  "fielding %": "fielding_pct", "fielding pct": "fielding_pct",
+                  "slugging %": "slugging_pct", "slugging pct": "slugging_pct",
+                  "sixty yard": "sixty_yard", "60-yard dash": "sixty_yard",
+                  "points per game": "ppg", "assists per game": "apg",
+                  "rebounds per game": "rpg", "steals per game": "spg",
+                  "fg %": "fg_pct", "3pt %": "three_pct", "ft %": "ft_pct",
+                  "pass yards": "pass_yards", "touchdowns": "touchdowns",
+                  "completion %": "comp_pct", "rush yards": "rush_yards",
+                  "tackles": "tackles", "interceptions": "interceptions",
+                  "40-yard dash": "forty_yard", "bench press (reps)": "bench_press",
+                  "goals": "goals", "assists": "assists",
+                  "shots per game": "shots_per_game", "pass accuracy %": "pass_accuracy",
+                  "minutes played": "minutes_played",
+                  "kills": "kills", "kills per set": "kills_per_set",
+                  "hit %": "hit_pct", "digs": "digs", "aces": "aces", "blocks": "blocks",
+                  "100m (sec)": "event_100m", "200m (sec)": "event_200m",
+                  "400m (sec)": "event_400m", "long jump": "long_jump",
+                  "high jump": "high_jump", "shot put": "shot_put",
+                  "relay split": "relay_split",
+                };
                 if (s.stats && Array.isArray(s.stats) && s.stats.length) {
                   const statsObj = {};
                   s.stats.forEach(st => {
                     if (st.label && st.value) {
-                      const key = st.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+                      const key = STAT_LABEL_MAP[st.label.toLowerCase().trim()]
+                        || st.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
                       statsObj[key] = st.value;
                     }
                   });
@@ -897,8 +924,30 @@ async function publishSite(profile, stats, measurables, sport, userId) {
 }
 
 // ── STATS EDITOR ──
+// Key repair map: wrong slugified keys → correct dashboard keys
+const STAT_KEY_REPAIR = {
+  pitching_velo_mph: "pitching_velo", exit_velo_mph: "exit_velo",
+  fielding: "fielding_pct", slugging: "slugging_pct",
+  points_per_game: "ppg", assists_per_game: "apg",
+  rebounds_per_game: "rpg", steals_per_game: "spg",
+  fg: "fg_pct", "3pt": "three_pct", ft: "ft_pct",
+  completion: "comp_pct", "40_yard_dash": "forty_yard",
+  bench_press_reps: "bench_press",
+  hit: "hit_pct",
+  "100m_sec": "event_100m", "200m_sec": "event_200m",
+  "400m_sec": "event_400m",
+};
+function repairStatKeys(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  const fixed = {};
+  Object.entries(raw).forEach(([k, v]) => {
+    fixed[STAT_KEY_REPAIR[k] || k] = v;
+  });
+  return fixed;
+}
+
 function StatsEditor({profile, setProfile, user}) {
-  const [stats, setStats] = useState(profile?.athlete_stats || {});
+  const [stats, setStats] = useState(() => repairStatKeys(profile?.athlete_stats));
   const [measurables, setMeasurables] = useState({
     athlete_height: profile?.athlete_height || "",
     athlete_weight: profile?.athlete_weight || "",
