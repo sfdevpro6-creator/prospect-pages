@@ -57,6 +57,101 @@ function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+// ── Look up profile photos via invite_code ──
+async function getProfilePhotos(inviteCode) {
+  if (!inviteCode) return null;
+  try {
+    // Find the user who claimed this invite code
+    const codes = await supaFetch(
+      `/rest/v1/invite_codes?code=eq.${encodeURIComponent(inviteCode)}&select=used_by`
+    );
+    if (!codes?.length || !codes[0].used_by) return null;
+
+    const userId = codes[0].used_by;
+    const profiles = await supaFetch(
+      `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos`
+    );
+    if (!profiles?.length) return null;
+    return profiles[0];
+  } catch (e) {
+    console.log("Profile photo lookup:", e.message);
+    return null;
+  }
+}
+
+// ── Inject photos into generated HTML ──
+function injectPhotos(html, photos) {
+  if (!photos) return html;
+  let result = html;
+
+  // 1. Hero photo — replace gradient background with photo + overlay
+  if (photos.hero_photo_url) {
+    result = result.replace(
+      /\.hero-bg\s*\{[^}]*background:\s*linear-gradient\(135deg,\s*#0d0d12[^}]*\}/,
+      `.hero-bg {
+  position: absolute; inset: 0;
+  background: url('${photos.hero_photo_url}') center center / cover no-repeat;
+}`
+    );
+  }
+
+  // 2. Headshot — replace "PHOTO COMING SOON" placeholder
+  if (photos.headshot_url) {
+    result = result.replace(
+      /<div class="about-photo reveal">PHOTO COMING SOON<\/div>/,
+      `<div class="about-photo reveal"><img src="${photos.headshot_url}" alt="Athlete headshot"></div>`
+    );
+  }
+
+  // 3. Additional photos — inject gallery before the footer if any exist
+  const additionalPhotos = photos.additional_photos || [];
+  if (additionalPhotos.length > 0) {
+    const galleryCards = additionalPhotos
+      .filter((p) => p && p.url)
+      .map(
+        (p) =>
+          `<div class="gallery-item"><img src="${p.url}" alt="${p.caption || "Photo"}" loading="lazy"></div>`
+      )
+      .join("\n      ");
+
+    const gallerySection = `
+<!-- PHOTO GALLERY -->
+<section id="gallery" style="padding:6rem 0;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Gallery</div>
+      <h2 class="section-title">PHOTOS</h2>
+    </div>
+    <div class="gallery-grid reveal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
+      ${galleryCards}
+    </div>
+  </div>
+</section>`;
+
+    const galleryStyles = `
+.gallery-item {
+  border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+  transition: transform 0.3s, border-color 0.3s;
+}
+.gallery-item:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
+.gallery-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }`;
+
+    // Inject styles before </style>
+    result = result.replace("</style>", galleryStyles + "\n</style>");
+
+    // Inject gallery section before footer
+    result = result.replace("<!-- FOOTER -->", gallerySection + "\n\n<!-- FOOTER -->");
+
+    // Add Gallery nav link
+    result = result.replace(
+      '<a href="#contact" class="nav-cta">Contact</a>',
+      '<a href="#gallery">Gallery</a>\n    <a href="#contact" class="nav-cta">Contact</a>'
+    );
+  }
+
+  return result;
+}
+
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -163,7 +258,18 @@ exports.handler = async (event) => {
     }
 
     // 3. Deploy the HTML file
-    const htmlContent = site.generated_html;
+    // 3a. Look up profile photos and inject into HTML
+    let htmlContent = site.generated_html;
+    const profilePhotos = await getProfilePhotos(site.invite_code);
+    if (profilePhotos) {
+      console.log("Injecting photos:", {
+        hero: !!profilePhotos.hero_photo_url,
+        headshot: !!profilePhotos.headshot_url,
+        additional: (profilePhotos.additional_photos || []).length,
+      });
+      htmlContent = injectPhotos(htmlContent, profilePhotos);
+    }
+
     const htmlHash = sha1(htmlContent);
 
     // Create deploy with file manifest
