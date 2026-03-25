@@ -4,7 +4,7 @@
 
 const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const NETLIFY_TOKEN = process.env.NETLIFY_AUTH_TOKEN;
+const NETLIFY_TOKEN = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_TOKEN;
 
 const crypto = require("crypto");
 
@@ -350,12 +350,19 @@ exports.handler = async (event) => {
 
     console.log("Deploy created:", deploy.id, "- uploading files...");
 
-    // Upload the HTML file
-    await netlifyApi(`/deploys/${deploy.id}/files/index.html`, {
+    // Upload the HTML file (direct fetch — matches publish-site.js)
+    const uploadRes = await fetch(`https://api.netlify.com/api/v1/deploys/${deploy.id}/files/index.html`, {
       method: "PUT",
-      contentType: "application/octet-stream",
-      rawBody: htmlContent,
+      headers: {
+        Authorization: `Bearer ${NETLIFY_TOKEN}`,
+        "Content-Type": "application/octet-stream",
+      },
+      body: htmlContent,
     });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text().catch(() => "");
+      throw new Error(`File upload failed (${uploadRes.status}): ${err.slice(0, 200)}`);
+    }
 
     console.log("File uploaded, deploy processing...");
 
