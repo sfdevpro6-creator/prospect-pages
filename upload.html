@@ -19,7 +19,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);min-height:100vh}
 
 /* Header */
-.header{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:14}
+.header{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:14px}
 .header svg{flex-shrink:0}
 .header-text{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;line-height:1}
 .header-text span{color:var(--red)}
@@ -98,6 +98,33 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 .thank-you .check{width:64px;height:64px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
 .thank-you h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px}
 .thank-you p{font-size:15px;color:var(--text-muted);max-width:400px;margin:0 auto;line-height:1.7}
+
+/* Generating animation */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+.gen-step.active{opacity:1!important}
+.gen-step.active .gen-dot{border-color:var(--gold);color:var(--gold);animation:pulse 1.5s ease infinite}
+.gen-step.done .gen-dot{border-color:var(--success);background:var(--success);color:#fff;animation:none}
+.gen-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle}
+
+/* Template picker */
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:12px}
+.template-card{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.3s;border:2px solid var(--border);background:var(--navy-light);padding:0;user-select:none}
+.template-card:hover{border-color:var(--text-dim);transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
+.template-card.selected{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 8px 25px rgba(196,30,58,0.25)}
+.template-preview{width:100%;aspect-ratio:4/3;background:var(--navy);overflow:hidden;position:relative}
+.template-preview iframe{width:400%;height:400%;transform:scale(0.25);transform-origin:top left;pointer-events:none;border:none}
+.template-name{padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--cream);display:flex;align-items:center;justify-content:space-between}
+.template-name .template-tag{font-size:10px;color:var(--gold);font-weight:400;letter-spacing:0.5px;text-transform:none}
+.template-check{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--red);display:none;align-items:center;justify-content:center;z-index:2}
+.template-card.selected .template-check{display:flex}
+
+/* Built by footer */
+.pp-footer{text-align:center;padding:32px 20px 24px;margin-top:40px;border-top:1px solid var(--border)}
+.pp-footer a{color:var(--text-dim);text-decoration:none;font-size:12px;letter-spacing:0.5px;transition:color 0.3s;display:inline-flex;align-items:center;gap:6px}
+.pp-footer a:hover{color:var(--gold)}
+.pp-footer svg{opacity:0.5;transition:opacity 0.3s}
+.pp-footer a:hover svg{opacity:1}
 </style>
 </head>
 <body>
@@ -315,6 +342,61 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     </div>
 
     <div class="card">
+      <div class="card-title">CHOOSE A TEMPLATE</div>
+      <div class="card-sub">Pick a style for your athlete's site. You can always change this later.</div>
+      <div class="template-grid">
+        <div class="template-card selected" data-template="dark" onclick="pickTemplate(this)">
+          <div class="template-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="template-preview" style="background:linear-gradient(135deg,#0a0a0c,#1a1018,#0a0a0c)">
+            <div style="padding:12px 10px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:7px;color:#e63a2e;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Class of 2027</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:0.9;letter-spacing:1px">ATHLETE<br>NAME</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:6px;color:#9a968e;letter-spacing:1.5px;margin-top:4px">POSITION • CITY, STATE</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff">6'0"</div><div style="font-size:4px;color:#5c5952;letter-spacing:1px">HEIGHT</div></div>
+                <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff">190</div><div style="font-size:4px;color:#5c5952;letter-spacing:1px">WEIGHT</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-name">Dark Pro <span class="template-tag">Most Popular</span></div>
+        </div>
+
+        <div class="template-card" data-template="clean" onclick="pickTemplate(this)">
+          <div class="template-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="template-preview" style="background:linear-gradient(160deg,#f8f6f3,#eee8dd)">
+            <div style="padding:12px 10px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:7px;color:#b22234;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Class of 2027</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#1a1a2e;line-height:0.9;letter-spacing:1px">ATHLETE<br>NAME</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:6px;color:#6a6a7a;letter-spacing:1.5px;margin-top:4px">POSITION • CITY, STATE</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);padding:4px 8px;border-radius:4px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#1a1a2e">6'0"</div><div style="font-size:4px;color:#8a8a9a;letter-spacing:1px">HEIGHT</div></div>
+                <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);padding:4px 8px;border-radius:4px;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#1a1a2e">190</div><div style="font-size:4px;color:#8a8a9a;letter-spacing:1px">WEIGHT</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-name">Clean Light <span class="template-tag">Coming Soon</span></div>
+        </div>
+
+        <div class="template-card" data-template="bold" onclick="pickTemplate(this)">
+          <div class="template-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="template-preview" style="background:linear-gradient(135deg,#002868,#001d4a)">
+            <div style="padding:12px 10px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:7px;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Class of 2027</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;line-height:0.9;letter-spacing:1px">ATHLETE<br>NAME</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:6px;color:rgba(255,255,255,0.5);letter-spacing:1.5px;margin-top:4px">POSITION • CITY, STATE</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#c9a84c">6'0"</div><div style="font-size:4px;color:rgba(255,255,255,0.35);letter-spacing:1px">HEIGHT</div></div>
+                <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#c9a84c">190</div><div style="font-size:4px;color:rgba(255,255,255,0.35);letter-spacing:1px">WEIGHT</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-name">Bold Navy <span class="template-tag">Coming Soon</span></div>
+        </div>
+      </div>
+      <input type="hidden" id="f_template" value="dark">
+    </div>
+
+    <div class="card">
       <div class="card-title">SITE PREFERENCES</div>
       <div class="card-sub">Help us customize the look and feel.</div>
       <div class="row">
@@ -342,21 +424,73 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     </div>
   </div>
 
+  <!-- Generating Screen -->
+  <div class="thank-you" id="generating" style="display:none">
+    <div style="margin-bottom:32px">
+      <svg viewBox="0 0 100 100" width="56" height="56" xmlns="http://www.w3.org/2000/svg" style="animation:spin 2s linear infinite">
+        <defs><clipPath id="sc2"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z"/></clipPath></defs>
+        <g transform="translate(0,2)"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" stroke-width="2.5"/><rect x="50" y="2" width="40" height="90" fill="#b22234" clip-path="url(#sc2)" opacity="0.18"/><g transform="translate(50,48)"><rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/><path d="M-4,-28 L-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4,-28 L4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="-6" y="-2" width="12" height="3" rx="1" fill="#b22234"/></g></g>
+      </svg>
+    </div>
+    <h2 style="margin-bottom:16px">BUILDING THE SITE...</h2>
+    <p style="margin-bottom:32px">Hang tight. We're auto-generating your athlete's recruiting page right now.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto;text-align:left">
+      <div class="gen-step" id="genStep1" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;opacity:0.4;transition:all 0.5s">
+        <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--text-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all 0.5s" class="gen-dot">1</div>
+        <span style="font-size:13px;color:var(--text-muted)">Saving your info...</span>
+      </div>
+      <div class="gen-step" id="genStep2" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;opacity:0.4;transition:all 0.5s">
+        <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--text-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all 0.5s" class="gen-dot">2</div>
+        <span style="font-size:13px;color:var(--text-muted)">Writing the athlete bio...</span>
+      </div>
+      <div class="gen-step" id="genStep3" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;opacity:0.4;transition:all 0.5s">
+        <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--text-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all 0.5s" class="gen-dot">3</div>
+        <span style="font-size:13px;color:var(--text-muted)">Building the full site...</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Thank You -->
   <div class="thank-you" id="thankYou">
     <div class="check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <h2>GOT IT!</h2>
-    <p>We have everything we need to start building. Your athlete's site will be ready within 2-3 business days. We'll email you at the address provided.</p>
-    <div style="margin-top:32px;padding:20px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;display:inline-block">
+    <h2>SITE GENERATED!</h2>
+    <p>Your athlete's recruiting page has been auto-built and is ready for review. We'll have it live within 24 hours. We'll email you at the address provided with the link.</p>
+
+    <div id="inviteCodeBlock" style="display:none;margin-top:28px;padding:24px;background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;max-width:380px;margin-left:auto;margin-right:auto">
+      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Your Dashboard Invite Code</div>
+      <div id="inviteCodeDisplay" style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:6px;color:var(--gold);margin-bottom:8px"></div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Save this code. Use it to sign up at<br><a href="/dashboard" style="color:var(--gold);text-decoration:none;font-weight:600">prospectpages.net/dashboard</a><br>to manage your athlete's profile, upload game film, and send emails to coaches.</div>
+    </div>
+
+    <div style="margin-top:24px;padding:16px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;display:inline-block">
       <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Questions?</div>
-      <div style="font-size:15px;font-weight:600"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a4e0c5d2cdc0e4d4d6cbd7d4c1c7d0d4c5c3c1d78ac7cbc8c8c1c3c1">[email&#160;protected]</a></div>
+      <div style="font-size:15px;font-weight:600">david@prospectpages.college</div>
     </div>
   </div>
 
 </div>
 
+<!-- Built by Prospect Pages footer -->
+<div class="pp-footer">
+  <a href="https://prospectpages.net" target="_blank">
+    <svg viewBox="0 0 100 100" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(0,2)"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" stroke-width="2.5"/><g transform="translate(50,48)"><rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/><path d="M-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" stroke-width="7" stroke-linecap="round"/></g></g>
+    </svg>
+    Built by Prospect Pages
+  </a>
+</div>
+
 <script>
 var selectedSport = "";
+var selectedTemplate = "dark";
+
+// Template picker
+function pickTemplate(el) {
+  document.querySelectorAll('.template-card').forEach(function(c){c.classList.remove('selected');});
+  el.classList.add('selected');
+  selectedTemplate = el.dataset.template;
+  document.getElementById('f_template').value = selectedTemplate;
+}
 
 // Sport-specific config
 var SPORTS = {
@@ -511,79 +645,117 @@ function goStep(n) {
 function submitForm() {
   var btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'SUBMITTING...';
+  btn.innerHTML = '<span class="gen-spinner"></span> GENERATING SITE...';
+
+  // Show generating screen immediately
+  document.querySelectorAll('.form-section').forEach(function(s){s.classList.remove('visible');});
+  document.querySelector('.steps').style.display='none';
+  document.querySelector('.hero').style.display='none';
+  document.getElementById('generating').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // Animate the progress steps
+  var genSteps = document.querySelectorAll('.gen-step');
+  genSteps[0].classList.add('active');
+  setTimeout(function(){ genSteps[1].classList.add('active'); }, 2000);
+  setTimeout(function(){ genSteps[2].classList.add('active'); }, 5000);
 
   // Collect all stat inputs
   var statInputs = document.querySelectorAll('.stat-input');
 
-  // Build form data
-  var fd = new FormData();
-    fd.append('parent_name', document.getElementById('f_parent_name').value);
-  fd.append('parent_email', document.getElementById('f_parent_email').value);
-  fd.append('parent_phone', document.getElementById('f_parent_phone').value);
-  fd.append('contact_method', document.getElementById('f_contact_method').value);
-  fd.append('sport', selectedSport);
-  fd.append('athlete_name', document.getElementById('f_athlete_name').value);
-  fd.append('grad_year', document.getElementById('f_grad_year').value);
-  fd.append('high_school', document.getElementById('f_high_school').value);
-  fd.append('city_state', document.getElementById('f_city_state').value);
-  fd.append('travel_team', document.getElementById('f_travel_team').value);
-  fd.append('position', document.getElementById('f_position').value);
-  fd.append('height', document.getElementById('f_height').value);
-  fd.append('weight', document.getElementById('f_weight').value);
-  fd.append('gpa', document.getElementById('f_gpa').value);
-  fd.append('hand_detail', document.getElementById('f_hand').value);
-  fd.append('hand_label', document.getElementById('handLabel').textContent);
+  // Build JSON payload
+  var payload = {
+    parent_name: document.getElementById('f_parent_name').value,
+    parent_email: document.getElementById('f_parent_email').value,
+    parent_phone: document.getElementById('f_parent_phone').value,
+    contact_method: document.getElementById('f_contact_method').value,
+    sport: selectedSport,
+    athlete_name: document.getElementById('f_athlete_name').value,
+    grad_year: document.getElementById('f_grad_year').value,
+    high_school: document.getElementById('f_high_school').value,
+    city_state: document.getElementById('f_city_state').value,
+    travel_team: document.getElementById('f_travel_team').value,
+    position: document.getElementById('f_position').value,
+    height: document.getElementById('f_height').value,
+    weight: document.getElementById('f_weight').value,
+    gpa: document.getElementById('f_gpa').value,
+    hand_detail: document.getElementById('f_hand').value,
+    hand_label: document.getElementById('handLabel').textContent,
+    achievements: document.getElementById('f_achievements').value,
+    story_how_started: document.getElementById('f_story_started').value,
+    story_what_drives: document.getElementById('f_story_drives').value,
+    story_proud_moment: document.getElementById('f_story_proud').value,
+    story_goals: document.getElementById('f_story_goals').value,
+    story_personality: document.getElementById('f_story_personality').value,
+    story_extra: document.getElementById('f_story_extra').value,
+    hs_coach_name: document.getElementById('f_hs_coach').value,
+    hs_coach_contact: document.getElementById('f_hs_coach_contact').value,
+    travel_coach_name: document.getElementById('f_travel_coach').value,
+    travel_coach_contact: document.getElementById('f_travel_coach_contact').value,
+    athlete_email: document.getElementById('f_athlete_email').value,
+    athlete_phone: document.getElementById('f_athlete_phone').value,
+    athlete_twitter: document.getElementById('f_twitter').value,
+    athlete_instagram: document.getElementById('f_instagram').value,
+    color_pref: document.getElementById('f_color').value,
+    domain_pref: document.getElementById('f_domain').value,
+    notes: document.getElementById('f_notes').value,
+    drive_link: document.getElementById('f_drive_link').value,
+    template: document.getElementById('f_template').value,
+  };
 
+  // Add stats
   statInputs.forEach(function(inp,i){
     if(i<8) {
-      fd.append('stat_'+(i+1)+'_label', inp.dataset.label);
-      fd.append('stat_'+(i+1)+'_value', inp.value);
+      payload['stat_'+(i+1)+'_label'] = inp.dataset.label;
+      payload['stat_'+(i+1)+'_value'] = inp.value;
     }
   });
 
-  fd.append('achievements', document.getElementById('f_achievements').value);
-  fd.append('story_how_started', document.getElementById('f_story_started').value);
-  fd.append('story_what_drives', document.getElementById('f_story_drives').value);
-  fd.append('story_proud_moment', document.getElementById('f_story_proud').value);
-  fd.append('story_goals', document.getElementById('f_story_goals').value);
-  fd.append('story_personality', document.getElementById('f_story_personality').value);
-  fd.append('story_extra', document.getElementById('f_story_extra').value);
-  fd.append('hs_coach_name', document.getElementById('f_hs_coach').value);
-  fd.append('hs_coach_contact', document.getElementById('f_hs_coach_contact').value);
-  fd.append('travel_coach_name', document.getElementById('f_travel_coach').value);
-  fd.append('travel_coach_contact', document.getElementById('f_travel_coach_contact').value);
-  fd.append('athlete_email', document.getElementById('f_athlete_email').value);
-  fd.append('athlete_phone', document.getElementById('f_athlete_phone').value);
-  fd.append('athlete_twitter', document.getElementById('f_twitter').value);
-  fd.append('athlete_instagram', document.getElementById('f_instagram').value);
-  fd.append('color_pref', document.getElementById('f_color').value);
-  fd.append('domain_pref', document.getElementById('f_domain').value);
-  fd.append('notes', document.getElementById('f_notes').value);
-  fd.append('drive_link', document.getElementById('f_drive_link').value);
-
-  fd.append('access_key', '5fa35adf-581a-4cfe-afa6-8b8811ed2219');
-  fd.append('subject', 'New Prospect Pages Submission — ' + (document.getElementById('f_athlete_name').value || 'Unknown'));
-  fd.append('from_name', 'Prospect Pages Intake');
-
-  fetch('https://api.web3forms.com/submit', {
+  // Call the auto-generate function
+  fetch('/.netlify/functions/generate-site', {
     method: 'POST',
-    body: fd
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   }).then(function(res){
+    if(!res.ok) {
+      // Server error — try to get error message, then throw to catch handler
+      return res.json().catch(function(){ return {}; }).then(function(errData){
+        throw new Error(errData.error || 'Server error ' + res.status);
+      });
+    }
     return res.json();
   }).then(function(data){
-    if(data.success) {
-      document.querySelectorAll('.form-section').forEach(function(s){s.classList.remove('visible');});
-      document.querySelector('.steps').style.display='none';
+    if(data && data.success) {
+      // Show success with invite code
+      document.getElementById('generating').style.display='none';
       document.getElementById('thankYou').style.display='block';
-      window.scrollTo({top:0,behavior:'smooth'});
+      if(data.invite_code) {
+        document.getElementById('inviteCodeDisplay').textContent = data.invite_code;
+        document.getElementById('inviteCodeBlock').style.display = 'block';
+      }
+      // Complete the animation
+      genSteps.forEach(function(s){ s.classList.add('active','done'); });
     } else {
-      alert('Something went wrong. Please email David@prospectpages.college directly.');
-      btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
+      // Unexpected response shape — fire backup
+      throw new Error('Unexpected response');
     }
-  }).catch(function(){
-    alert('Connection error. Please try again or email David@prospectpages.college');
-    btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }).catch(function(err){
+    console.error('Generate error:', err);
+    // Still show thank you — the Web3Forms backup will catch it
+    document.getElementById('generating').style.display='none';
+    document.getElementById('thankYou').style.display='block';
+    document.getElementById('inviteCodeBlock').style.display = 'none';
+
+    // Fire Web3Forms as backup notification so David gets the data
+    var fd = new FormData();
+    fd.append('access_key', '5fa35adf-581a-4cfe-afa6-8b8811ed2219');
+    fd.append('subject', 'Prospect Pages Submission (fallback) — ' + payload.athlete_name);
+    fd.append('from_name', 'Prospect Pages Intake');
+    fd.append('message', JSON.stringify(payload, null, 2));
+    fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(function(){});
+
+    window.scrollTo({top:0,behavior:'smooth'});
   });
 }
 </script>
