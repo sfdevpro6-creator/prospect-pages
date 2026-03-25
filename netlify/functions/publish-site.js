@@ -79,6 +79,20 @@ function injectPPMarkers(html) {
     }
   }
 
+  // Footer branding
+  if (!result.includes('Built by') && !result.includes('Prospect Pages</a>')) {
+    result = result.replace(
+      /<\/div>\s*<\/footer>/,
+      `<div class="footer-pp">Built by <a href="https://prospectpages.net" target="_blank">Prospect Pages</a></div>\n  </div>\n</footer>`
+    );
+    if (!result.includes('.footer-pp')) {
+      result = result.replace(
+        '</style>',
+        `.footer-pp { font-size: 0.7rem; color: var(--text-muted); margin-top: 1rem; opacity: 0.6; }\n.footer-pp a { color: var(--gold); text-decoration: none; }\n.footer-pp a:hover { text-decoration: underline; }\n</style>`
+      );
+    }
+  }
+
   return result;
 }
 
@@ -229,6 +243,38 @@ function injectPhotos(html, photos) {
   return result;
 }
 
+// ── Inject social links into footer ──
+function injectSocialLinks(html, profileData) {
+  if (!profileData) return html;
+  let result = html;
+  const ig = profileData.athlete_instagram;
+  const yt = profileData.athlete_youtube;
+  if (!ig && !yt) return result;
+
+  // Build social links HTML
+  let socialHtml = '';
+  if (ig) {
+    const handle = ig.replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/+$/, '');
+    socialHtml += `<a href="https://instagram.com/${handle}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);color:var(--text-secondary);text-decoration:none;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>`;
+  }
+  if (yt) {
+    const ytUrl = yt.startsWith('http') ? yt : `https://youtube.com/${yt.replace(/^@/, '@')}`;
+    socialHtml += `<a href="${ytUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);color:var(--text-secondary);text-decoration:none;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14c1.88.55 9.38.55 9.38.55s7.5 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg></a>`;
+  }
+
+  if (socialHtml) {
+    // Inject before footer-pp or at end of footer container
+    const socialWrap = `<div style="display:flex;gap:8px;justify-content:center;margin-top:1rem;">${socialHtml}</div>`;
+    if (result.includes('footer-pp')) {
+      result = result.replace(/<div class="footer-pp">/, socialWrap + '\n    <div class="footer-pp">');
+    } else {
+      result = result.replace(/<\/div>\s*<\/footer>/, socialWrap + '\n  </div>\n</footer>');
+    }
+  }
+
+  return result;
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -271,20 +317,21 @@ exports.handler = async (event) => {
     // Step 1b: Inject PP markers if missing (legacy sites)
     html = injectPPMarkers(html);
 
-    // Step 1c: Inject photos from profile
+    // Step 1c: Inject photos and social links from profile
     if (profile && SUPABASE_SERVICE_KEY) {
       try {
         const userId = profile.id;
         if (userId) {
           const profiles = await supaFetch(
-            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos`
+            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube`
           );
           if (profiles && profiles.length) {
             html = injectPhotos(html, profiles[0]);
+            html = injectSocialLinks(html, profiles[0]);
           }
         }
       } catch (e) {
-        console.log('Photo injection:', e.message);
+        console.log('Photo/social injection:', e.message);
       }
     }
 
