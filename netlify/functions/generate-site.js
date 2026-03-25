@@ -885,17 +885,67 @@ exports.handler = async (event) => {
       console.log("Invite code insert:", e.message);
     }
 
-    // 7. Fire-and-forget email notification via Web3Forms (don't await — saves 1-2s)
-    const emailFd = new URLSearchParams();
-    emailFd.append("access_key", "5fa35adf-581a-4cfe-afa6-8b8811ed2219");
-    emailFd.append("subject", `🚀 Auto-Generated: ${data.athlete_name || "New Athlete"} (${data.sport || "Unknown Sport"})`);
-    emailFd.append("from_name", "Prospect Pages Auto-Gen");
-    emailFd.append("message", `New site auto-generated!\n\nAthlete: ${data.athlete_name}\nSport: ${data.sport}\nParent: ${data.parent_name} (${data.parent_email})\nInvite Code: ${inviteCode}\n\nReview it in the admin panel.`);
-    fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: emailFd.toString(),
-    }).catch((e) => console.log("Email notification:", e.message));
+    // 7. Send email notification to ADMIN (David)
+    try {
+      const adminEmail = new URLSearchParams();
+      adminEmail.append("access_key", "5fa35adf-581a-4cfe-afa6-8b8811ed2219");
+      adminEmail.append("subject", `🚀 Auto-Generated: ${data.athlete_name || "New Athlete"} (${data.sport || "Unknown Sport"})`);
+      adminEmail.append("from_name", "Prospect Pages Auto-Gen");
+      adminEmail.append("message", `New site auto-generated!\n\nAthlete: ${data.athlete_name}\nSport: ${data.sport}\nParent: ${data.parent_name} (${data.parent_email})\nInvite Code: ${inviteCode}\n\nReview it in the admin panel at prospectpages.net/admin`);
+      const adminRes = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: adminEmail.toString(),
+      });
+      const adminResult = await adminRes.json();
+      console.log("Admin email result:", adminResult.success ? "sent" : adminResult.message);
+    } catch (e) {
+      console.error("Admin email failed:", e.message);
+    }
+
+    // 8. Send email to PARENT with invite code and instructions
+    if (data.parent_email) {
+      try {
+        const parentEmail = new URLSearchParams();
+        parentEmail.append("access_key", "5fa35adf-581a-4cfe-afa6-8b8811ed2219");
+        parentEmail.append("subject", `Your Prospect Pages Site is Ready — ${data.athlete_name}`);
+        parentEmail.append("from_name", "Prospect Pages");
+        parentEmail.append("replyto", "david@prospectpages.college");
+        parentEmail.append("to", data.parent_email);
+        parentEmail.append("message", [
+          `Hi ${(data.parent_name || "").split(" ")[0] || "there"},`,
+          ``,
+          `${data.athlete_name}'s recruiting site has been generated and is being reviewed. You'll receive a follow-up when it's live.`,
+          ``,
+          `In the meantime, here's your dashboard invite code:`,
+          ``,
+          `    ${inviteCode}`,
+          ``,
+          `Use this code to sign up at: https://prospectpages.net/dashboard`,
+          ``,
+          `From the dashboard, you can:`,
+          `- Upload and manage game film`,
+          `- Update stats and measurables`,
+          `- Generate personalized coach outreach emails`,
+          `- Track your recruiting outreach`,
+          ``,
+          `If you have any questions, just reply to this email.`,
+          ``,
+          `— David Medina`,
+          `Prospect Pages`,
+          `david@prospectpages.college`,
+        ].join("\n"));
+        const parentRes = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: parentEmail.toString(),
+        });
+        const parentResult = await parentRes.json();
+        console.log("Parent email result:", parentResult.success ? "sent" : parentResult.message);
+      } catch (e) {
+        console.error("Parent email failed:", e.message);
+      }
+    }
 
     return {
       statusCode: 200,
