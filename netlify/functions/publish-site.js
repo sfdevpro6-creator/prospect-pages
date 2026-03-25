@@ -165,15 +165,22 @@ function injectPhotos(html, photos) {
   let result = html;
 
   if (photos.hero_photo_url) {
+    // Match either the original gradient OR a previously injected photo URL
     result = result.replace(
-      /\.hero-bg\s*\{[^}]*background:\s*linear-gradient\(135deg,\s*#0d0d12[^}]*\}/,
+      /\.hero-bg\s*\{[^}]*\}/,
       `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center center / cover no-repeat;\n}`
+    );
+    // Darken the overlay slightly more for text readability over a photo
+    result = result.replace(
+      /\.hero-bg::after\s*\{[^}]*\}/,
+      `.hero-bg::after {\n  content: ''; position: absolute; inset: 0;\n  background: linear-gradient(to bottom, rgba(10,10,12,0.35) 0%, rgba(10,10,12,0.6) 50%, var(--bg-primary) 100%);\n}`
     );
   }
 
   if (photos.headshot_url) {
+    // Match either "PHOTO COMING SOON" text or a previously injected img tag
     result = result.replace(
-      /<div class="about-photo reveal">PHOTO COMING SOON<\/div>/,
+      /<div class="about-photo reveal">(?:PHOTO COMING SOON|<img[^>]*>)<\/div>/,
       `<div class="about-photo reveal"><img src="${photos.headshot_url}" alt="Athlete headshot"></div>`
     );
   }
