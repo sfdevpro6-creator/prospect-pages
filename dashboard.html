@@ -88,6 +88,8 @@ const Icon = ({ name, size = 18 }) => {
     sparkle: <Fragment><path d="M12 3v18M5.5 7.5l13 9M5.5 16.5l13-9"/></Fragment>,
     globe: <Fragment><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></Fragment>,
     film: <Fragment><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></Fragment>,
+    camera: <Fragment><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></Fragment>,
+    trash: <Fragment><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></Fragment>,
   };
   return <svg viewBox="0 0 24 24" style={s} xmlns="http://www.w3.org/2000/svg">{paths[name]}</svg>;
 };
@@ -1302,6 +1304,198 @@ function VideoManager({profile, user}) {
   );
 }
 
+// ── PHOTO MANAGER ──
+function PhotoManager({profile, setProfile, user}) {
+  const [uploading, setUploading] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [saved, setSaved] = useState(false);
+  const [additionalPhotos, setAdditionalPhotos] = useState(profile?.additional_photos || []);
+
+  const uploadToCloudinary = (file, onSuccess) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return alert("Please upload an image file (JPG, PNG, etc.).");
+    if (file.size > 20 * 1024 * 1024) return alert("File too large. Max 20MB.");
+    setUploadProgress(0);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "prospect-pages-videos");
+    fd.append("resource_type", "image");
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/dcm7qt50x/image/upload");
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round(e.loaded / e.total * 100)); };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        const url = data.secure_url;
+        onSuccess(url);
+      } else { alert("Upload failed. Try again."); }
+      setUploading(null); setUploadProgress(0);
+    };
+    xhr.onerror = () => { setUploading(null); setUploadProgress(0); alert("Upload failed. Check your connection."); };
+    xhr.send(fd);
+  };
+
+  const handleHeroUpload = (file) => {
+    setUploading("hero");
+    uploadToCloudinary(file, async (url) => {
+      try {
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { hero_photo_url: url }, prefer: "return=representation" });
+        if (d?.[0]) setProfile(d[0]);
+      } catch (e) { alert("Save failed: " + e.message); }
+    });
+  };
+
+  const handleHeadshotUpload = (file) => {
+    setUploading("headshot");
+    uploadToCloudinary(file, async (url) => {
+      try {
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { headshot_url: url }, prefer: "return=representation" });
+        if (d?.[0]) setProfile(d[0]);
+      } catch (e) { alert("Save failed: " + e.message); }
+    });
+  };
+
+  const handleAdditionalUpload = (file) => {
+    setUploading("additional");
+    uploadToCloudinary(file, async (url) => {
+      const updated = [...additionalPhotos, { url, caption: "", uploaded_at: new Date().toISOString() }];
+      try {
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
+        if (d?.[0]) { setProfile(d[0]); setAdditionalPhotos(updated); }
+      } catch (e) { alert("Save failed: " + e.message); }
+    });
+  };
+
+  const removeAdditional = async (idx) => {
+    if (!confirm("Remove this photo?")) return;
+    const updated = additionalPhotos.filter((_, i) => i !== idx);
+    try {
+      const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
+      if (d?.[0]) { setProfile(d[0]); setAdditionalPhotos(updated); }
+    } catch (e) { alert("Remove failed: " + e.message); }
+  };
+
+  const removePhoto = async (field) => {
+    if (!confirm("Remove this photo?")) return;
+    try {
+      const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { [field]: null }, prefer: "return=representation" });
+      if (d?.[0]) setProfile(d[0]);
+    } catch (e) { alert("Remove failed: " + e.message); }
+  };
+
+  const DropZone = ({ type, label, hint, icon, onDrop, currentUrl, aspect, field }) => {
+    const isUploading = uploading === type;
+    return (
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+        {currentUrl ? (
+          <div style={{position:"relative"}}>
+            <img src={currentUrl} style={{width:"100%",aspectRatio:aspect||"16/9",objectFit:"cover",display:"block"}}/>
+            <div style={{position:"absolute",top:8,right:8,display:"flex",gap:4}}>
+              <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>onDrop(e.target.files[0]);i.click();}} style={{padding:"6px 12px",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1,textTransform:"uppercase"}}>Replace</button>
+              <button onClick={()=>removePhoto(field)} style={{padding:"6px 10px",background:"rgba(196,30,58,0.8)",border:"none",borderRadius:6,color:"#fff",cursor:"pointer",fontSize:12}}><Icon name="trash" size={14}/></button>
+            </div>
+            <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.cream}}>{label}</div>
+              <div style={{fontSize:11,color:C.success,marginTop:2}}>Uploaded</div>
+            </div>
+          </div>
+        ) : isUploading ? (
+          <div style={{padding:"40px 20px",textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:600,color:C.cream,marginBottom:12}}>Uploading...</div>
+            <div style={{width:"100%",height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
+              <div style={{width:uploadProgress+"%",height:"100%",background:C.red,borderRadius:3,transition:"width 0.3s"}}/>
+            </div>
+            <div style={{fontSize:11,color:C.textDim,marginTop:6}}>{uploadProgress}%</div>
+          </div>
+        ) : (
+          <div
+            onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.gold;}}
+            onDragLeave={e=>{e.currentTarget.style.borderColor="transparent";}}
+            onDrop={e=>{e.preventDefault();e.currentTarget.style.borderColor="transparent";onDrop(e.dataTransfer.files[0]);}}
+            onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>onDrop(e.target.files[0]);i.click();}}
+            style={{padding:"40px 20px",textAlign:"center",cursor:"pointer",border:"2px dashed transparent",transition:"border-color 0.2s",margin:4,borderRadius:8}}
+          >
+            <div style={{fontSize:32,marginBottom:8,opacity:0.5}}>{icon}</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.cream,marginBottom:4}}>{label}</div>
+            <div style={{fontSize:12,color:C.textMuted,lineHeight:1.5}}>{hint}</div>
+            <div style={{fontSize:11,color:C.textDim,marginTop:8}}>Drop image here or click to browse</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{maxWidth:700}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:16}}>
+        <DropZone
+          type="hero"
+          field="hero_photo_url"
+          label="Hero / Action Photo"
+          hint="This is the big background photo on your site. An action shot works best."
+          icon="📸"
+          aspect="16/9"
+          onDrop={handleHeroUpload}
+          currentUrl={profile?.hero_photo_url}
+        />
+
+        <DropZone
+          type="headshot"
+          field="headshot_url"
+          label="Headshot / Portrait"
+          hint="Used in the About section. A clean, well-lit photo works great."
+          icon="🤳"
+          aspect="3/4"
+          onDrop={handleHeadshotUpload}
+          currentUrl={profile?.headshot_url}
+        />
+      </div>
+
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24,marginTop:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2}}>ADDITIONAL PHOTOS</div>
+          <div style={{padding:"4px 12px",background:`${C.gold}20`,border:`1px solid ${C.gold}40`,borderRadius:6,fontSize:11,fontWeight:700,color:C.gold,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1}}>{additionalPhotos.length} photos</div>
+        </div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:16}}>Team photos, press clippings, awards, training photos. These appear in a gallery section on your site.</div>
+
+        {additionalPhotos.length > 0 && (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))",gap:8,marginBottom:16}}>
+            {additionalPhotos.map((photo, i) => (
+              <div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`}}>
+                <img src={photo.url} style={{width:"100%",aspectRatio:"1/1",objectFit:"cover",display:"block"}}/>
+                <button onClick={()=>removeAdditional(i)} style={{position:"absolute",top:4,right:4,width:24,height:24,borderRadius:"50%",background:"rgba(196,30,58,0.85)",border:"none",color:"#fff",cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {uploading === "additional" ? (
+          <div style={{padding:"20px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:600,color:C.cream,marginBottom:8}}>Uploading...</div>
+            <div style={{width:"100%",height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
+              <div style={{width:uploadProgress+"%",height:"100%",background:C.red,borderRadius:3,transition:"width 0.3s"}}/>
+            </div>
+          </div>
+        ) : (
+          <div
+            onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.gold;}}
+            onDragLeave={e=>{e.currentTarget.style.borderColor=C.border;}}
+            onDrop={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.border;handleAdditionalUpload(e.dataTransfer.files[0]);}}
+            onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>handleAdditionalUpload(e.target.files[0]);i.click();}}
+            style={{width:"100%",padding:"16px 0",background:"transparent",border:`2px dashed ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",textAlign:"center",transition:"all 0.15s"}}
+            onMouseOver={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}}
+            onMouseOut={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}
+          >+ Add Photo</div>
+        )}
+      </div>
+
+      <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
+        <strong style={{color:C.gold}}>How photos work:</strong> Upload your hero/action photo and headshot here. They're saved to the cloud automatically. Hit Publish on the My Stats page to push them live on your recruiting site.
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN APP ──
 function App() {
   const [user, setUser] = useState(null);
@@ -1340,7 +1534,7 @@ function App() {
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"photos",icon:"camera",label:"Photo Manager"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -1351,8 +1545,8 @@ function App() {
       <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="photos"&&"PHOTO MANAGER"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="photos"&&"Upload your hero photo, headshot, and additional images"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
@@ -1363,6 +1557,7 @@ function App() {
           {page==="email"&&<EmailBuilder profile={profile} user={user}/>}
           {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
           {page==="stats"&&<StatsEditor profile={profile} setProfile={setProfile} user={user}/>}
+          {page==="photos"&&<PhotoManager profile={profile} setProfile={setProfile} user={user}/>}
           {page==="videos"&&<VideoManager profile={profile} user={user}/>}
               {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
