@@ -348,23 +348,26 @@ exports.handler = async (event) => {
       },
     });
 
-    console.log("Deploy created:", deploy.id, "- uploading files...");
+    console.log("Deploy created:", deploy.id, "- required files:", deploy.required?.length || 0);
 
-    // Upload the HTML file (direct fetch — matches publish-site.js)
-    const uploadRes = await fetch(`https://api.netlify.com/api/v1/deploys/${deploy.id}/files/index.html`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${NETLIFY_TOKEN}`,
-        "Content-Type": "application/octet-stream",
-      },
-      body: htmlContent,
-    });
-    if (!uploadRes.ok) {
-      const err = await uploadRes.text().catch(() => "");
-      throw new Error(`File upload failed (${uploadRes.status}): ${err.slice(0, 200)}`);
+    // Only upload if Netlify doesn't already have this file hash
+    if (deploy.required && deploy.required.includes(htmlHash)) {
+      const uploadRes = await fetch(`https://api.netlify.com/api/v1/deploys/${deploy.id}/files/index.html`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${NETLIFY_TOKEN}`,
+          "Content-Type": "application/octet-stream",
+        },
+        body: htmlContent,
+      });
+      if (!uploadRes.ok) {
+        const err = await uploadRes.text().catch(() => "");
+        throw new Error(`File upload failed (${uploadRes.status}): ${err.slice(0, 200)}`);
+      }
+      console.log("File uploaded, deploy processing...");
+    } else {
+      console.log("File already cached by Netlify, skipping upload.");
     }
-
-    console.log("File uploaded, deploy processing...");
 
     // Get the final site URL
     const deployedSite = await netlifyApi(`/sites/${netlifySiteId}`);
