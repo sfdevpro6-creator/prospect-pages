@@ -1147,7 +1147,7 @@ function VideoManager({profile, user}) {
   const lbl={fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:4};
   const catColor = (cat) => {const m={pitching:"#4A90D9",hitting:"#E6A23C",fielding:"#67C23A",offense:"#E6A23C",defense:"#4A90D9",highlights:"#C41E3A",special_teams:"#67C23A",goals:"#E6A23C",assists:"#4A90D9",serves:"#67C23A",sprints:"#E6A23C",jumps:"#4A90D9",throws:"#67C23A"};return m[cat]||C.gold;};
 
-  const VideoForm = ({onSubmit, submitLabel}) => (
+  const renderForm = (onSubmit, submitLabel) => (
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         <div><label style={lbl}>Title</label><input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="vs. San Marcos — Pitching" style={inp}/></div>
@@ -1180,7 +1180,7 @@ function VideoManager({profile, user}) {
             {videos.map((v,i) => (
               <div key={v.id} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:editId===v.id?C.navyLight:"transparent",border:`1px solid ${editId===v.id?C.gold+"40":C.border}`,borderRadius:8,marginBottom:8,transition:"all 0.15s"}}>
                 {editId===v.id ? (
-                  <div style={{flex:1}}><VideoForm onSubmit={()=>handleEdit(v.id)} submitLabel="Save Changes"/></div>
+                  <div style={{flex:1}}>{renderForm(()=>handleEdit(v.id), "Save Changes")}</div>
                 ) : (
                   <Fragment>
                     {/* Reorder buttons */}
@@ -1221,7 +1221,7 @@ function VideoManager({profile, user}) {
             {showAdd ? (
               <div style={{background:C.navyLight,border:`1px solid ${C.gold}40`,borderRadius:8,padding:16,marginTop:8}}>
                 <div style={{fontSize:13,fontWeight:700,color:C.gold,marginBottom:12,fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase",letterSpacing:1}}>Add New Clip</div>
-                <VideoForm onSubmit={handleAdd} submitLabel="Add Clip"/>
+                {renderForm(handleAdd, "Add Clip")}
               </div>
             ) : (
               <button onClick={()=>{resetForm();setForm(f=>({...f,category:cats[0]?.key||""}));setShowAdd(true);}} style={{width:"100%",padding:"12px 0",background:"transparent",border:`2px dashed ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",marginTop:8,transition:"all 0.15s"}} onMouseOver={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseOut={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.textMuted;}}>+ Add Video Clip</button>
