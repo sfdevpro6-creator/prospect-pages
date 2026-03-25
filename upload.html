@@ -355,7 +355,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 var selectedSport = "";
 
 // Sport-specific config
@@ -579,4 +579,13 @@ function submitForm() {
       window.scrollTo({top:0,behavior:'smooth'});
     } else {
       alert('Something went wrong. Please email David@prospectpages.college directly.');
-      btn.disabled=false; btn.textContent='SUBMIT —
+      btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
+    }
+  }).catch(function(){
+    alert('Connection error. Please try again or email David@prospectpages.college');
+    btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
+  });
+}
+</script>
+</body>
+</html>
