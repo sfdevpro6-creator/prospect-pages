@@ -1084,6 +1084,9 @@ function VideoManager({profile, user}) {
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({title:"",category:"",video_url:"",duration:"1:00",meta_text:""});
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadFileName, setUploadFileName] = useState("");
   const sport = profile?.athlete_sport || "baseball";
 
   const SPORT_CATS = {
@@ -1106,7 +1109,38 @@ function VideoManager({profile, user}) {
     setLoading(false);
   };
 
-  const resetForm = () => setForm({title:"",category:cats[0]?.key||"",video_url:"",duration:"1:00",meta_text:""});
+  const resetForm = () => {setForm({title:"",category:cats[0]?.key||"",video_url:"",duration:"1:00",meta_text:""});setUploadFileName("");};
+
+  const handleUpload = (file) => {
+    if(!file) return;
+    if(!file.type.startsWith("video/")) return alert("Please upload a video file (mp4, mov, etc.).");
+    if(file.size > 500*1024*1024) return alert("File too large. Max 500MB.");
+    setUploading(true); setUploadProgress(0); setUploadFileName(file.name);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "prospect-pages-videos");
+    fd.append("resource_type", "video");
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://api.cloudinary.com/v1_1/dcm7qt50x/video/upload");
+    xhr.upload.onprogress = (e) => { if(e.lengthComputable) setUploadProgress(Math.round(e.loaded/e.total*100)); };
+    xhr.onload = () => {
+      setUploading(false);
+      if(xhr.status===200) {
+        const data = JSON.parse(xhr.responseText);
+        // Use .mp4 transform URL for guaranteed H.264 playback
+        const url = data.secure_url.replace("/upload/", "/upload/f_mp4/");
+        const dur = data.duration ? (Math.floor(data.duration/60)+":"+(Math.floor(data.duration%60)+"").padStart(2,"0")) : "1:00";
+        setForm(f=>({...f, video_url:url, duration:dur}));
+        // Auto-fill title from filename if empty
+        if(!form.title) {
+          const name = file.name.replace(/\.[^.]+$/,"").replace(/[_-]/g," ");
+          setForm(f=>({...f, title:name}));
+        }
+      } else { alert("Upload failed. Try again."); }
+    };
+    xhr.onerror = () => { setUploading(false); alert("Upload failed. Check your connection."); };
+    xhr.send(fd);
+  };
 
   const handleAdd = async () => {
     if(!form.title||!form.video_url) return alert("Title and Video URL/path are required.");
@@ -1153,7 +1187,38 @@ function VideoManager({profile, user}) {
         <div><label style={lbl}>Title</label><input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="vs. San Marcos — Pitching" style={inp}/></div>
         <div><label style={lbl}>Category</label><select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} style={{...inp,cursor:"pointer"}}>{cats.map(c=>(<option key={c.key} value={c.key}>{c.label}</option>))}</select></div>
       </div>
-      <div><label style={lbl}>Video URL or Path</label><input value={form.video_url} onChange={e=>setForm(f=>({...f,video_url:e.target.value}))} placeholder="videos/pitching-vs-san-marcos.mp4 or https://..." style={inp}/><div style={{fontSize:10,color:C.textDim,marginTop:3}}>Use relative paths like "videos/filename.mp4" for self-hosted, or full URLs for external hosting.</div></div>
+      <div>
+        <label style={lbl}>Video File</label>
+        {form.video_url ? (
+          <div style={{padding:"12px 16px",background:C.navyLight,border:`1px solid ${C.gold}40`,borderRadius:8,display:"flex",alignItems:"center",gap:10}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13,fontWeight:600,color:C.gold,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uploadFileName||"Video ready"}</div>
+              <div style={{fontSize:11,color:C.textDim,marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{form.video_url.length>60?form.video_url.slice(0,60)+"...":form.video_url}</div>
+            </div>
+            <button onClick={()=>{setForm(f=>({...f,video_url:""}));setUploadFileName("");}} style={{background:"transparent",border:`1px solid ${C.red}30`,borderRadius:6,color:C.red,cursor:"pointer",padding:"4px 10px",fontSize:11,fontWeight:600,flexShrink:0}}>Remove</button>
+          </div>
+        ) : uploading ? (
+          <div style={{padding:"20px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:600,color:C.cream,marginBottom:8}}>Uploading {uploadFileName}...</div>
+            <div style={{width:"100%",height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
+              <div style={{width:uploadProgress+"%",height:"100%",background:C.red,borderRadius:3,transition:"width 0.3s"}}/>
+            </div>
+            <div style={{fontSize:11,color:C.textDim,marginTop:6}}>{uploadProgress}%</div>
+          </div>
+        ) : (
+          <div
+            onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.gold;}}
+            onDragLeave={e=>{e.currentTarget.style.borderColor=C.border;}}
+            onDrop={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.border;handleUpload(e.dataTransfer.files[0]);}}
+            onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="video/*";i.onchange=e=>handleUpload(e.target.files[0]);i.click();}}
+            style={{padding:"28px 16px",background:C.navyLight,border:`2px dashed ${C.border}`,borderRadius:8,textAlign:"center",cursor:"pointer",transition:"border-color 0.2s"}}
+          >
+            <div style={{fontSize:24,marginBottom:6}}>🎬</div>
+            <div style={{fontSize:13,fontWeight:600,color:C.cream}}>Drop video file here or click to browse</div>
+            <div style={{fontSize:11,color:C.textDim,marginTop:4}}>MP4, MOV, or any video format. Auto-converts for all browsers.</div>
+          </div>
+        )}
+      </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         <div><label style={lbl}>Duration</label><input value={form.duration} onChange={e=>setForm(f=>({...f,duration:e.target.value}))} placeholder="1:02" style={inp}/></div>
         <div><label style={lbl}>Description</label><input value={form.meta_text} onChange={e=>setForm(f=>({...f,meta_text:e.target.value}))} placeholder="2026 Varsity" style={inp}/></div>
@@ -1231,7 +1296,7 @@ function VideoManager({profile, user}) {
       </div>
 
       <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
-        <strong style={{color:C.gold}}>How video files work:</strong> The video URL should match the file path on your Netlify site. Upload video files to your site's <code style={{background:C.navyLight,padding:"1px 6px",borderRadius:3,fontSize:12}}>videos/</code> folder via Netlify deploy, then add the path here (e.g. "videos/pitching-reel.mp4"). Hit Publish on the My Stats page to update your live site.
+        <strong style={{color:C.gold}}>How video uploads work:</strong> Drop a video file into the upload zone. It's automatically uploaded to the cloud and converted to a format that plays on every device. Hit Publish on the My Stats page to update your live site with the new clips.
       </div>
     </div>
   );
