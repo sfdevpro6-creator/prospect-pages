@@ -151,6 +151,8 @@ function SiteDetail({ site, onBack, onUpdate }) {
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [previewMode, setPreviewMode] = useState("preview");
+  const [deploying, setDeploying] = useState(false);
+  const [deployError, setDeployError] = useState("");
   const iframeRef = useRef(null);
 
   const saveBio = async () => {
@@ -172,13 +174,34 @@ function SiteDetail({ site, onBack, onUpdate }) {
     setEditing(false);
   };
 
-  const updateStatus = async (newStatus) => {
+  const deploySite = async () => {
+    setDeploying(true);
+    setDeployError("");
+    try {
+      const res = await fetch("/.netlify/functions/deploy-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: site.id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        onUpdate({ ...site, status: "published", site_url: data.site_url, netlify_site_id: data.netlify_site_id });
+      } else {
+        setDeployError(data.error || "Deploy failed");
+      }
+    } catch (e) {
+      setDeployError(e.message);
+    }
+    setDeploying(false);
+  };
+
+  const unpublish = async () => {
     try {
       await supaFetch(`/rest/v1/sites?id=eq.${site.id}`, {
         method: "PATCH",
-        body: { status: newStatus },
+        body: { status: "generated" },
       });
-      onUpdate({ ...site, status: newStatus });
+      onUpdate({ ...site, status: "generated" });
     } catch (e) { alert("Update failed: " + e.message); }
   };
 
@@ -220,12 +243,17 @@ function SiteDetail({ site, onBack, onUpdate }) {
           </div>
           <StatusBadge status={site.status}/>
         </div>
-        <div style={{display:"flex",gap:8}}>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {deployError && <div style={{fontSize:12,color:C.red,maxWidth:250}}>{deployError}</div>}
+          {site.site_url && <a href={site.site_url} target="_blank" style={{fontSize:12,color:C.gold,textDecoration:"none",marginRight:8}}>{site.site_url} ↗</a>}
           {site.status !== "published" && (
-            <button onClick={()=>updateStatus("published")} style={{padding:"10px 20px",background:C.success,border:"none",borderRadius:8,color:"#fff",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Mark Published</button>
+            <button onClick={deploySite} disabled={deploying} style={{padding:"10px 20px",background:deploying?"#666":C.success,border:"none",borderRadius:8,color:"#fff",cursor:deploying?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase",opacity:deploying?0.7:1}}>{deploying?"DEPLOYING...":"PUBLISH TO NETLIFY"}</button>
           )}
           {site.status === "published" && (
-            <button onClick={()=>updateStatus("generated")} style={{padding:"10px 20px",background:C.warn,border:"none",borderRadius:8,color:"#000",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Unpublish</button>
+            <Fragment>
+              <button onClick={deploySite} disabled={deploying} style={{padding:"10px 20px",background:deploying?"#666":"#3B82F6",border:"none",borderRadius:8,color:"#fff",cursor:deploying?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase",opacity:deploying?0.7:1}}>{deploying?"DEPLOYING...":"RE-DEPLOY"}</button>
+              <button onClick={unpublish} style={{padding:"10px 20px",background:C.warn,border:"none",borderRadius:8,color:"#000",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Unpublish</button>
+            </Fragment>
           )}
         </div>
       </div>
@@ -244,6 +272,15 @@ function SiteDetail({ site, onBack, onUpdate }) {
             </div>
             <div style={{fontSize:11,color:C.textDim,marginTop:6}}>Give this to the family so they can sign up for the dashboard</div>
           </div>
+
+          {/* Live site URL */}
+          {site.site_url && (
+            <div style={cardStyle}>
+              <div style={labelStyle}>Live Site</div>
+              <a href={site.site_url} target="_blank" style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:700,color:C.success,textDecoration:"none",letterSpacing:0.5,wordBreak:"break-all"}}>{site.site_url} ↗</a>
+              <div style={{fontSize:11,color:C.textDim,marginTop:6}}>This site is live and accessible to coaches</div>
+            </div>
+          )}
 
           {/* Parent info */}
           <div style={cardStyle}>
