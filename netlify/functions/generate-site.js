@@ -190,7 +190,7 @@ function buildContactItems(data) {
 
   // Coach references
   if (data.hs_coach_name || data.travel_coach_name) {
-    html += `<div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06);">
+    html += `<div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
           <div style="font-family:var(--font-condensed); font-size:0.65rem; font-weight:600; letter-spacing:0.25em; text-transform:uppercase; color:var(--accent); margin-bottom:0.8rem;">Coach References</div>`;
     if (data.hs_coach_name) {
       html += `<div class="contact-item" style="border-bottom:none; padding-bottom:0;">
@@ -233,6 +233,178 @@ function sportName(sport) {
   return map[sport] || sport;
 }
 
+// ── Theme configuration for all 7 templates ──
+const THEME_CONFIG = {
+  dark: {
+    name: "Dark Pro",
+    bg: "#0a0a0c",
+    bg2: "#111116",
+    card: "#16161c",
+    cardHover: "#1c1c24",
+    accent: "#e63a2e",
+    accentGlow: "rgba(230, 58, 46, 0.25)",
+    accentHover: "#cf2f24",
+    gold: "#c9a84c",
+    textPrimary: "#f0ece4",
+    textSecondary: "#9a968e",
+    textMuted: "#5c5952",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Bebas Neue', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "split",
+    heroBgGradient: "linear-gradient(135deg, #0d0d12 0%, #1a1018 50%, #0d0d12 100%)",
+    navBg: "rgba(10,10,12,0.85)",
+    navBgScrolled: "rgba(10,10,12,0.95)",
+    isLight: false,
+  },
+  clean: {
+    name: "Clean Light",
+    bg: "#faf8f5",
+    bg2: "#f0ede8",
+    card: "#ffffff",
+    cardHover: "#f5f3f0",
+    accent: "#c4387a",
+    accentGlow: "rgba(196, 56, 122, 0.20)",
+    accentHover: "#a82e68",
+    gold: "#8b6914",
+    textPrimary: "#1a1a2e",
+    textSecondary: "#555566",
+    textMuted: "#8a8a9a",
+    border: "rgba(0,0,0,0.08)",
+    fontDisplay: "'Raleway', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Raleway:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "split",
+    heroBgGradient: "linear-gradient(160deg, #faf8f5 0%, #f0ede8 50%, #faf8f5 100%)",
+    navBg: "rgba(250,248,245,0.90)",
+    navBgScrolled: "rgba(250,248,245,0.97)",
+    isLight: true,
+  },
+  fire: {
+    name: "Bold Fire",
+    bg: "#08080a",
+    bg2: "#0f0f14",
+    card: "#141418",
+    cardHover: "#1a1a20",
+    accent: "#ff6b2b",
+    accentGlow: "rgba(255, 107, 43, 0.25)",
+    accentHover: "#e55a1f",
+    gold: "#c9a84c",
+    textPrimary: "#f0ece4",
+    textSecondary: "#9a968e",
+    textMuted: "#5c5952",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Oswald', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "centered",
+    heroBgGradient: "linear-gradient(135deg, #08080a 0%, #1a0e08 50%, #08080a 100%)",
+    navBg: "rgba(8,8,10,0.85)",
+    navBgScrolled: "rgba(8,8,10,0.95)",
+    isLight: false,
+  },
+  field: {
+    name: "Field",
+    bg: "#060a07",
+    bg2: "#0c120e",
+    card: "#111a14",
+    cardHover: "#172019",
+    accent: "#2d8a4e",
+    accentGlow: "rgba(45, 138, 78, 0.25)",
+    accentHover: "#247040",
+    gold: "#c9a84c",
+    textPrimary: "#e8f0ea",
+    textSecondary: "#8a9e8f",
+    textMuted: "#526258",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Oswald', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "centered",
+    heroBgGradient: "linear-gradient(135deg, #060a07 0%, #0a1a0e 50%, #060a07 100%)",
+    navBg: "rgba(6,10,7,0.85)",
+    navBgScrolled: "rgba(6,10,7,0.95)",
+    isLight: false,
+  },
+  midnight: {
+    name: "Midnight",
+    bg: "#060810",
+    bg2: "#0c0e18",
+    card: "#11141e",
+    cardHover: "#171a26",
+    accent: "#2563eb",
+    accentGlow: "rgba(37, 99, 235, 0.25)",
+    accentHover: "#1d4fd8",
+    gold: "#c9a84c",
+    textPrimary: "#e4e8f0",
+    textSecondary: "#8a90a0",
+    textMuted: "#525868",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Montserrat', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Montserrat:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "centered",
+    heroBgGradient: "linear-gradient(135deg, #060810 0%, #0a1028 50%, #060810 100%)",
+    navBg: "rgba(6,8,16,0.85)",
+    navBgScrolled: "rgba(6,8,16,0.95)",
+    isLight: false,
+  },
+  ultraviolet: {
+    name: "Ultraviolet",
+    bg: "#0a0614",
+    bg2: "#110c1c",
+    card: "#161024",
+    cardHover: "#1c142c",
+    accent: "#7c3aed",
+    accentGlow: "rgba(124, 58, 237, 0.25)",
+    accentHover: "#6d28d9",
+    gold: "#c9a84c",
+    textPrimary: "#ece4f0",
+    textSecondary: "#9a8ea8",
+    textMuted: "#5c5268",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Raleway', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Raleway:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "centered",
+    heroBgGradient: "linear-gradient(135deg, #0a0614 0%, #18082a 50%, #0a0614 100%)",
+    navBg: "rgba(10,6,20,0.85)",
+    navBgScrolled: "rgba(10,6,20,0.95)",
+    isLight: false,
+  },
+  ember: {
+    name: "Ember",
+    bg: "#0c0806",
+    bg2: "#140e0a",
+    card: "#1a1410",
+    cardHover: "#201a16",
+    accent: "#ea580c",
+    accentGlow: "rgba(234, 88, 12, 0.25)",
+    accentHover: "#d24a0a",
+    gold: "#c9a84c",
+    textPrimary: "#f0ece4",
+    textSecondary: "#9e948a",
+    textMuted: "#685e54",
+    border: "rgba(255,255,255,0.06)",
+    fontDisplay: "'Bebas Neue', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    heroLayout: "centered",
+    heroBgGradient: "linear-gradient(135deg, #0c0806 0%, #1a0e06 50%, #0c0806 100%)",
+    navBg: "rgba(12,8,6,0.85)",
+    navBgScrolled: "rgba(12,8,6,0.95)",
+    isLight: false,
+  },
+};
+
 // ── Format bio into HTML paragraphs ──
 function formatBio(bio) {
   if (!bio || !bio.trim()) return "<p><em>Bio coming soon.</em></p>";
@@ -260,6 +432,22 @@ function buildSiteHtml(data, bio) {
   const taglineParts = [data.position, data.city_state].filter(Boolean);
   const tagline = taglineParts.join(" &bull; ");
 
+  // Resolve theme
+  const templateKey = data.template && THEME_CONFIG[data.template] ? data.template : "dark";
+  const theme = { ...THEME_CONFIG[templateKey] };
+  // Color picker override
+  if (data.color_pref && /^#[0-9a-fA-F]{6}$/.test(data.color_pref)) {
+    theme.accent = data.color_pref;
+    // Derive glow and hover from custom accent
+    const r = parseInt(data.color_pref.slice(1,3), 16);
+    const g = parseInt(data.color_pref.slice(3,5), 16);
+    const b = parseInt(data.color_pref.slice(5,7), 16);
+    theme.accentGlow = `rgba(${r}, ${g}, ${b}, 0.25)`;
+    theme.accentHover = `#${Math.max(0,r-20).toString(16).padStart(2,'0')}${Math.max(0,g-20).toString(16).padStart(2,'0')}${Math.max(0,b-20).toString(16).padStart(2,'0')}`;
+  }
+  const isCentered = theme.heroLayout === "centered";
+  const whiteOrPrimary = theme.isLight ? theme.textPrimary : "#ffffff";
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -268,26 +456,26 @@ function buildSiteHtml(data, bio) {
 <title>${escHtml(name)} | ${escHtml(sport)}</title>
 <meta name="description" content="${escHtml(name)} – ${escHtml(sport)} Player Recruiting Profile. Game film, stats, progression timeline, and contact information for college coaches.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?${theme.fontImport}&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg-primary: #0a0a0c;
-  --bg-secondary: #111116;
-  --bg-card: #16161c;
-  --bg-card-hover: #1c1c24;
-  --text-primary: #f0ece4;
-  --text-secondary: #9a968e;
-  --text-muted: #5c5952;
-  --accent: #e63a2e;
-  --accent-glow: rgba(230, 58, 46, 0.25);
-  --accent-secondary: #ff6b3d;
-  --gold: #c9a84c;
-  --white: #ffffff;
-  --border: rgba(255,255,255,0.06);
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-body: 'Barlow', sans-serif;
-  --font-condensed: 'Barlow Condensed', sans-serif;
+  --bg-primary: ${theme.bg};
+  --bg-secondary: ${theme.bg2};
+  --bg-card: ${theme.card};
+  --bg-card-hover: ${theme.cardHover};
+  --text-primary: ${theme.textPrimary};
+  --text-secondary: ${theme.textSecondary};
+  --text-muted: ${theme.textMuted};
+  --accent: ${theme.accent};
+  --accent-glow: ${theme.accentGlow};
+  --accent-secondary: ${theme.accent};
+  --gold: ${theme.gold};
+  --white: ${whiteOrPrimary};
+  --border: ${theme.border};
+  --font-display: ${theme.fontDisplay};
+  --font-body: ${theme.fontBody};
+  --font-condensed: ${theme.fontCondensed};
 }
 html { scroll-behavior: smooth; }
 body {
@@ -303,12 +491,12 @@ nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   padding: 1.25rem 3rem;
   display: flex; align-items: center; justify-content: space-between;
-  background: rgba(10,10,12,0.85);
+  background: ${theme.navBg};
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   transition: all 0.4s ease;
 }
-nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
+nav.scrolled { padding: 0.8rem 3rem; background: ${theme.navBgScrolled}; }
 .nav-logo {
   font-family: var(--font-display); font-size: 1.6rem;
   letter-spacing: 0.08em; color: var(--text-primary); text-decoration: none;
@@ -332,7 +520,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
   transition: background 0.3s, transform 0.3s !important;
 }
 .nav-cta::after { display: none !important; }
-.nav-cta:hover { background: #cf2f24 !important; transform: translateY(-1px); }
+.nav-cta:hover { background: ${theme.accentHover} !important; transform: translateY(-1px); }
 .nav-toggle {
   display: none; background: none; border: none; cursor: pointer;
   flex-direction: column; gap: 5px; padding: 4px;
@@ -346,7 +534,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
 }
 .hero-bg {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, #0d0d12 0%, #1a1018 50%, #0d0d12 100%);
+  background: ${theme.heroBgGradient};
 }
 .hero-overlay-lines {
   position: absolute; inset: 0; opacity: 0.04;
@@ -405,7 +593,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
   background: var(--accent); color: var(--white); border: none; cursor: pointer;
   text-decoration: none; transition: all 0.3s; position: relative; overflow: hidden;
 }
-.btn-primary:hover { background: #cf2f24; transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow); }
+.btn-primary:hover { background: ${theme.accentHover}; transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow); }
 .btn-secondary {
   font-family: var(--font-condensed); font-weight: 700; font-size: 0.85rem;
   letter-spacing: 0.18em; text-transform: uppercase; padding: 1rem 2.5rem;
@@ -518,7 +706,7 @@ section { padding: 6rem 0; }
   background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
   cursor: pointer; transition: all 0.2s;
 }
-.film-tab:hover, .film-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(230,58,46,0.08); }
+.film-tab:hover, .film-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 .film-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .film-thumb {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
@@ -614,10 +802,29 @@ footer {
 .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
+${isCentered ? `/* CENTERED HERO LAYOUT */
+.hero-inner { flex-direction: column; align-items: center; text-align: center; padding: 8rem 2rem 5rem; }
+.hero-eyebrow { justify-content: center; }
+.hero-stats { justify-content: center; }
+.hero-cta-group { justify-content: center; }
+.hero-photo-card { display: none; }
+` : ""}
+
+${theme.isLight ? `/* LIGHT THEME OVERRIDES */
+.contact-item-icon svg { stroke: var(--accent); fill: none; }
+.about-photo::before { background: linear-gradient(to top, var(--bg-secondary), transparent); }
+.contact-form input, .contact-form textarea { background: var(--bg-primary); border-color: var(--border); color: var(--text-primary); }
+.stat-card { background: var(--bg-card); border-color: var(--border); }
+.nav-links a { color: var(--text-secondary); }
+.nav-links a:hover { color: var(--text-primary); }
+a { color: var(--text-primary); }
+a:hover { color: var(--accent); }
+` : ""}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   nav { padding: 1rem 1.5rem; }
-  .nav-links { display:none; position:fixed; inset:0; background:rgba(10,10,12,0.98); backdrop-filter:blur(20px); flex-direction:column; align-items:center; justify-content:center; gap:2rem; z-index:200; }
+  .nav-links { display:none; position:fixed; inset:0; background:${theme.navBgScrolled}; backdrop-filter:blur(20px); flex-direction:column; align-items:center; justify-content:center; gap:2rem; z-index:200; }
   .nav-links.open { display:flex; }
   .nav-toggle { display:flex; z-index:201; }
   .hero-inner { flex-direction: column; padding: 6rem 1.5rem 3rem; gap: 2rem; }
