@@ -87,18 +87,26 @@ function injectPhotos(html, photos) {
   // 1. Hero photo — replace gradient background with photo + overlay
   if (photos.hero_photo_url) {
     result = result.replace(
-      /\.hero-bg\s*\{[^}]*background:\s*linear-gradient\(135deg,\s*#0d0d12[^}]*\}/,
+      /\.hero-bg\s*\{[^}]*\}/,
       `.hero-bg {
   position: absolute; inset: 0;
   background: url('${photos.hero_photo_url}') center center / cover no-repeat;
 }`
     );
+    // Adjust overlay for photo readability
+    result = result.replace(
+      /\.hero-bg::after\s*\{[^}]*\}/,
+      `.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,12,0.35) 0%, rgba(10,10,12,0.6) 50%, var(--bg-primary) 100%);
+}`
+    );
   }
 
-  // 2. Headshot — replace "PHOTO COMING SOON" placeholder
+  // 2. Headshot — replace placeholder or existing headshot
   if (photos.headshot_url) {
     result = result.replace(
-      /<div class="about-photo reveal">PHOTO COMING SOON<\/div>/,
+      /<div class="about-photo reveal">(?:PHOTO COMING SOON|<img[^>]*>)<\/div>/,
       `<div class="about-photo reveal"><img src="${photos.headshot_url}" alt="Athlete headshot"></div>`
     );
   }
