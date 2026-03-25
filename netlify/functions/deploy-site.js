@@ -100,21 +100,66 @@ exports.handler = async (event) => {
     let netlifySiteId = site.netlify_site_id;
     let siteUrl;
 
+    // If we have a URL but no site ID (from a partial previous deploy), look up the site
+    if (!netlifySiteId && site.site_url) {
+      const urlMatch = site.site_url.match(/https?:\/\/([^.]+)\.netlify\.app/);
+      if (urlMatch) {
+        try {
+          const existing = await netlifyApi(`/sites/${urlMatch[1]}.netlify.app`);
+          if (existing?.id) {
+            netlifySiteId = existing.id;
+            siteUrl = existing.ssl_url || existing.url;
+            console.log("Found site from existing URL:", siteUrl);
+          }
+        } catch (e) { console.log("URL lookup failed:", e.message); }
+      }
+    }
+
     if (netlifySiteId) {
       // Re-deploy to existing site
       console.log("Re-deploying to existing Netlify site:", netlifySiteId);
     } else {
-      // Create a new Netlify site
-      console.log("Creating new Netlify site for:", site.athlete_name);
-      const newSite = await netlifyApi("/sites", {
-        method: "POST",
-        body: {
-          name: preferredName, // becomes preferredName.netlify.app
-        },
-      });
-      netlifySiteId = newSite.id;
-      siteUrl = newSite.ssl_url || newSite.url;
-      console.log("Created site:", siteUrl);
+      // Try to find an existing site with this name first (in case it was created manually)
+      console.log("Looking for existing Netlify site:", preferredName);
+      try {
+        const existing = await netlifyApi(`/sites/${preferredName}.netlify.app`);
+        if (existing?.id) {
+          netlifySiteId = existing.id;
+          siteUrl = existing.ssl_url || existing.url;
+          console.log("Found existing site:", siteUrl);
+        }
+      } catch (e) {
+        console.log("No existing site found, creating new...");
+      }
+
+      if (!netlifySiteId) {
+        // Create a new Netlify site — try preferred name, then with suffix if taken
+        const tryCreate = async (name) => {
+          const newSite = await netlifyApi("/sites", {
+            method: "POST",
+            body: { name },
+          });
+          return newSite;
+        };
+
+        try {
+          const newSite = await tryCreate(preferredName);
+          netlifySiteId = newSite.id;
+          siteUrl = newSite.ssl_url || newSite.url;
+        } catch (e) {
+          // Name taken — try with random suffix
+          console.log("Name taken, trying with suffix...");
+          const suffix = Math.random().toString(36).slice(2, 6);
+          try {
+            const newSite = await tryCreate(preferredName + "-" + suffix);
+            netlifySiteId = newSite.id;
+            siteUrl = newSite.ssl_url || newSite.url;
+          } catch (e2) {
+            throw new Error(`Could not create Netlify site: ${e2.message}`);
+          }
+        }
+        console.log("Created site:", siteUrl);
+      }
     }
 
     // 3. Deploy the HTML file
