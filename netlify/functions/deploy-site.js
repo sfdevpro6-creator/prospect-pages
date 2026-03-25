@@ -4,7 +4,7 @@
 
 const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const NETLIFY_TOKEN = process.env.NETLIFY_TOKEN;
+const NETLIFY_TOKEN = process.env.NETLIFY_AUTH_TOKEN;
 
 const crypto = require("crypto");
 
@@ -234,7 +234,7 @@ exports.handler = async (event) => {
   }
 
   if (!NETLIFY_TOKEN) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "NETLIFY_TOKEN not configured. Add it in Netlify environment variables." }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "NETLIFY_AUTH_TOKEN not configured. Add it in Netlify environment variables." }) };
   }
 
   try {
