@@ -895,4 +895,23 @@ function submitForm() {
     fd.append('access_key', '5fa35adf-581a-4cfe-afa6-8b8811ed2219');
     fd.append('subject', 'Prospect Pages Submission (fallback) — ' + payload.athlete_name);
     fd.append('from_name', 'Prospect Pages Intake');
-  
+    var msgParts = [];
+    for (var key in payload) {
+      if (payload[key]) msgParts.push(key + ': ' + payload[key]);
+    }
+    fd.append('message', msgParts.join('\n'));
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      body: fd
+    }).then(function(r){ return r.json(); }).then(function(d){
+      console.log('Web3Forms fallback:', d.success ? 'sent' : 'failed');
+    }).catch(function(e2){
+      console.error('Web3Forms fallback failed:', e2);
+    });
+
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+</script>
+</body>
+</html>
