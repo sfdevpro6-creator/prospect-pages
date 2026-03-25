@@ -84,23 +84,19 @@ function injectPhotos(html, photos) {
   if (!photos) return html;
   let result = html;
 
-  // 1. Hero photo — replace gradient background with photo + overlay
+  // 1. Hero photo — replace placeholder in photo card
   if (photos.hero_photo_url) {
     result = result.replace(
-      /\.hero-bg\s*\{[^}]*\}/,
-      `.hero-bg {
-  position: absolute; inset: 0;
-  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;
-}`
+      /<!-- PP-HERO-PHOTO -->[\s\S]*?<!-- \/PP-HERO-PHOTO -->/,
+      `<!-- PP-HERO-PHOTO -->\n    <div class="hero-photo-card">\n      <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n    </div>\n    <!-- /PP-HERO-PHOTO -->`
     );
-    // Adjust overlay for photo readability
-    result = result.replace(
-      /\.hero-bg::after\s*\{[^}]*\}/,
-      `.hero-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(10,10,12,0.35) 0%, rgba(10,10,12,0.6) 50%, var(--bg-primary) 100%);
-}`
-    );
+    // Fallback for legacy sites without PP-HERO-PHOTO markers
+    if (!result.includes('PP-HERO-PHOTO')) {
+      result = result.replace(
+        /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
+        `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
+      );
+    }
   }
 
   // 2. Headshot — replace placeholder or existing headshot
