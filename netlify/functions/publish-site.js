@@ -1,5 +1,206 @@
 const crypto = require('crypto');
 
+const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+// ── Supabase helper ──
+async function supaFetch(path) {
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── Inject PP markers into legacy HTML ──
+function injectPPMarkers(html) {
+  let result = html;
+
+  if (!result.includes('<!-- PP-HERO-STATS -->')) {
+    result = result.replace(
+      /(<div class="hero-stats">)/,
+      '<!-- PP-HERO-STATS -->\n    $1'
+    );
+    result = result.replace(
+      /(<\/div>\s*<div class="hero-cta-group">)/,
+      '</div>\n    <!-- /PP-HERO-STATS -->\n    <div class="hero-cta-group">'
+    );
+  }
+
+  if (!result.includes('<!-- PP-PERF-STATS -->')) {
+    result = result.replace(
+      /(<div class="stats-grid">)/,
+      '<!-- PP-PERF-STATS -->\n    $1'
+    );
+    result = result.replace(
+      /(<\/div>\s*<\/div>\s*<\/section>\s*(?:<!-- HIGHLIGHTS -->|<section id="highlights">))/,
+      '</div>\n    <!-- /PP-PERF-STATS -->\n  </div>\n</section>\n\n<!-- HIGHLIGHTS -->\n<section id="highlights">'
+    );
+  }
+
+  if (!result.includes('<!-- PP-INFO -->')) {
+    result = result.replace(
+      /(<div class="about-info-grid[^>]*>)/,
+      '<!-- PP-INFO -->\n        $1'
+    );
+    result = result.replace(
+      /(<\/div>\s*<div class="about-bio reveal">)/,
+      '</div>\n        <!-- /PP-INFO -->\n        <div class="about-bio reveal">'
+    );
+  }
+
+  if (!result.includes('<!-- PP-FILM -->')) {
+    result = result.replace(
+      /(<div class="film-placeholder reveal")/,
+      '<!-- PP-FILM -->\n    $1'
+    );
+    result = result.replace(
+      /(GAME FILM COMING SOON<\/h3>[\s\S]*?<\/p>\s*<\/div>)/,
+      '$1\n    <!-- /PP-FILM -->'
+    );
+  }
+
+  return result;
+}
+
+// ── Film player CSS ──
+const FILM_CSS = `
+/* FILM PLAYER */
+.film-player-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.film-main-video video { width: 100%; display: block; background: #000; aspect-ratio: 16/9; }
+.film-now-playing {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+}
+.film-now-tag {
+  font-family: var(--font-condensed); font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.2rem;
+}
+.film-now-title { font-family: var(--font-condensed); font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+.film-now-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
+.film-count {
+  font-family: var(--font-condensed); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.15em; color: var(--text-muted); white-space: nowrap;
+}
+.film-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.film-tab {
+  font-family: var(--font-condensed); font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1.2rem;
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.film-tab:hover, .film-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(230,58,46,0.08); }
+.film-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.film-thumb {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; cursor: pointer; transition: all 0.3s;
+}
+.film-thumb:hover, .film-thumb.active { border-color: var(--accent); }
+.film-thumb-preview {
+  position: relative; background: #000; aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+}
+.film-thumb-number {
+  position: absolute; top: 8px; left: 8px; font-family: var(--font-condensed);
+  font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.1em;
+}
+.film-thumb-play svg { width: 32px; height: 32px; fill: rgba(255,255,255,0.7); }
+.film-thumb-duration {
+  position: absolute; bottom: 8px; right: 8px; font-family: var(--font-condensed);
+  font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); background: rgba(0,0,0,0.6);
+  padding: 2px 6px; border-radius: 3px;
+}
+.film-thumb-info { padding: 0.8rem 1rem; }
+.film-thumb-cat {
+  font-family: var(--font-condensed); font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.15rem;
+}
+.film-thumb-title { font-family: var(--font-condensed); font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+.film-thumb-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+.gallery-item {
+  border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+  transition: transform 0.3s, border-color 0.3s;
+}
+.gallery-item:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
+.gallery-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+`;
+
+// ── Film player JS ──
+const FILM_JS = `
+function playVideo(el) {
+  var vid = document.getElementById('mainVideo');
+  if (vid) {
+    vid.src = el.getAttribute('data-src');
+    vid.play();
+    document.getElementById('filmNowTitle').textContent = el.getAttribute('data-title') || '';
+    document.getElementById('filmNowMeta').textContent = el.getAttribute('data-meta') || '';
+    var cat = el.getAttribute('data-cat') || '';
+    document.getElementById('filmNowTag').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.querySelectorAll('.film-thumb').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    var all = document.querySelectorAll('.film-thumb');
+    var idx = Array.prototype.indexOf.call(all, el);
+    document.getElementById('filmCount').textContent = (idx + 1) + ' of ' + all.length;
+    document.getElementById('filmPlayer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+function filterFilm(tab) {
+  var cat = tab.getAttribute('data-cat');
+  document.querySelectorAll('.film-tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  document.querySelectorAll('.film-thumb').forEach(function(t) {
+    t.style.display = (cat === 'all' || t.getAttribute('data-cat') === cat) ? '' : 'none';
+  });
+}
+`;
+
+// ── Inject photos into HTML ──
+function injectPhotos(html, photos) {
+  if (!photos) return html;
+  let result = html;
+
+  if (photos.hero_photo_url) {
+    result = result.replace(
+      /\.hero-bg\s*\{[^}]*background:\s*linear-gradient\(135deg,\s*#0d0d12[^}]*\}/,
+      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center center / cover no-repeat;\n}`
+    );
+  }
+
+  if (photos.headshot_url) {
+    result = result.replace(
+      /<div class="about-photo reveal">PHOTO COMING SOON<\/div>/,
+      `<div class="about-photo reveal"><img src="${photos.headshot_url}" alt="Athlete headshot"></div>`
+    );
+  }
+
+  const additional = photos.additional_photos || [];
+  if (additional.length > 0) {
+    const cards = additional
+      .filter(p => p && p.url)
+      .map(p => `<div class="gallery-item"><img src="${p.url}" alt="${p.caption || 'Photo'}" loading="lazy"></div>`)
+      .join('\n      ');
+
+    const gallerySection = `\n<!-- PHOTO GALLERY -->\n<section id="gallery" style="padding:6rem 0;">\n  <div class="container">\n    <div class="section-header reveal">\n      <div class="section-label">Gallery</div>\n      <h2 class="section-title">PHOTOS</h2>\n    </div>\n    <div class="gallery-grid reveal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">\n      ${cards}\n    </div>\n  </div>\n</section>`;
+
+    result = result.replace(/\n<!-- PHOTO GALLERY -->[\s\S]*?<\/section>\s*(?=\n*<!-- FOOTER -->)/, '');
+    result = result.replace('<!-- FOOTER -->', gallerySection + '\n\n<!-- FOOTER -->');
+
+    if (!result.includes('href="#gallery"')) {
+      result = result.replace(
+        '<a href="#contact" class="nav-cta">Contact</a>',
+        '<a href="#gallery">Gallery</a>\n    <a href="#contact" class="nav-cta">Contact</a>'
+      );
+    }
+  }
+
+  return result;
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -26,7 +227,7 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing siteId or siteUrl' }) };
     }
 
-    // Normalize URL — add protocol if missing
+    // Normalize URL
     let fetchUrl = siteUrl;
     if (fetchUrl && !fetchUrl.startsWith('http')) {
       fetchUrl = 'https://' + fetchUrl;
@@ -38,6 +239,26 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Could not fetch site: ' + siteRes.status }) };
     }
     let html = await siteRes.text();
+
+    // Step 1b: Inject PP markers if missing (legacy sites)
+    html = injectPPMarkers(html);
+
+    // Step 1c: Inject photos from profile
+    if (profile && SUPABASE_SERVICE_KEY) {
+      try {
+        const userId = profile.id;
+        if (userId) {
+          const profiles = await supaFetch(
+            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos`
+          );
+          if (profiles && profiles.length) {
+            html = injectPhotos(html, profiles[0]);
+          }
+        }
+      } catch (e) {
+        console.log('Photo injection:', e.message);
+      }
+    }
 
     const statLabels = {
       baseball: { batting_avg: 'Batting Avg', home_runs: 'Home Runs', rbis: 'RBIs', stolen_bases: 'Stolen Bases', era: 'ERA', pitching_velo: 'Pitching Velo', exit_velo: 'Exit Velo (mph)', fielding_pct: 'Fielding %', sixty_yard: '60-Yard Dash' },
@@ -148,6 +369,16 @@ exports.handler = async (event) => {
       f += '    </div>\n    <!-- /PP-FILM -->';
       html = html.replace(/<!-- PP-FILM -->[\s\S]*?<!-- \/PP-FILM -->/, f);
       replacements++;
+
+      // Inject film CSS if not already present
+      if (!html.includes('.film-player-wrap')) {
+        html = html.replace('</style>', FILM_CSS + '\n</style>');
+      }
+
+      // Inject film JS if not already present
+      if (!html.includes('function playVideo')) {
+        html = html.replace('</script>\n</body>', FILM_JS + '</script>\n</body>');
+      }
     }
 
     if (replacements === 0) {
