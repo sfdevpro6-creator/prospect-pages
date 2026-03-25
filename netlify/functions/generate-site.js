@@ -341,29 +341,28 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
 
 /* HERO */
 .hero {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
+  min-height: 100vh; display: flex; align-items: center;
+  position: relative; overflow: visible;
 }
 .hero-bg {
   position: absolute; inset: 0;
   background: linear-gradient(135deg, #0d0d12 0%, #1a1018 50%, #0d0d12 100%);
 }
-.hero-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(10,10,12,0.45) 0%, rgba(10,10,12,0.75) 50%, var(--bg-primary) 100%);
-}
 .hero-overlay-lines {
   position: absolute; inset: 0; opacity: 0.04;
   background: repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(255,255,255,0.5) 120px, rgba(255,255,255,0.5) 121px);
 }
-.hero-content {
-  position: relative; z-index: 2; text-align: left; padding-left: 6%; max-width: 60%;
+.hero-inner {
+  position: relative; z-index: 2; display: flex; align-items: center;
+  width: 100%; max-width: 1200px; margin: 0 auto;
+  padding: 5rem 2rem 5rem 3rem; gap: 3rem;
   animation: heroFadeIn 1.2s ease-out;
 }
 @keyframes heroFadeIn {
   from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.hero-content { flex: 1; min-width: 0; }
 .hero-eyebrow {
   font-family: var(--font-condensed); font-weight: 600; font-size: 0.85rem;
   letter-spacing: 0.35em; text-transform: uppercase; color: var(--accent);
@@ -371,7 +370,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
 }
 .hero-eyebrow::before, .hero-eyebrow::after { content: ''; width: 40px; height: 1px; background: var(--accent); }
 .hero-name {
-  font-family: var(--font-display); font-size: clamp(4rem, 12vw, 10rem);
+  font-family: var(--font-display); font-size: clamp(4rem, 10vw, 8rem);
   line-height: 0.9; letter-spacing: 0.04em; color: var(--white); margin-bottom: 0.5rem;
 }
 .hero-tagline {
@@ -379,14 +378,27 @@ nav.scrolled { padding: 0.8rem 3rem; background: rgba(10,10,12,0.95); }
   font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--text-secondary); margin-bottom: 2.5rem;
 }
-.hero-stats { display: flex; gap: 3rem; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 3rem; }
+.hero-stats { display: flex; gap: 2.5rem; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 2.5rem; }
 .hero-stat { text-align: center; }
-.hero-stat-value { font-family: var(--font-display); font-size: 2.8rem; color: var(--white); line-height: 1; }
+.hero-stat-value { font-family: var(--font-display); font-size: 2.5rem; color: var(--white); line-height: 1; }
 .hero-stat-label {
   font-family: var(--font-condensed); font-size: 0.7rem; letter-spacing: 0.25em;
   text-transform: uppercase; color: var(--text-muted); margin-top: 0.3rem;
 }
 .hero-cta-group { display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap; }
+.hero-photo-card {
+  width: 320px; flex-shrink: 0; align-self: flex-start;
+  margin-bottom: -100px; position: relative; z-index: 3;
+  border: 1px solid var(--border); background: var(--bg-card); overflow: hidden;
+}
+.hero-photo-card img {
+  width: 100%; height: 420px; object-fit: cover; display: block;
+}
+.hero-photo-card .photo-placeholder {
+  width: 100%; height: 420px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); color: var(--text-muted);
+  font-family: var(--font-condensed); font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+}
 .btn-primary {
   font-family: var(--font-condensed); font-weight: 700; font-size: 0.85rem;
   letter-spacing: 0.18em; text-transform: uppercase; padding: 1rem 2.5rem;
@@ -608,12 +620,17 @@ footer {
   .nav-links { display:none; position:fixed; inset:0; background:rgba(10,10,12,0.98); backdrop-filter:blur(20px); flex-direction:column; align-items:center; justify-content:center; gap:2rem; z-index:200; }
   .nav-links.open { display:flex; }
   .nav-toggle { display:flex; z-index:201; }
-  .hero-content { max-width: 90% !important; padding-left: 5% !important; }
+  .hero-inner { flex-direction: column; padding: 6rem 1.5rem 3rem; gap: 2rem; }
+  .hero-photo-card { width: 100%; max-width: 360px; margin-bottom: 0; align-self: center; }
+  .hero-photo-card img, .hero-photo-card .photo-placeholder { height: 320px; }
+  .hero-content { text-align: center; }
+  .hero-eyebrow { justify-content: center; }
+  .hero-stats { justify-content: center; gap: 2rem; }
+  .hero-cta-group { justify-content: center; }
   .about-grid { grid-template-columns: 1fr; }
   .about-photo { max-width: 300px; }
   .contact-grid { grid-template-columns: 1fr; }
   .achievements-grid { grid-template-columns: 1fr; }
-  .hero-stats { gap: 2rem; }
 }
 </style>
 </head>
@@ -637,19 +654,26 @@ footer {
 <section class="hero" id="home">
   <div class="hero-bg"></div>
   <div class="hero-overlay-lines"></div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">Class of ${escHtml(data.grad_year || "2027")}</div>
-    <h1 class="hero-name">${escHtml(name.toUpperCase()).replace(" ", "<br>")}</h1>
-    <p class="hero-tagline">${tagline}</p>
-    <!-- PP-HERO-STATS -->
-    <div class="hero-stats">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Class of ${escHtml(data.grad_year || "2027")}</div>
+      <h1 class="hero-name">${escHtml(name.toUpperCase()).replace(" ", "<br>")}</h1>
+      <p class="hero-tagline">${tagline}</p>
+      <!-- PP-HERO-STATS -->
+      <div class="hero-stats">
 ${buildHeroStats(data)}
+      </div>
+      <!-- /PP-HERO-STATS -->
+      <div class="hero-cta-group">
+        <a href="#highlights" class="btn-primary">Watch Film</a>
+        <a href="#contact" class="btn-secondary">Contact Me</a>
+      </div>
     </div>
-    <!-- /PP-HERO-STATS -->
-    <div class="hero-cta-group">
-      <a href="#highlights" class="btn-primary">Watch Film</a>
-      <a href="#contact" class="btn-secondary">Contact Me</a>
+    <!-- PP-HERO-PHOTO -->
+    <div class="hero-photo-card">
+      <div class="photo-placeholder">Photo Coming Soon</div>
     </div>
+    <!-- /PP-HERO-PHOTO -->
   </div>
   <div class="scroll-indicator">
     <span>Scroll</span>
