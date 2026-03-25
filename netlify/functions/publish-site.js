@@ -65,6 +65,20 @@ function injectPPMarkers(html) {
     );
   }
 
+  if (!result.includes('<!-- PP-HERO-PHOTO -->')) {
+    // Legacy sites don't have the photo card at all — inject one before scroll indicator or closing hero div
+    if (result.includes('hero-photo-card')) {
+      result = result.replace(
+        /(<div class="hero-photo-card">)/,
+        '<!-- PP-HERO-PHOTO -->\n    $1'
+      );
+      result = result.replace(
+        /(<\/div>\s*<!-- \/PP-HERO-PHOTO -->)/,
+        '</div>\n    <!-- /PP-HERO-PHOTO -->'
+      );
+    }
+  }
+
   return result;
 }
 
@@ -165,16 +179,23 @@ function injectPhotos(html, photos) {
   let result = html;
 
   if (photos.hero_photo_url) {
-    // Match either the original gradient OR a previously injected photo URL
+    // New layout: replace photo card placeholder
     result = result.replace(
-      /\.hero-bg\s*\{[^}]*\}/,
-      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
+      /<!-- PP-HERO-PHOTO -->[\s\S]*?<!-- \/PP-HERO-PHOTO -->/,
+      `<!-- PP-HERO-PHOTO -->\n    <div class="hero-photo-card">\n      <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n    </div>\n    <!-- /PP-HERO-PHOTO -->`
     );
-    // Darken the overlay slightly more for text readability over a photo
-    result = result.replace(
-      /\.hero-bg::after\s*\{[^}]*\}/,
-      `.hero-bg::after {\n  content: ''; position: absolute; inset: 0;\n  background: linear-gradient(to bottom, rgba(10,10,12,0.35) 0%, rgba(10,10,12,0.6) 50%, var(--bg-primary) 100%);\n}`
-    );
+    // Fallback for legacy sites without PP-HERO-PHOTO markers
+    if (!result.includes('PP-HERO-PHOTO')) {
+      result = result.replace(
+        /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
+        `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
+      );
+      // Legacy background approach fallback
+      result = result.replace(
+        /\.hero-bg\s*\{[^}]*\}/,
+        `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
+      );
+    }
   }
 
   if (photos.headshot_url) {
