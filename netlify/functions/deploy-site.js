@@ -90,7 +90,7 @@ function injectPhotos(html, photos) {
       /\.hero-bg\s*\{[^}]*\}/,
       `.hero-bg {
   position: absolute; inset: 0;
-  background: url('${photos.hero_photo_url}') center center / cover no-repeat;
+  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;
 }`
     );
     // Adjust overlay for photo readability
