@@ -60,12 +60,16 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 
 /* Sport picker */
 .sport-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:8px}
-.sport-card{padding:20px 12px;background:var(--navy-light);border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:all 0.2s;user-select:none}
-.sport-card:hover{border-color:var(--text-dim);background:var(--navy)}
-.sport-card.selected{border-color:var(--red);background:rgba(196,30,58,0.08)}
-.sport-card .sport-emoji{font-size:32px;margin-bottom:8px;display:block}
-.sport-card .sport-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted)}
-.sport-card.selected .sport-name{color:var(--cream)}
+.sport-card{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.4s;border:2px solid var(--border);aspect-ratio:4/3;user-select:none}
+.sport-card:hover{border-color:var(--text-dim);transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
+.sport-card.selected{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 8px 25px rgba(196,30,58,0.3)}
+.sport-card-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.5s}
+.sport-card:hover .sport-card-bg{transform:scale(1.08)}
+.sport-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,27,42,0.92) 0%,rgba(13,27,42,0.5) 50%,rgba(13,27,42,0.25) 100%);transition:background 0.3s}
+.sport-card:hover .sport-card-overlay{background:linear-gradient(to top,rgba(13,27,42,0.85) 0%,rgba(13,27,42,0.35) 50%,rgba(13,27,42,0.15) 100%)}
+.sport-card.selected .sport-card-overlay{background:linear-gradient(to top,rgba(120,15,30,0.85) 0%,rgba(60,10,20,0.4) 50%,rgba(60,10,20,0.15) 100%)}
+.sport-card-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 12px}
+.sport-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
 
 /* Section show/hide */
 .form-section{display:none;animation:fadeUp 0.35s ease}
@@ -121,6 +125,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     <div class="step-dot" id="dot2"></div>
     <div class="step-dot" id="dot3"></div>
     <div class="step-dot" id="dot4"></div>
+    <div class="step-dot" id="dot5"></div>
   </div>
 
   <!-- Netlify form (hidden for bot detection) -->
@@ -144,6 +149,12 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     <input name="athlete_email"><input name="athlete_phone"><input name="athlete_twitter"><input name="athlete_instagram">
     <input name="color_pref"><input name="domain_pref"><input name="notes">
     <input name="drive_link">
+    <input name="story_how_started">
+    <input name="story_what_drives">
+    <input name="story_proud_moment">
+    <input name="story_goals">
+    <input name="story_personality">
+    <input name="story_extra">
   </form>
 
   <!-- STEP 1: Parent Info + Sport Selection -->
@@ -165,13 +176,13 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
       <div class="card-title">CHOOSE YOUR SPORT</div>
       <div class="card-sub">This determines what stats and info we'll collect for the recruiting site.</div>
       <div class="sport-grid" id="sportGrid">
-        <div class="sport-card" data-sport="baseball" onclick="pickSport(this)"><span class="sport-emoji">⚾</span><div class="sport-name">Baseball</div></div>
-        <div class="sport-card" data-sport="softball" onclick="pickSport(this)"><span class="sport-emoji">🥎</span><div class="sport-name">Softball</div></div>
-        <div class="sport-card" data-sport="basketball" onclick="pickSport(this)"><span class="sport-emoji">🏀</span><div class="sport-name">Basketball</div></div>
-        <div class="sport-card" data-sport="football" onclick="pickSport(this)"><span class="sport-emoji">🏈</span><div class="sport-name">Football</div></div>
-        <div class="sport-card" data-sport="soccer" onclick="pickSport(this)"><span class="sport-emoji">⚽</span><div class="sport-name">Soccer</div></div>
-        <div class="sport-card" data-sport="volleyball" onclick="pickSport(this)"><span class="sport-emoji">🏐</span><div class="sport-name">Volleyball</div></div>
-        <div class="sport-card" data-sport="track" onclick="pickSport(this)"><span class="sport-emoji">🏃</span><div class="sport-name">Track & Field</div></div>
+        <div class="sport-card" data-sport="baseball" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/baseball.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Baseball</div></div></div>
+        <div class="sport-card" data-sport="softball" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/softball.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Softball</div></div></div>
+        <div class="sport-card" data-sport="basketball" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/basketball.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Basketball</div></div></div>
+        <div class="sport-card" data-sport="football" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/football.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Football</div></div></div>
+        <div class="sport-card" data-sport="soccer" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/soccer.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Soccer</div></div></div>
+        <div class="sport-card" data-sport="volleyball" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/volleyball.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Volleyball</div></div></div>
+        <div class="sport-card" data-sport="track" onclick="pickSport(this)"><div class="sport-card-bg" style="background-image:url('/images/track.jpg')"></div><div class="sport-card-overlay"></div><div class="sport-card-content"><div class="sport-name">Track & Field</div></div></div>
       </div>
     </div>
 
@@ -250,8 +261,46 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     </div>
   </div>
 
-  <!-- STEP 4: Contact, Preferences, Media -->
+  <!-- STEP 4: Their Story -->
   <div class="form-section" id="step4">
+    <div class="card">
+      <div class="card-title">TELL US THEIR STORY</div>
+      <div class="card-sub">This is what sets your athlete apart. We use these answers to write the bio and journey sections of the site. The more detail the better.</div>
+      <div class="field">
+        <label>How did they get started in their sport?</label>
+        <textarea id="f_story_started" placeholder="e.g. Started playing tee-ball at age 5. Fell in love with the game and never looked back. Was always the kid staying after practice to take extra reps."></textarea>
+      </div>
+      <div class="field">
+        <label>What drives them? Why do they love it?</label>
+        <textarea id="f_story_drives" placeholder="e.g. The competition. They want to prove they can compete at the highest level. They're the first one at practice and the last one to leave."></textarea>
+      </div>
+      <div class="field">
+        <label>What's a moment you're proud of?</label>
+        <textarea id="f_story_proud" placeholder="e.g. Sophomore year, made varsity and earned a starting spot over upperclassmen. Hit a walk-off double in the league championship."></textarea>
+      </div>
+      <div class="field">
+        <label>What are their goals at the next level?</label>
+        <textarea id="f_story_goals" placeholder="e.g. Wants to play D1 or D2 baseball. Interested in programs in Arizona, Southern California, and Colorado. Plans to study business."></textarea>
+      </div>
+      <div class="field">
+        <label>Who are they off the field?</label>
+        <textarea id="f_story_personality" placeholder="e.g. 3.4 GPA, works part-time, helps coach younger kids on the weekends. Team captain. The kind of kid coaches love having in the dugout."></textarea>
+      </div>
+      <div class="field">
+        <label>Anything else that tells their story?</label>
+        <textarea id="f_story_extra" placeholder="Key milestones, injuries they came back from, family connections to the sport, travel ball history, academic goals, etc."></textarea>
+        <div class="hint">Don't worry about making it sound polished. Just give us the raw details and we'll write it up for the site.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(3)">← BACK</button>
+      <button class="btn btn-primary" onclick="goStep(5)">CONTINUE →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Contact, Preferences, Media -->
+  <div class="form-section" id="step5">
     <div class="card">
       <div class="card-title">ATHLETE CONTACT INFO</div>
       <div class="card-sub">How coaches can reach your athlete directly.</div>
@@ -288,7 +337,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goStep(3)">← BACK</button>
+      <button class="btn btn-secondary" onclick="goStep(4)">← BACK</button>
       <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">SUBMIT — LET'S BUILD IT</button>
     </div>
   </div>
@@ -300,13 +349,13 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     <p>We have everything we need to start building. Your athlete's site will be ready within 2-3 business days. We'll email you at the address provided.</p>
     <div style="margin-top:32px;padding:20px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;display:inline-block">
       <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Questions?</div>
-      <div style="font-size:15px;font-weight:600">David@prospectpages.college</div>
+      <div style="font-size:15px;font-weight:600"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a4e0c5d2cdc0e4d4d6cbd7d4c1c7d0d4c5c3c1d78ac7cbc8c8c1c3c1">[email&#160;protected]</a></div>
     </div>
   </div>
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var selectedSport = "";
 
 // Sport-specific config
@@ -449,7 +498,7 @@ function goStep(n) {
   document.getElementById('step'+n).classList.add('visible');
 
   // Update dots
-  for(var i=1;i<=4;i++){
+  for(var i=1;i<=5;i++){
     var dot = document.getElementById('dot'+i);
     dot.classList.remove('active','done');
     if(i<n) dot.classList.add('done');
@@ -469,8 +518,7 @@ function submitForm() {
 
   // Build form data
   var fd = new FormData();
-  fd.append('form-name','athlete-intake');
-  fd.append('parent_name', document.getElementById('f_parent_name').value);
+    fd.append('parent_name', document.getElementById('f_parent_name').value);
   fd.append('parent_email', document.getElementById('f_parent_email').value);
   fd.append('parent_phone', document.getElementById('f_parent_phone').value);
   fd.append('contact_method', document.getElementById('f_contact_method').value);
@@ -495,6 +543,12 @@ function submitForm() {
   });
 
   fd.append('achievements', document.getElementById('f_achievements').value);
+  fd.append('story_how_started', document.getElementById('f_story_started').value);
+  fd.append('story_what_drives', document.getElementById('f_story_drives').value);
+  fd.append('story_proud_moment', document.getElementById('f_story_proud').value);
+  fd.append('story_goals', document.getElementById('f_story_goals').value);
+  fd.append('story_personality', document.getElementById('f_story_personality').value);
+  fd.append('story_extra', document.getElementById('f_story_extra').value);
   fd.append('hs_coach_name', document.getElementById('f_hs_coach').value);
   fd.append('hs_coach_contact', document.getElementById('f_hs_coach_contact').value);
   fd.append('travel_coach_name', document.getElementById('f_travel_coach').value);
@@ -508,25 +562,21 @@ function submitForm() {
   fd.append('notes', document.getElementById('f_notes').value);
   fd.append('drive_link', document.getElementById('f_drive_link').value);
 
-  fetch('/', {
+  fd.append('access_key', '5fa35adf-581a-4cfe-afa6-8b8811ed2219');
+  fd.append('subject', 'New Prospect Pages Submission — ' + (document.getElementById('f_athlete_name').value || 'Unknown'));
+  fd.append('from_name', 'Prospect Pages Intake');
+
+  fetch('https://api.web3forms.com/submit', {
     method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-    body: new URLSearchParams(fd).toString()
+    body: fd
   }).then(function(res){
-    if(res.ok) {
+    return res.json();
+  }).then(function(data){
+    if(data.success) {
       document.querySelectorAll('.form-section').forEach(function(s){s.classList.remove('visible');});
       document.querySelector('.steps').style.display='none';
       document.getElementById('thankYou').style.display='block';
       window.scrollTo({top:0,behavior:'smooth'});
     } else {
       alert('Something went wrong. Please email David@prospectpages.college directly.');
-      btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
-    }
-  }).catch(function(){
-    alert('Connection error. Please try again or email David@prospectpages.college');
-    btn.disabled=false; btn.textContent='SUBMIT — LET\'S BUILD IT';
-  });
-}
-</script>
-</body>
-</html>
+      btn.disabled=false; btn.textContent='SUBMIT —
