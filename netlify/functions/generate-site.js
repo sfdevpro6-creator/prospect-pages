@@ -482,6 +482,59 @@ section { padding: 6rem 0; }
 }
 .film-placeholder h3 { font-family: var(--font-display); font-size: 1.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
 
+/* FILM PLAYER (injected by publish) */
+.film-player-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.film-main-video video { width: 100%; display: block; background: #000; aspect-ratio: 16/9; }
+.film-now-playing {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+}
+.film-now-tag {
+  font-family: var(--font-condensed); font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.2rem;
+}
+.film-now-title { font-family: var(--font-condensed); font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+.film-now-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
+.film-count {
+  font-family: var(--font-condensed); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.15em; color: var(--text-muted); white-space: nowrap;
+}
+.film-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.film-tab {
+  font-family: var(--font-condensed); font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 1.2rem;
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.film-tab:hover, .film-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(230,58,46,0.08); }
+.film-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.film-thumb {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; cursor: pointer; transition: all 0.3s;
+}
+.film-thumb:hover, .film-thumb.active { border-color: var(--accent); }
+.film-thumb-preview {
+  position: relative; background: #000; aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+}
+.film-thumb-number {
+  position: absolute; top: 8px; left: 8px; font-family: var(--font-condensed);
+  font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.1em;
+}
+.film-thumb-play svg { width: 32px; height: 32px; fill: rgba(255,255,255,0.7); }
+.film-thumb-duration {
+  position: absolute; bottom: 8px; right: 8px; font-family: var(--font-condensed);
+  font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); background: rgba(0,0,0,0.6);
+  padding: 2px 6px; border-radius: 3px;
+}
+.film-thumb-info { padding: 0.8rem 1rem; }
+.film-thumb-cat {
+  font-family: var(--font-condensed); font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.15rem;
+}
+.film-thumb-title { font-family: var(--font-condensed); font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+.film-thumb-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+
 /* ACHIEVEMENTS */
 .achievements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
 .achievement-card {
@@ -588,9 +641,11 @@ footer {
     <div class="hero-eyebrow">Class of ${escHtml(data.grad_year || "2027")}</div>
     <h1 class="hero-name">${escHtml(name.toUpperCase()).replace(" ", "<br>")}</h1>
     <p class="hero-tagline">${tagline}</p>
+    <!-- PP-HERO-STATS -->
     <div class="hero-stats">
 ${buildHeroStats(data)}
     </div>
+    <!-- /PP-HERO-STATS -->
     <div class="hero-cta-group">
       <a href="#highlights" class="btn-primary">Watch Film</a>
       <a href="#contact" class="btn-secondary">Contact Me</a>
@@ -610,7 +665,9 @@ ${buildHeroStats(data)}
       <h2 class="section-title">BY THE NUMBERS</h2>
       <p class="section-subtitle">Current and career statistics.</p>
     </div>
+    <!-- PP-PERF-STATS -->
     ${buildStatCards(data)}
+    <!-- /PP-PERF-STATS -->
   </div>
 </section>
 
@@ -622,11 +679,13 @@ ${buildHeroStats(data)}
       <h2 class="section-title">HIGHLIGHTS</h2>
       <p class="section-subtitle">Watch the progression. Upload clips from your dashboard.</p>
     </div>
+    <!-- PP-FILM -->
     <div class="film-placeholder reveal" id="filmArea">
       <div style="font-size:3rem; margin-bottom:1rem;">🎬</div>
       <h3>GAME FILM COMING SOON</h3>
       <p style="max-width:400px; margin:0 auto; line-height:1.7; font-size:0.95rem;">Log in to your Prospect Pages dashboard to upload and manage your highlight clips.</p>
     </div>
+    <!-- /PP-FILM -->
   </div>
 </section>
 
@@ -640,12 +699,14 @@ ${buildHeroStats(data)}
           <div class="section-label">The Athlete</div>
           <h2 class="section-title">ABOUT ${escHtml(firstName.toUpperCase())}</h2>
         </div>
+        <!-- PP-INFO -->
         <div class="about-info-grid reveal">
           ${data.high_school ? `<div class="info-card"><div class="info-card-label">School</div><div class="info-card-value">${escHtml(data.high_school)}</div></div>` : ""}
           ${data.grad_year ? `<div class="info-card"><div class="info-card-label">Class</div><div class="info-card-value">${escHtml(data.grad_year)}</div></div>` : ""}
           ${data.position ? `<div class="info-card"><div class="info-card-label">Position</div><div class="info-card-value">${escHtml(data.position)}</div></div>` : ""}
           ${data.travel_team ? `<div class="info-card"><div class="info-card-label">Travel / Club</div><div class="info-card-value">${escHtml(data.travel_team)}</div></div>` : ""}
         </div>
+        <!-- /PP-INFO -->
         <div class="about-bio reveal">
           ${formatBio(bio)}
         </div>
@@ -750,6 +811,33 @@ function submitContact(e) {
     alert('Something went wrong. Please try reaching out directly via email.');
   });
   return false;
+}
+
+// Film player controls (used when videos are published)
+function playVideo(el) {
+  var vid = document.getElementById('mainVideo');
+  if (vid) {
+    vid.src = el.getAttribute('data-src');
+    vid.play();
+    document.getElementById('filmNowTitle').textContent = el.getAttribute('data-title') || '';
+    document.getElementById('filmNowMeta').textContent = el.getAttribute('data-meta') || '';
+    var cat = el.getAttribute('data-cat') || '';
+    document.getElementById('filmNowTag').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.querySelectorAll('.film-thumb').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    var all = document.querySelectorAll('.film-thumb');
+    var idx = Array.prototype.indexOf.call(all, el);
+    document.getElementById('filmCount').textContent = (idx + 1) + ' of ' + all.length;
+    document.getElementById('filmPlayer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+function filterFilm(tab) {
+  var cat = tab.getAttribute('data-cat');
+  document.querySelectorAll('.film-tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  document.querySelectorAll('.film-thumb').forEach(function(t) {
+    t.style.display = (cat === 'all' || t.getAttribute('data-cat') === cat) ? '' : 'none';
+  });
 }
 </script>
 </body>
