@@ -135,13 +135,57 @@ function AuthScreen({ onAuth }) {
         if (res?.access_token) {
           // Mark code as used
           try { await supaFetch(`/rest/v1/invite_codes?id=eq.${codeData.id}`, { method: "PATCH", body: { used_by: res.user.id, used_at: new Date().toISOString(), client_email: email }, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } }); } catch(e) { console.log("Code claim:", e); }
-          // Auto-populate profile with invite code data
+          // Auto-populate profile with ALL intake form data
           try {
-            await new Promise(r => setTimeout(r, 500)); // Wait for trigger
+            await new Promise(r => setTimeout(r, 500)); // Wait for profile trigger
             const profileData = {};
+            // Basic info from invite code
             if (codeData.client_name) profileData.full_name = codeData.client_name;
             if (codeData.sport) profileData.athlete_sport = codeData.sport;
-            if (codeData.athlete_site_url) profileData.recruiting_site_url = codeData.athlete_site_url;
+            if (codeData.athlete_site_url) {
+              let url = codeData.athlete_site_url;
+              if (url && !url.startsWith("http")) url = "https://" + url;
+              profileData.recruiting_site_url = url;
+            }
+            // Now pull the FULL intake data from the sites table
+            try {
+              const siteRows = await supaFetch(`/rest/v1/sites?invite_code=eq.${encodeURIComponent(inviteCode.trim().toUpperCase())}&select=*&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
+              if (siteRows?.length) {
+                const s = siteRows[0];
+                if (s.athlete_name) profileData.athlete_name = s.athlete_name;
+                if (s.parent_name) profileData.full_name = s.parent_name;
+                if (s.athlete_email) profileData.athlete_email = s.athlete_email;
+                if (s.sport) profileData.athlete_sport = s.sport;
+                if (s.grad_year) profileData.athlete_grad_year = parseInt(s.grad_year, 10) || null;
+                if (s.position) profileData.athlete_position = s.position;
+                if (s.height) profileData.athlete_height = s.height;
+                if (s.weight) profileData.athlete_weight = s.weight;
+                if (s.hand_detail) profileData.athlete_bats_throws = s.hand_detail;
+                if (s.high_school) profileData.athlete_school = s.high_school;
+                if (s.city_state) profileData.athlete_city_state = s.city_state;
+                if (s.travel_team) profileData.athlete_travel_team = s.travel_team;
+                if (s.generated_bio) profileData.athlete_bio = s.generated_bio;
+                if (s.netlify_site_id) profileData.netlify_site_id = s.netlify_site_id;
+                // Site URL from the sites table (with protocol fix)
+                if (s.site_url && !profileData.recruiting_site_url) {
+                  let sUrl = s.site_url;
+                  if (sUrl && !sUrl.startsWith("http")) sUrl = "https://" + sUrl;
+                  profileData.recruiting_site_url = sUrl;
+                }
+                // Convert intake stats array [{label, value}] to keyed object for dashboard
+                if (s.stats && Array.isArray(s.stats) && s.stats.length) {
+                  const statsObj = {};
+                  s.stats.forEach(st => {
+                    if (st.label && st.value) {
+                      const key = st.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+                      statsObj[key] = st.value;
+                    }
+                  });
+                  if (Object.keys(statsObj).length) profileData.athlete_stats = statsObj;
+                }
+                console.log("Prefilled profile from intake form:", Object.keys(profileData));
+              }
+            } catch(e) { console.log("Sites lookup for prefill:", e); }
             if (Object.keys(profileData).length) {
               await supaFetch(`/rest/v1/profiles?id=eq.${res.user.id}`, { method: "PATCH", body: profileData, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
             }
