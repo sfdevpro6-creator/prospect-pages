@@ -142,10 +142,68 @@ function injectPhotos(html, photos) {
     // Inject gallery section before footer
     result = result.replace("<!-- FOOTER -->", gallerySection + "\n\n<!-- FOOTER -->");
 
-    // Add Gallery nav link
+    // Add Gallery nav link if not already there
+    if (!result.includes('href="#gallery"')) {
+      result = result.replace(
+        '<a href="#contact" class="nav-cta">Contact</a>',
+        '<a href="#gallery">Gallery</a>\n    <a href="#contact" class="nav-cta">Contact</a>'
+      );
+    }
+  }
+
+  return result;
+}
+
+// ── Inject PP markers into legacy HTML that was generated without them ──
+function injectPPMarkers(html) {
+  let result = html;
+
+  // PP-HERO-STATS
+  if (!result.includes('<!-- PP-HERO-STATS -->')) {
     result = result.replace(
-      '<a href="#contact" class="nav-cta">Contact</a>',
-      '<a href="#gallery">Gallery</a>\n    <a href="#contact" class="nav-cta">Contact</a>'
+      /(<div class="hero-stats">)/,
+      '<!-- PP-HERO-STATS -->\n    $1'
+    );
+    result = result.replace(
+      /(<\/div>\s*<div class="hero-cta-group">)/,
+      '</div>\n    <!-- /PP-HERO-STATS -->\n    <div class="hero-cta-group">'
+    );
+  }
+
+  // PP-PERF-STATS
+  if (!result.includes('<!-- PP-PERF-STATS -->')) {
+    result = result.replace(
+      /(<div class="stats-grid">)/,
+      '<!-- PP-PERF-STATS -->\n    $1'
+    );
+    // Close after the stats-grid div (before the container close in stats section)
+    result = result.replace(
+      /(<\/div>\s*<\/div>\s*<\/section>\s*<!-- HIGHLIGHTS -->)/,
+      '</div>\n    <!-- /PP-PERF-STATS -->\n  </div>\n</section>\n\n<!-- HIGHLIGHTS -->'
+    );
+  }
+
+  // PP-INFO
+  if (!result.includes('<!-- PP-INFO -->')) {
+    result = result.replace(
+      /(<div class="about-info-grid[^>]*>)/,
+      '<!-- PP-INFO -->\n        $1'
+    );
+    result = result.replace(
+      /(<\/div>\s*<div class="about-bio reveal">)/,
+      '</div>\n        <!-- /PP-INFO -->\n        <div class="about-bio reveal">'
+    );
+  }
+
+  // PP-FILM
+  if (!result.includes('<!-- PP-FILM -->')) {
+    result = result.replace(
+      /(<div class="film-placeholder reveal")/,
+      '<!-- PP-FILM -->\n    $1'
+    );
+    result = result.replace(
+      /(GAME FILM COMING SOON<\/h3>[\s\S]*?<\/div>\s*<\/div>\s*<\/section>\s*<!-- ABOUT -->)/,
+      'GAME FILM COMING SOON</h3>\n      <p style="max-width:400px; margin:0 auto; line-height:1.7; font-size:0.95rem;">Log in to your Prospect Pages dashboard to upload and manage your highlight clips.</p>\n    </div>\n    <!-- /PP-FILM -->\n  </div>\n</section>\n\n<!-- ABOUT -->'
     );
   }
 
@@ -258,8 +316,12 @@ exports.handler = async (event) => {
     }
 
     // 3. Deploy the HTML file
-    // 3a. Look up profile photos and inject into HTML
     let htmlContent = site.generated_html;
+
+    // 3a. Inject PP markers if missing (legacy sites generated before markers were added)
+    htmlContent = injectPPMarkers(htmlContent);
+
+    // 3b. Look up profile photos and inject into HTML
     const profilePhotos = await getProfilePhotos(site.invite_code);
     if (profilePhotos) {
       console.log("Injecting photos:", {
