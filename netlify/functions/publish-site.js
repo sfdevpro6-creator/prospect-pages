@@ -26,8 +26,14 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing siteId or siteUrl' }) };
     }
 
+    // Normalize URL — add protocol if missing
+    let fetchUrl = siteUrl;
+    if (fetchUrl && !fetchUrl.startsWith('http')) {
+      fetchUrl = 'https://' + fetchUrl;
+    }
+
     // Step 1: Fetch the CURRENT live site HTML
-    const siteRes = await fetch(siteUrl, { headers: { 'Cache-Control': 'no-cache' } });
+    const siteRes = await fetch(fetchUrl, { headers: { 'Cache-Control': 'no-cache' } });
     if (!siteRes.ok) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Could not fetch site: ' + siteRes.status }) };
     }
