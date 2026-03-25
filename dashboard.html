@@ -166,6 +166,8 @@ function AuthScreen({ onAuth }) {
                 if (s.travel_team) profileData.athlete_travel_team = s.travel_team;
                 if (s.generated_bio) profileData.athlete_bio = s.generated_bio;
                 if (s.netlify_site_id) profileData.netlify_site_id = s.netlify_site_id;
+                if (s.athlete_instagram) profileData.athlete_instagram = s.athlete_instagram;
+                if (s.athlete_youtube) profileData.athlete_youtube = s.athlete_youtube;
                 // Site URL from the sites table (with protocol fix)
                 if (s.site_url && !profileData.recruiting_site_url) {
                   let sUrl = s.site_url;
@@ -813,7 +815,7 @@ function OutreachTracker({profile, user}) {
 
 // ── PROFILE EDITOR ──
 function ProfileEditor({profile, setProfile, user}) {
-  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||""});
+  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||"",athlete_instagram:profile?.athlete_instagram||"",athlete_youtube:profile?.athlete_youtube||""});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const handleSave=async()=>{setSaving(true);try{const saveData={...form,athlete_grad_year:form.athlete_grad_year?parseInt(form.athlete_grad_year,10):null,updated_at:new Date().toISOString()};const d=await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`,{method:"PATCH",body:saveData,prefer:"return=representation"});if(d?.[0])setProfile(d[0]);setSaved(true);setTimeout(()=>setSaved(false),2500);}catch(e){alert("Error: "+e.message);}setSaving(false);};
@@ -830,6 +832,8 @@ function ProfileEditor({profile, setProfile, user}) {
           <div><label style={lbl}>Athlete Email</label><input type="email" value={form.athlete_email} onChange={e=>setForm(f=>({...f,athlete_email:e.target.value}))} placeholder="athlete@email.com" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This email gets included in the signature of every generated email</div></div>
           <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Sport</label><select value={form.athlete_sport} onChange={e=>setForm(f=>({...f,athlete_sport:e.target.value}))} style={{...inp,cursor:"pointer"}}>{["baseball","softball","basketball","football","soccer","volleyball","track"].map(s=>(<option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>))}</select></div><div style={{flex:1}}><label style={lbl}>Position(s)</label><input value={form.athlete_position} onChange={e=>setForm(f=>({...f,athlete_position:e.target.value}))} placeholder="LHP / 1B" style={inp}/></div></div>
           <div><label style={lbl}>Recruiting Site URL</label><input value={form.recruiting_site_url} onChange={e=>setForm(f=>({...f,recruiting_site_url:e.target.value}))} placeholder="https://dmedina.me" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This link gets included in every generated email</div></div>
+
+          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Instagram</label><input value={form.athlete_instagram} onChange={e=>setForm(f=>({...f,athlete_instagram:e.target.value}))} placeholder="@athlete_handle" style={inp}/></div><div style={{flex:1}}><label style={lbl}>YouTube</label><input value={form.athlete_youtube} onChange={e=>setForm(f=>({...f,athlete_youtube:e.target.value}))} placeholder="youtube.com/@channel or video URL" style={inp}/></div></div>
 
           <div><label style={lbl}>Netlify Site ID <span style={{fontSize:10,color:C.gold,fontWeight:400,letterSpacing:0}}>(admin)</span></label><input value={form.netlify_site_id} onChange={e=>setForm(f=>({...f,netlify_site_id:e.target.value}))} placeholder="e.g. a1b2c3d4-e5f6-7890" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>Find in Netlify: Site configuration &gt; General &gt; Site ID. Required for Publish to work.</div></div>
         </div>
