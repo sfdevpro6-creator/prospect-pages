@@ -10,12 +10,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0D1B2A; overflow: hidden; }
+  body { background: #0D1B2A; }
   ::placeholder { color: #5A6B7D; }
   select option { background: #1B2D45; color: #F5F0E8; }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1E3048; border-radius: 3px; }
+  /* Prevent iOS input zoom */
+  @media (max-width: 768px) {
+    body { overflow: auto; -webkit-overflow-scrolling: touch; }
+    input, select, textarea { font-size: 16px !important; }
+    /* Bottom nav scroll without visible scrollbar */
+    nav::-webkit-scrollbar { display: none; }
+    nav { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Stack 2-col grids on mobile */
+    [style*="grid-template-columns: 1fr 1fr"],
+    [style*="grid-template-columns:1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+  @media (min-width: 769px) {
+    body { overflow: hidden; }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -25,6 +41,17 @@
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef, Fragment } = React;
+
+// ── Mobile detection hook ──
+function useIsMobile(breakpoint = 768) {
+  const [mobile, setMobile] = useState(window.innerWidth < breakpoint);
+  useEffect(() => {
+    const check = () => setMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+  return mobile;
+}
 
 const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
 const SUPABASE_KEY = "sb_publishable_axuGAsFPyrmkew9R8QD31w_4pv_pKs6";
@@ -230,8 +257,8 @@ function AuthScreen({ onAuth }) {
   };
   const inp = { width:"100%",padding:"14px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:15,fontFamily:"'Barlow',sans-serif",outline:"none",boxSizing:"border-box" };
   return (
-    <div style={{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow',sans-serif",color:C.cream}}>
-      <div style={{width:420,padding:40}}>
+    <div style={{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow',sans-serif",color:C.cream,padding:"20px 16px"}}>
+      <div style={{width:"100%",maxWidth:420,padding:0}}>
         <div style={{textAlign:"center",marginBottom:40}}>
           <PPLogo size={52}/>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,letterSpacing:4,marginTop:16}}>PROSPECT PAGES</div>
@@ -264,7 +291,7 @@ function AuthScreen({ onAuth }) {
 }
 
 // ── COLLEGE DIRECTORY ──
-function CollegeDirectory({profile, onNavigateEmail, onBatchEmail}) {
+function CollegeDirectory({profile, isMobile, onNavigateEmail, onBatchEmail}) {
   const [colleges, setColleges] = useState([]);
   const [coaches, setCoaches] = useState({});
   const [loading, setLoading] = useState(true);
@@ -389,7 +416,7 @@ function CollegeDirectory({profile, onNavigateEmail, onBatchEmail}) {
         </div>
       )}
       {selected.size>0&&(
-        <div style={{position:"fixed",bottom:0,left:240,right:0,padding:"14px 32px",background:C.navyMid,borderTop:`2px solid ${C.red}`,display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:50}}>
+        <div style={{position:"fixed",bottom:isMobile?56:0,left:isMobile?0:240,right:0,padding:isMobile?"10px 16px":"14px 32px",background:C.navyMid,borderTop:`2px solid ${C.red}`,display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:50,flexWrap:isMobile?"wrap":"nowrap",gap:8}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.gold,letterSpacing:1}}>{selected.size}</div>
             <span style={{fontSize:14,color:C.cream}}>school{selected.size!==1?"s":""} selected</span>
@@ -1600,6 +1627,7 @@ function App() {
   const [page, setPage] = useState("colleges");
   const [profile, setProfile] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
 
   const loadProfile=async(u)=>{
     const uid=typeof u==="string"?u:u?.id;
@@ -1623,15 +1651,19 @@ function App() {
   if(loading)return(<div style={{background:C.navy,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{textAlign:"center"}}><PPLogo size={48}/><div style={{color:C.cream,fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:3,marginTop:16}}>LOADING...</div></div></div>);
   if(!user)return <AuthScreen onAuth={handleAuth}/>;
 
+  const navItems = [{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"photos",icon:"camera",label:"Photo Manager"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}];
+
   return (
-    <div style={{display:"flex",minHeight:"100vh",background:C.navy,fontFamily:"'Barlow',sans-serif",color:C.cream}}>
+    <div style={{display:"flex",flexDirection:isMobile?"column":"row",minHeight:"100vh",background:C.navy,fontFamily:"'Barlow',sans-serif",color:C.cream}}>
+      {/* SIDEBAR — desktop only */}
+      {!isMobile && (
       <aside style={{width:sidebarOpen?240:64,transition:"width 0.25s ease",background:C.navyMid,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0,overflow:"hidden"}}>
         <div style={{padding:"20px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:`1px solid ${C.border}`}}>
           <PPLogo size={28}/>
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"photos",icon:"camera",label:"Photo Manager"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {navItems.map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -1639,18 +1671,20 @@ function App() {
           <button onClick={handleLogout} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:"transparent",border:"none",borderRadius:8,color:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"}}><Icon name="logout" size={16}/>{sidebarOpen&&<span>Sign Out</span>}</button>
         </div>
       </aside>
-      <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
-        <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
+      )}
+      <main style={{flex:1,overflow:"auto",maxHeight:isMobile?"none":"100vh",paddingBottom:isMobile?72:0}}>
+        <header style={{padding:isMobile?"12px 16px":"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="photos"&&"PHOTO MANAGER"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="photos"&&"Upload your hero photo, headshot, and additional images"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:isMobile?22:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="photos"&&"PHOTO MANAGER"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            {!isMobile&&<p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="photos"&&"Upload your hero photo, headshot, and additional images"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>}
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {isMobile&&<button onClick={handleLogout} style={{padding:"6px 10px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:11,fontFamily:"'Barlow',sans-serif"}}>Sign Out</button>}
+            <div style={{width:32,height:32,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
           </div>
         </header>
-        <div style={{padding:"24px 32px"}}>
-          {page==="colleges"&&<CollegeDirectory profile={profile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}} onBatchEmail={(colleges)=>{setPage("email");window.__batchPrefill=colleges;}}/>}
+        <div style={{padding:isMobile?"16px":"24px 32px"}}>
+          {page==="colleges"&&<CollegeDirectory profile={profile} isMobile={isMobile} onNavigateEmail={(college,coach)=>{setPage("email");window.__prefill={college,coach};}} onBatchEmail={(colleges)=>{setPage("email");window.__batchPrefill=colleges;}}/>}
           {page==="email"&&<EmailBuilder profile={profile} user={user}/>}
           {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
           {page==="stats"&&<StatsEditor profile={profile} setProfile={setProfile} user={user}/>}
@@ -1659,6 +1693,18 @@ function App() {
               {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
       </main>
+      {/* BOTTOM NAV — mobile only */}
+      {isMobile && (
+        <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:C.navyMid,borderTop:`1px solid ${C.border}`,display:"flex",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:"env(safe-area-inset-bottom)"}}>
+          {navItems.map(item=>(
+            <button key={item.id} onClick={()=>setPage(item.id)} style={{flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 12px",minWidth:64,background:"transparent",border:"none",color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'Barlow',sans-serif",letterSpacing:0.5,position:"relative"}}>
+              {page===item.id&&<div style={{position:"absolute",top:0,left:"20%",right:"20%",height:2,background:C.red,borderRadius:1}}/>}
+              <Icon name={item.icon} size={18}/>
+              <span>{item.label.split(" ")[0]}</span>
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
