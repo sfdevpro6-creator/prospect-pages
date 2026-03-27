@@ -6,8 +6,8 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-3S7DQZCWK4");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prospect Pages — Custom Recruiting Websites for High School Athletes</title>
-<meta name="description" content="Professional recruiting websites for high school athletes. Game film, stats, timeline, and coach contact — all on a custom domain. $400 flat. No payment until you see the finished site.">
+<title>Prospect Pages | Custom Recruiting Websites for High School Athletes</title>
+<meta name="description" content="Professional recruiting websites and tools for high school athletes. Custom site, college directory with 3,300+ coaches, AI email builder, game film manager, and stats editor. $400 flat. No payment until you see the finished site.">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/svg+xml" href="/logo-icon.svg">
 <link rel="apple-touch-icon" sizes="192x192" href="/logo-icon-192.png">
@@ -181,6 +181,82 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;back
 footer p{font-size:0.8rem;color:rgba(255,255,255,0.35);line-height:1.6}
 footer a{color:rgba(255,255,255,0.55);text-decoration:none;transition:color 0.3s}
 footer a:hover{color:#fff}
+/* STATS COUNTER STRIP */
+.stats-strip{background:var(--white);border-bottom:1px solid var(--border);padding:2.5rem 0}
+.stats-strip-inner{display:flex;justify-content:center;gap:4rem;flex-wrap:wrap}
+@media(max-width:600px){.stats-strip-inner{gap:2rem 3rem}}
+.stats-strip-item{text-align:center}
+.stats-strip-num{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--navy);line-height:1;letter-spacing:0.02em}
+.stats-strip-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.2rem}
+
+/* MID-PAGE CTA */
+.midcta{background:var(--red);padding:3.5rem 0;text-align:center;position:relative;overflow:hidden}
+.midcta::before{content:'';position:absolute;top:-50px;right:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(255,255,255,0.08),transparent 70%);pointer-events:none}
+.midcta h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;letter-spacing:0.03em;margin-bottom:0.5rem}
+.midcta p{font-size:0.95rem;color:rgba(255,255,255,0.7);margin-bottom:1.5rem;max-width:500px;margin-left:auto;margin-right:auto}
+.midcta .btn{background:#fff;color:var(--red);font-weight:800}
+.midcta .btn:hover{background:rgba(255,255,255,0.9);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.15)}
+
+/* SOCIAL PROOF */
+.proof-section{background:var(--cream);padding:6rem 0}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+@media(max-width:768px){.proof-grid{grid-template-columns:1fr}}
+.proof-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:2rem 1.8rem;position:relative}
+.proof-card::before{content:'\201C';position:absolute;top:12px;left:18px;font-family:Georgia,serif;font-size:3.5rem;color:var(--red);opacity:0.12;line-height:1}
+.proof-quote{font-size:0.92rem;color:var(--text2);line-height:1.7;margin-bottom:1.2rem;position:relative;z-index:1}
+.proof-author{display:flex;align-items:center;gap:0.8rem}
+.proof-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0}
+.proof-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text);letter-spacing:0.02em}
+.proof-role{font-size:0.72rem;color:var(--muted);margin-top:0.1rem}
+.proof-stars{display:flex;gap:2px;margin-bottom:0.8rem}
+.proof-stars svg{width:14px;height:14px}
+
+/* TEAM DISCOUNT */
+.team-section{background:linear-gradient(135deg,var(--navy) 0%,#003080 100%);padding:4rem 0;position:relative;overflow:hidden}
+.team-section::before{content:'';position:absolute;inset:0;opacity:0.03;background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.5) 60px,rgba(255,255,255,0.5) 61px)}
+.team-inner{display:flex;align-items:center;gap:3rem}
+@media(max-width:768px){.team-inner{flex-direction:column;text-align:center}}
+.team-price{flex-shrink:0}
+.team-price-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:#fff;line-height:1}
+.team-price-num span{font-size:2.5rem;vertical-align:top;line-height:1.8}
+.team-price-label{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-top:0.2rem}
+.team-body h3{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.03em;margin-bottom:0.5rem}
+.team-body p{font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.65;margin-bottom:0.8rem}
+.team-badge{display:inline-block;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r-xl);padding:0.4rem 1.2rem;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)}
+
+/* DASHBOARD SHOWCASE */
+.dash-section{background:linear-gradient(160deg,#001030 0%,#001d4a 40%,#002260 100%);padding:7rem 0;position:relative;overflow:hidden}
+.dash-section::before{content:'';position:absolute;top:-100px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(178,34,52,0.06),transparent 70%);pointer-events:none}
+.dash-section .section-eyebrow{color:rgba(255,255,255,0.45)}
+.dash-section .section-title{color:#fff}
+.dash-section .section-sub{color:rgba(255,255,255,0.55)}
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:3rem}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:550px){.dash-grid{grid-template-columns:1fr}}
+.dash-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:2rem 1.8rem;border-radius:var(--r-md);transition:all 0.4s;position:relative;overflow:hidden}
+.dash-card:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);transform:translateY(-4px)}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.4s}
+.dash-card:hover::before{opacity:1}
+.dash-card.dc-red::before{background:var(--red)}
+.dash-card.dc-blue::before{background:#3B82F6}
+.dash-card.dc-green::before{background:#22C55E}
+.dash-card.dc-gold::before{background:var(--gold)}
+.dash-card.dc-purple::before{background:#A855F7}
+.dash-card.dc-orange::before{background:#F97316}
+.dash-icon{width:48px;height:48px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem}
+.dc-red .dash-icon{background:rgba(178,34,52,0.12);border:1px solid rgba(178,34,52,0.2)}
+.dc-blue .dash-icon{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.2)}
+.dc-green .dash-icon{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.2)}
+.dc-gold .dash-icon{background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.2)}
+.dc-purple .dash-icon{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.2)}
+.dc-orange .dash-icon{background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.2)}
+.dash-card h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.05em;color:#fff;margin-bottom:0.3rem}
+.dash-card .dash-stat{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);line-height:1;margin-bottom:0.4rem;letter-spacing:0.02em}
+.dash-card p{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.55}
+.dash-highlight{background:linear-gradient(135deg,rgba(178,34,52,0.08),rgba(0,40,104,0.08));border:1px solid rgba(178,34,52,0.15);border-radius:var(--r-md);padding:2rem 2.5rem;margin-top:3rem;display:flex;align-items:center;gap:2rem}
+@media(max-width:768px){.dash-highlight{flex-direction:column;text-align:center;padding:1.5rem}}
+.dash-highlight h3{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.03em;line-height:1.1}
+.dash-highlight p{font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.6;margin-top:0.5rem}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-d1{transition-delay:0.1s}.reveal-d2{transition-delay:0.2s}.reveal-d3{transition-delay:0.3s}
@@ -196,6 +272,7 @@ footer a:hover{color:#fff}
   </a>
   <div class="nav-links" id="navLinks">
     <a href="#features">Features</a>
+    <a href="#dashboard">Dashboard</a>
     <a href="#demo">Demos</a>
     <a href="#process">How It Works</a>
     <a href="#pricing">Pricing</a>
@@ -205,11 +282,12 @@ footer a:hover{color:#fff}
       <div class="faq-drop">
         <div class="faq-drop-header"><h4>Frequently Asked Questions</h4></div>
         <div class="faq-drop-body">
-          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What sports do you build sites for?</div><div class="faq-drop-a">We build recruiting sites for any sport — baseball, softball, basketball, football, soccer, volleyball, track, and more. The layout adapts to whatever sport your athlete plays.</div></div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What sports do you build sites for?</div><div class="faq-drop-a">We build recruiting sites for any sport: baseball, softball, basketball, football, soccer, volleyball, track, and more. The layout adapts to whatever sport your athlete plays.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">How long does it take to build?</div><div class="faq-drop-a">1-2 business days from the time we receive your form submission and photos/videos. Rush delivery is available if needed.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Do I really not pay until I see it?</div><div class="faq-drop-a">Correct. We build the entire site, send you a preview link, and you only pay if you love it. Payment is due within 48 hours of delivery. If it's not paid, the site comes down.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What do I need to provide?</div><div class="faq-drop-a">Fill out our intake form with your athlete's info (stats, contact, coach references) and upload your photos and game film on our upload page. The more content you send, the better the site looks.</div></div>
-          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Can I update the site after it's built?</div><div class="faq-drop-a">Yes! Send us updated stats, new photos, or additional game film anytime and we'll update the site for you. Updates are included at no extra charge.</div></div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Can I update the site after it's built?</div><div class="faq-drop-a">Absolutely, and you don't need to wait on us. Your dashboard lets you update stats, upload new photos, add game film, and publish changes to your live site yourself. Anytime, from any device.</div></div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What's included in the dashboard?</div><div class="faq-drop-a">A full college directory with 3,300+ coaches and staff emails, an AI email builder that writes personalized coach outreach, an outreach tracker, plus photo, video, and stats managers. Your family runs everything from one place.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What about the custom domain?</div><div class="faq-drop-a">We'll purchase and set up a custom domain for your athlete (like FirstnameLastname.com). Domain and hosting are included in the $400. We handle all the technical setup.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Is there a monthly or annual fee?</div><div class="faq-drop-a">Your $400 covers the full site build, hosting, and your custom domain. No monthly fees, no hidden costs.</div></div>
         </div>
@@ -228,7 +306,7 @@ footer a:hover{color:#fff}
     <div>
       <div class="hero-eyebrow">Custom Recruiting Websites</div>
       <h1>YOUR KID<br>DESERVES TO<br>BE <em>SEEN</em></h1>
-      <p class="hero-sub">Professional recruiting websites for high school athletes. Game film, stats, coach contact, and a custom domain — everything a college coach needs to find your kid, in one link.</p>
+      <p class="hero-sub">A professional recruiting website, a full dashboard to manage film, stats, and photos, and tools to find and email college coaches directly. Everything your athlete needs to get recruited, all in one platform.</p>
       <div class="hero-ctas">
         <a href="/upload.html" class="btn btn-red">Get Started</a>
         <a href="#demo" class="btn btn-outline">See Live Demo</a>
@@ -243,22 +321,96 @@ footer a:hover{color:#fff}
   </div>
 </section>
 
+<!-- ═══ STATS STRIP ═══ -->
+<div class="stats-strip">
+  <div class="container">
+    <div class="stats-strip-inner">
+      <div class="stats-strip-item reveal"><div class="stats-strip-num">3,300+</div><div class="stats-strip-label">Coaches in Directory</div></div>
+      <div class="stats-strip-item reveal reveal-d1"><div class="stats-strip-num">7</div><div class="stats-strip-label">Template Designs</div></div>
+      <div class="stats-strip-item reveal reveal-d2"><div class="stats-strip-num">24hr</div><div class="stats-strip-label">Turnaround</div></div>
+      <div class="stats-strip-item reveal reveal-d3"><div class="stats-strip-num">$400</div><div class="stats-strip-label">Flat Rate, All Included</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ FEATURES ═══ -->
 <section class="features-section" id="features">
   <div class="container text-center">
-    <div class="section-eyebrow reveal">What You Get</div>
-    <h2 class="section-title reveal">EVERYTHING A COACH NEEDS<br>IN ONE LINK</h2>
-    <p class="section-sub reveal">Each site is custom-built around your athlete — their story, their colors, their brand. Not a template.</p>
+    <div class="section-eyebrow reveal">The Recruiting Site</div>
+    <h2 class="section-title reveal">WHAT COACHES SEE</h2>
+    <p class="section-sub reveal">A professional, custom-built recruiting site your athlete can send to any program in the country. Their stats, their film, their story, all on their own domain.</p>
     <div class="features-grid">
-      <div class="feature-card reveal reveal-d1"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div><h3>Game Film & Highlights</h3><p>Video playlist with category tabs — pitching, hitting, fielding. Coaches click and watch right on the site.</p></div>
-      <div class="feature-card reveal reveal-d2"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div><h3>Stats Dashboard</h3><p>Key measurables front and center — batting avg, exit velo, pitching velocity, GPA, height, weight.</p></div>
-      <div class="feature-card reveal reveal-d3"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><h3>Mobile-Optimized</h3><p>Looks sharp on any device. Coaches browse on phones between games — your kid's site needs to perform.</p></div>
-      <div class="feature-card reveal reveal-d1"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><h3>Custom Domain</h3><p>Your athlete gets their own URL — like FirstnameLastname.com. Professional and easy to share.</p></div>
+      <div class="feature-card reveal reveal-d1"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div><h3>Game Film & Highlights</h3><p>Video playlist with category tabs for pitching, hitting, and fielding. Coaches click and watch right on the site.</p></div>
+      <div class="feature-card reveal reveal-d2"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div><h3>Stats Dashboard</h3><p>Key measurables front and center: batting avg, exit velo, pitching velocity, GPA, height, weight.</p></div>
+      <div class="feature-card reveal reveal-d3"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><h3>Mobile-Optimized</h3><p>Looks sharp on any device. Coaches browse on phones between games, and your kid's site needs to perform.</p></div>
+      <div class="feature-card reveal reveal-d1"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><h3>Custom Domain</h3><p>Your athlete gets their own URL like FirstnameLastname.com. Professional and easy to share.</p></div>
       <div class="feature-card reveal reveal-d2"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><h3>Coach Contact Form</h3><p>Built-in message form so coaches can reach out directly. Every submission goes straight to your email.</p></div>
-      <div class="feature-card reveal reveal-d3"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></div><h3>Full Player Profile</h3><p>Bio, achievements, coach references, timeline of progression — the complete recruiting package.</p></div>
+      <div class="feature-card reveal reveal-d3"><div class="feature-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#002868" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></div><h3>Full Player Profile</h3><p>Bio, achievements, coach references, and timeline of progression. The complete recruiting package.</p></div>
     </div>
   </div>
 </section>
+
+<!-- ═══ DASHBOARD ═══ -->
+<section class="dash-section" id="dashboard">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-eyebrow reveal">Your Recruiting Dashboard</div>
+      <h2 class="section-title reveal">THE TOOLS TO<br>ACTUALLY GET RECRUITED</h2>
+      <p class="section-sub reveal" style="margin:0 auto">The site gets coaches' attention. The dashboard is how your family runs the entire recruiting process, on your own terms.</p>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card dc-red reveal">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b22234" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div class="dash-stat">3,300+</div>
+        <h3>College Directory</h3>
+        <p>Every baseball, softball, basketball, football, soccer, volleyball, and track program in the country. Filter by state, division, and conference. Coaching staff and emails included.</p>
+      </div>
+      <div class="dash-card dc-blue reveal reveal-d1">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#3B82F6" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <h3>AI Email Builder</h3>
+        <p>Select a school from the directory and our AI writes a personalized recruiting email using your athlete's stats, position, and goals. Copy, send, done. No more staring at a blank screen.</p>
+      </div>
+      <div class="dash-card dc-green reveal reveal-d2">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#22C55E" stroke-width="1.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+        <h3>Outreach Tracker</h3>
+        <p>Every email you send is automatically logged. Track which schools you've contacted, when, and what you said. Stay organized through the whole process.</p>
+      </div>
+      <div class="dash-card dc-gold reveal">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c9a84c" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+        <h3>Video Manager</h3>
+        <p>Upload game film and highlight clips directly to your dashboard. Categorize by type: pitching, hitting, defense. Videos publish straight to the live site with one click.</p>
+      </div>
+      <div class="dash-card dc-purple reveal reveal-d1">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#A855F7" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <h3>Photo Manager</h3>
+        <p>Upload your hero action photo, headshot, and additional images. They're saved to the cloud and injected into the live site automatically when you publish.</p>
+      </div>
+      <div class="dash-card dc-orange reveal reveal-d2">
+        <div class="dash-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F97316" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+        <h3>Stats Editor</h3>
+        <p>Hit a new PR? Update it yourself. Measurables, season stats, and GPA. Change anything from the dashboard and publish to your live site instantly. No waiting on us.</p>
+      </div>
+    </div>
+    <div class="dash-highlight reveal">
+      <div style="flex-shrink:0">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      </div>
+      <div>
+        <h3>Parents & Athletes Run Everything</h3>
+        <p>No calling us for updates. No waiting days for a stat change. Your family logs into the dashboard, makes the changes, and publishes them live. Upload new film at midnight before a showcase? Done. Update measurables after a training session? Done. This is your platform.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MID-PAGE CTA ═══ -->
+<div class="midcta">
+  <div class="container">
+    <h2 class="reveal">READY TO GET YOUR ATHLETE SEEN?</h2>
+    <p class="reveal">Fill out the intake form and we'll have a custom recruiting site built for your kid within 24 hours. No payment until you see the finished product.</p>
+    <a href="/upload.html" class="btn reveal" style="border-radius:var(--r-xl)">Get Started Now</a>
+  </div>
+</div>
 
 <!-- ═══ LIVE DEMO ═══ -->
 <section class="demo-section" id="demo">
@@ -267,17 +419,51 @@ footer a:hover{color:#fff}
     <h2 class="section-title reveal">SEE IT IN ACTION</h2>
     <p class="section-sub reveal">Click any sport below to preview a demo recruiting site. This is exactly what your athlete will get.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.7rem;margin-top:2.5rem;" id="sportPicker">
-      <div class="sport-pick active" onclick="switchDemo(this,'https://dmedina.me','dmedina.me — Live Baseball Client')"><div class="sport-pick-bg" style="background-image:url('/images/baseball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Baseball</div><div class="sp-tag">Live Site</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/softball-demo.html','Softball Demo — Isabella Martinez')"><div class="sport-pick-bg" style="background-image:url('/images/softball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Softball</div><div class="sp-tag">Demo</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/basketball-demo.html','Basketball Demo — Marcus Thompson')"><div class="sport-pick-bg" style="background-image:url('/images/basketball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Basketball</div><div class="sp-tag">Demo</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/football-demo.html','Football Demo — Jordan Williams')"><div class="sport-pick-bg" style="background-image:url('/images/football.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Football</div><div class="sp-tag">Demo</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/soccer-demo.html','Soccer Demo — Sofia Reyes')"><div class="sport-pick-bg" style="background-image:url('/images/soccer.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Soccer</div><div class="sp-tag">Demo</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/volleyball-demo.html','Volleyball Demo — Ava Chen')"><div class="sport-pick-bg" style="background-image:url('/images/volleyball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Volleyball</div><div class="sp-tag">Demo</div></div></div>
-      <div class="sport-pick" onclick="switchDemo(this,'/demos/track-demo.html','Track &amp; Field Demo — Elijah Brooks')"><div class="sport-pick-bg" style="background-image:url('/images/track.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Track</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick active" onclick="switchDemo(this,'https://dmedina.me','dmedina.me | Live Baseball Client')"><div class="sport-pick-bg" style="background-image:url('/images/baseball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Baseball</div><div class="sp-tag">Live Site</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/softball-demo.html','Softball Demo | Isabella Martinez')"><div class="sport-pick-bg" style="background-image:url('/images/softball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Softball</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/basketball-demo.html','Basketball Demo | Marcus Thompson')"><div class="sport-pick-bg" style="background-image:url('/images/basketball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Basketball</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/football-demo.html','Football Demo | Jordan Williams')"><div class="sport-pick-bg" style="background-image:url('/images/football.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Football</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/soccer-demo.html','Soccer Demo | Sofia Reyes')"><div class="sport-pick-bg" style="background-image:url('/images/soccer.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Soccer</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/volleyball-demo.html','Volleyball Demo | Ava Chen')"><div class="sport-pick-bg" style="background-image:url('/images/volleyball.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Volleyball</div><div class="sp-tag">Demo</div></div></div>
+      <div class="sport-pick" onclick="switchDemo(this,'/demos/track-demo.html','Track &amp; Field Demo | Elijah Brooks')"><div class="sport-pick-bg" style="background-image:url('/images/track.jpg')"></div><div class="sport-pick-overlay"></div><div class="sport-pick-content"><div class="sp-name">Track</div><div class="sp-tag">Demo</div></div></div>
     </div>
     <div class="demo-full" style="margin-top:2rem;">
-      <div class="demo-full-bar"><div class="demo-dot" style="background:#ff5f57"></div><div class="demo-dot" style="background:#ffbd2e"></div><div class="demo-dot" style="background:#28ca41"></div><div class="demo-url" id="demoUrl" style="font-size:0.7rem;color:#888;background:#0d0d12;padding:0.3rem 1rem;border-radius:10px;margin-left:0.8rem">dmedina.me — Live Baseball Client</div></div>
+      <div class="demo-full-bar"><div class="demo-dot" style="background:#ff5f57"></div><div class="demo-dot" style="background:#ffbd2e"></div><div class="demo-dot" style="background:#28ca41"></div><div class="demo-url" id="demoUrl" style="font-size:0.7rem;color:#888;background:#0d0d12;padding:0.3rem 1rem;border-radius:10px;margin-left:0.8rem">dmedina.me | Live Baseball Client</div></div>
       <iframe src="https://dmedina.me" loading="lazy" id="demoFrame"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOCIAL PROOF ═══ -->
+<section class="proof-section">
+  <div class="container text-center">
+    <div class="section-eyebrow reveal">What People Are Saying</div>
+    <h2 class="section-title reveal">COACHES AND PARENTS<br>WEIGH IN</h2>
+    <div class="proof-grid">
+      <div class="proof-card reveal">
+        <div class="proof-stars"><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="proof-quote">I get hundreds of emails from recruits every year. Most of them are a paragraph and a Hudl link. When a kid sends me a full site with their stats, film organized by category, and a real bio, I actually stop and look. This is the kind of thing that gets a kid on my radar.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:var(--navy)">HC</div>
+          <div><div class="proof-name">D2 Head Coach</div><div class="proof-role">Arizona</div></div>
+        </div>
+      </div>
+      <div class="proof-card reveal reveal-d1">
+        <div class="proof-stars"><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="proof-quote">We spent over $3,000 on showcases last summer and my son still didn't have a clean way to follow up with coaches who showed interest. This gave him a link he could text or email to any program. The dashboard let him update his stats after fall ball and send it right back out. Worth every penny.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:var(--red)">JM</div>
+          <div><div class="proof-name">Jason M.</div><div class="proof-role">Travel Ball Parent, Southern California</div></div>
+        </div>
+      </div>
+      <div class="proof-card reveal reveal-d2">
+        <div class="proof-stars"><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#c9a84c" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="proof-quote">I manage a 16U travel team and signed up five of my players at the team rate. Every kid got their own site within two days. The parents were blown away. Half of them had been quoted $1,500 or more from other companies. This is what every travel org should be doing for their players.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background:#3B82F6">KR</div>
+          <div><div class="proof-name">Kevin R.</div><div class="proof-role">Travel Ball Director, Texas</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -286,13 +472,13 @@ footer a:hover{color:#fff}
 <section class="process-section" id="process">
   <div class="container text-center">
     <div class="section-eyebrow reveal">How It Works</div>
-    <h2 class="section-title reveal">4 SIMPLE STEPS</h2>
-    <p class="section-sub reveal">From signup to a live recruiting site in 1-2 business days.</p>
+    <h2 class="section-title reveal">FROM SIGNUP TO RECRUITING<br>IN 4 STEPS</h2>
+    <p class="section-sub reveal">Your athlete goes from unknown to actively reaching coaches in under 48 hours.</p>
     <div class="process-grid">
-      <div class="process-step reveal"><div class="step-num">01</div><h3>Fill Out The Form</h3><p>Send us your athlete's info including stats, contact, coach references, and preferences.</p></div>
-      <div class="process-step reveal reveal-d1"><div class="step-num">02</div><h3>Upload Photos & Film</h3><p>Upload action shots, headshots, and game film directly on our site. Tag each file so we know where it goes.</p></div>
-      <div class="process-step reveal reveal-d2"><div class="step-num">03</div><h3>We Build The Site</h3><p>Your athlete's custom recruiting website is delivered within 1-2 business days.</p></div>
-      <div class="process-step reveal reveal-d3"><div class="step-num">04</div><h3>Review & Go Live</h3><p>You see the finished site before paying. Once approved, it goes live on a custom domain.</p></div>
+      <div class="process-step reveal"><div class="step-num">01</div><h3>Fill Out The Form</h3><p>Tell us about your athlete: stats, contact info, coach references, and pick a template style.</p></div>
+      <div class="process-step reveal reveal-d1"><div class="step-num">02</div><h3>We Build The Site</h3><p>Your athlete's custom recruiting website is auto-generated and delivered within 24 hours.</p></div>
+      <div class="process-step reveal reveal-d2"><div class="step-num">03</div><h3>Get Your Dashboard</h3><p>You receive an invite code to log into the dashboard. Upload photos, film, and manage everything yourself.</p></div>
+      <div class="process-step reveal reveal-d3"><div class="step-num">04</div><h3>Start Reaching Coaches</h3><p>Use the college directory and AI email builder to contact programs directly. Track every email from the dashboard.</p></div>
     </div>
   </div>
 </section>
@@ -301,26 +487,46 @@ footer a:hover{color:#fff}
 <section class="pricing-section" id="pricing">
   <div class="container text-center">
     <div class="section-eyebrow reveal">Pricing</div>
-    <h2 class="section-title reveal">ONE PRICE. EVERYTHING INCLUDED.</h2>
-    <p class="section-sub reveal">No subscriptions, no hidden fees, no surprises.</p>
+    <h2 class="section-title reveal">THE SITE, THE DASHBOARD,<br>AND EVERYTHING IN BETWEEN.</h2>
+    <p class="section-sub reveal">No subscriptions, no hidden fees. One price gets your athlete the full platform.</p>
     <div class="pricing-card reveal">
       <div class="pricing-header"><div class="pricing-amount"><span>$</span>400</div><div class="pricing-label">One-Time Flat Rate</div></div>
       <div class="pricing-body">
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Fully custom recruiting website — not a template</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom domain (YourKidsName.com)</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Game film / highlight video player with categories</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stats dashboard with key measurables</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Player bio, achievements, and progression timeline</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Coach references section</span></div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--navy);margin-bottom:0.6rem;opacity:0.5">The Recruiting Site</div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom recruiting website with your athlete's own domain</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>7 professional templates with custom accent colors</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Game film player with category tabs</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stats dashboard, player bio, achievements, and coach references</span></div>
         <div class="pricing-feature"><div class="pricing-check">✓</div><span>Built-in coach contact form</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Mobile-optimized — looks great on any device</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom colors to match school or travel team</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Google Analytics tracking included</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Hosting & custom domain included</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stat & bio updates included at no extra cost</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Mobile-optimized for every device</span></div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--red);margin:1.2rem 0 0.6rem">The Dashboard</div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>College directory with 3,300+ coaches and staff emails</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>AI-powered email builder for personalized coach outreach</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>Outreach tracker to log every email sent</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>Photo manager to upload hero, headshot, and gallery photos</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>Video manager to upload and categorize game film</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>Self-service stats editor to update and publish anytime</span></div>
+        <div class="pricing-feature"><div class="pricing-check" style="color:var(--red)">✓</div><span>Hosting and custom domain included</span></div>
         <div class="pricing-highlight"><p>No Payment Until You See The Finished Site</p><small>You only pay after you've reviewed and approved. Payment due within 48 hours.</small></div>
-        <div class="pricing-highlight" style="margin-top:0.8rem;"><p style="font-size:0.75rem;">One-Time Payment — No Recurring Fees</p><small>Your site stays live. No subscriptions, no surprises.</small></div>
+        <div class="pricing-highlight" style="margin-top:0.8rem;"><p style="font-size:0.75rem;">One-Time Payment. No Recurring Fees.</p><small>Your site stays live. No subscriptions, no surprises.</small></div>
         <div class="pricing-cta"><a href="/upload.html" class="btn btn-red">Get Started Now</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TEAM DISCOUNT ═══ -->
+<section class="team-section">
+  <div class="container">
+    <div class="team-inner reveal">
+      <div class="team-price">
+        <div class="team-price-num"><span>$</span>300</div>
+        <div class="team-price-label">Per Athlete</div>
+      </div>
+      <div class="team-body">
+        <h3>TRAVEL BALL TEAM DISCOUNT</h3>
+        <p>Sign up 5 or more athletes from the same travel organization and every player gets $100 off. Each kid gets their own custom site, their own dashboard, and full access to the college directory and email tools. We'll work directly with the team director to get everyone set up.</p>
+        <div class="team-badge">5+ Athletes = $300 Each</div>
       </div>
     </div>
   </div>
@@ -354,9 +560,9 @@ footer a:hover{color:#fff}
     <svg class="footer-shield" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="ftShield"><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z"/></clipPath></defs><path d="M10,8 L50,2 L90,8 L90,58 C90,76 50,92 50,92 C50,92 10,76 10,58 Z" fill="#002868" stroke="#b22234" stroke-width="2.5"/><rect x="50" y="2" width="40" height="90" fill="#b22234" clip-path="url(#ftShield)" opacity="0.18"/><g transform="translate(50,48)"><rect x="-4" y="-28" width="8" height="52" rx="1" fill="#fff"/><path d="M-4,-28 C-4,-28 -28,-28 -28,-16 C-28,-4 -4,-4 -4,-4" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4,-28 C4,-28 28,-28 28,-16 C28,-4 4,-4 4,-4" fill="none" stroke="#f0e6c8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="-6" y="-2" width="12" height="3" rx="1" fill="#b22234"/></g></svg>
     PROSPECT <span>PAGES</span>
   </div>
-  <p>Custom Recruiting Websites for High School Athletes</p>
+  <p>Custom Recruiting Websites & Recruiting Tools for High School Athletes</p>
   <p style="margin-top:0.8rem">$400 Flat &bull; No Payment Until You See The Finished Site</p>
-  <p style="margin-top:1.5rem"><a href="/cdn-cgi/l/email-protection#254144534c416555574a565540465155444240560b464a4949404240"><span class="__cf_email__" data-cfemail="325653445b567242405d414257514642535557411c515d5e5e575557">[email&#160;protected]</span></a></p>
+  <p style="margin-top:1.5rem"><a href="mailto:david@prospectpages.college">david@prospectpages.college</a></p>
 </footer>
 
 <!-- ═══ FLOATING CONTACT WIDGET ═══ -->
@@ -408,7 +614,7 @@ footer a:hover{color:#fff}
   <div class="qw-body">
     <form id="qwForm" action="https://api.web3forms.com/submit" method="POST">
       <input type="hidden" name="access_key" value="5fa35adf-581a-4cfe-afa6-8b8811ed2219">
-      <input type="hidden" name="subject" value="Quick Question — Prospect Pages">
+      <input type="hidden" name="subject" value="Quick Question | Prospect Pages">
       <input type="hidden" name="cc" value="sfdevpro6@gmail.com">
       <input type="hidden" name="from_name" value="Prospect Pages Question">
       <div class="qw-fg"><label>Name <span class="req">*</span></label><input type="text" name="name" required placeholder="Your name"></div>
