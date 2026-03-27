@@ -29,22 +29,24 @@ exports.handler = async (event) => {
       "Content-Type": "application/json",
     };
 
-    // Delete existing coaches for this college
-    // If delete_sports is provided, only delete those sports (partial update)
-    // Otherwise delete ALL coaches for this college (full replace)
-    let deleteUrl = `${PP_URL}/rest/v1/coaches?college_id=eq.${college_id}`;
-    if (delete_sports && delete_sports.length > 0) {
-      // Also delete case-insensitive variants (e.g. "Baseball" vs "baseball")
-      // Safest: just delete all for this college when doing a sport-scoped replace
-      // The incoming coaches list is the source of truth
-      deleteUrl += `&or=(${delete_sports.map(s => `sport.ilike.${s}`).join(",")})`;
-    }
+    // Delete existing coaches
+    // Replace mode: delete ALL coaches for this college (clean slate)
+    // Append mode: skip delete entirely
+    let deleted = [];
+    const shouldDelete = delete_sports && delete_sports.length > 0;
 
-    const delRes = await fetch(deleteUrl, {
-      method: "DELETE",
-      headers: { ...supaHeaders, Prefer: "return=representation" },
-    });
-    const deleted = delRes.ok ? (await delRes.json()) : [];
+    if (shouldDelete) {
+      const deleteUrl = `${PP_URL}/rest/v1/coaches?college_id=eq.${college_id}`;
+      const delRes = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: { ...supaHeaders, Prefer: "return=representation" },
+      });
+      if (!delRes.ok) {
+        const err = await delRes.text().catch(() => "");
+        return { statusCode: 502, headers, body: JSON.stringify({ error: `Delete failed: ${err.slice(0, 300)}` }) };
+      }
+      deleted = await delRes.json();
+    }
 
     // Deduplicate coaches by name (case-insensitive) — keep first occurrence
     const seen = new Set();
