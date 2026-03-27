@@ -191,6 +191,7 @@ function AuthScreen({ onAuth }) {
                 if (s.high_school) profileData.athlete_school = s.high_school;
                 if (s.city_state) profileData.athlete_city_state = s.city_state;
                 if (s.travel_team) profileData.athlete_travel_team = s.travel_team;
+                if (s.gpa) profileData.athlete_gpa = s.gpa;
                 if (s.generated_bio) profileData.athlete_bio = s.generated_bio;
                 if (s.netlify_site_id) profileData.netlify_site_id = s.netlify_site_id;
                 if (s.athlete_instagram) profileData.athlete_instagram = s.athlete_instagram;
@@ -464,7 +465,7 @@ function EmailBuilder({profile, user}) {
   const selectCollege=(college)=>{setSelectedCollege(college);setCollegeSearch(college.name);loadCoachesForCollege(college.id);};
 
   const buildPrompt=(college, emailT, note, coach)=>{
-    const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nEmail: ${profile.athlete_email||""}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
+    const athleteInfo=`Athlete: ${profile.athlete_name||"Athlete"}\nEmail: ${profile.athlete_email||""}\nSport: ${profile.athlete_sport||"baseball"}\nGraduation Year: ${profile.athlete_grad_year||"2027"}\nPosition: ${profile.athlete_position||"Player"}\nGPA: ${profile.athlete_gpa||"N/A"}\nRecruiting Site: ${profile.recruiting_site_url||"prospectpages.net"}`;
     const schoolInfo=`School: ${college.name}\nLocation: ${college.city}, ${college.state}\nDivision: ${college.division}\nConference: ${college.conference||"N/A"}`;
     const coachInfo=coach?`\nCoach: ${coach.name}, ${coach.title}`:"";
     const typePrompts={
@@ -900,7 +901,7 @@ function ProfileEditor({profile, setProfile, user}) {
           <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:C.textMuted,marginBottom:12}}>Email Signature Preview</div>
           <div style={{padding:"16px 20px",background:C.navyLight,borderRadius:8,fontSize:14,lineHeight:1.8,border:`1px solid ${C.border}`}}>
             <div style={{fontWeight:700}}>{profile.athlete_name}</div>
-            <div style={{color:C.textMuted}}>Class of {profile.athlete_grad_year} | {profile.athlete_position}</div>
+            <div style={{color:C.textMuted}}>Class of {profile.athlete_grad_year} | {profile.athlete_position}{profile.athlete_gpa?` | ${profile.athlete_gpa} GPA`:""}</div>
             {profile.athlete_email&&<div style={{color:C.cream}}>{profile.athlete_email}</div>}
             {profile.recruiting_site_url&&<div style={{color:C.gold}}>{profile.recruiting_site_url}</div>}
           </div>
@@ -978,6 +979,7 @@ function StatsEditor({profile, setProfile, user}) {
   const [measurables, setMeasurables] = useState({
     athlete_height: profile?.athlete_height || "",
     athlete_weight: profile?.athlete_weight || "",
+    athlete_gpa: profile?.athlete_gpa || "",
     athlete_bats_throws: profile?.athlete_bats_throws || "",
     athlete_dominant_hand: profile?.athlete_dominant_hand || "",
     athlete_dominant_foot: profile?.athlete_dominant_foot || "",
@@ -1090,6 +1092,7 @@ function StatsEditor({profile, setProfile, user}) {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <div><label style={lbl}>Height</label><input value={measurables.athlete_height} onChange={e=>setMeasurables(m=>({...m,athlete_height:e.target.value}))} placeholder="5ft 11in" style={inp}/></div>
           <div><label style={lbl}>Weight (lbs)</label><input value={measurables.athlete_weight} onChange={e=>setMeasurables(m=>({...m,athlete_weight:e.target.value}))} placeholder="175" style={inp}/></div>
+          <div><label style={lbl}>GPA</label><input value={measurables.athlete_gpa} onChange={e=>setMeasurables(m=>({...m,athlete_gpa:e.target.value}))} placeholder="3.4" style={inp}/></div>
           {(sport==="baseball"||sport==="softball")&&<div><label style={lbl}>Bats / Throws</label><input value={measurables.athlete_bats_throws} onChange={e=>setMeasurables(m=>({...m,athlete_bats_throws:e.target.value}))} placeholder="R/R" style={inp}/></div>}
           {(sport==="basketball"||sport==="football"||sport==="volleyball")&&<div><label style={lbl}>Dominant Hand</label><input value={measurables.athlete_dominant_hand} onChange={e=>setMeasurables(m=>({...m,athlete_dominant_hand:e.target.value}))} placeholder="Right-Handed" style={inp}/></div>}
           {sport==="soccer"&&<div><label style={lbl}>Dominant Foot</label><input value={measurables.athlete_dominant_foot} onChange={e=>setMeasurables(m=>({...m,athlete_dominant_foot:e.target.value}))} placeholder="Right-Footed" style={inp}/></div>}
