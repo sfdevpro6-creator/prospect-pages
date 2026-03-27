@@ -254,8 +254,11 @@ function sportName(sport) {
 }
 
 // ── Theme configuration for all 7 templates ──
+// VALUES ARE 1:1 EXACT MATCHES from the live demo HTML files.
+// DO NOT "improve" or "customize" these — they must match the demos.
 const THEME_CONFIG = {
   dark: {
+    // SOURCE: dmedina.me (baseball-demo.html / live site)
     name: "Dark Pro",
     bg: "#0a0a0c",
     bg2: "#111116",
@@ -272,46 +275,73 @@ const THEME_CONFIG = {
     fontDisplay: "'Bebas Neue', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
-    heroLayout: "split",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
+    heroLayout: "overlay",
     heroBgGradient: "linear-gradient(135deg, #0d0d12 0%, #1a1018 50%, #0d0d12 100%)",
     navBg: "rgba(10,10,12,0.85)",
     navBgScrolled: "rgba(10,10,12,0.95)",
     isLight: false,
   },
   clean: {
+    // SOURCE: softball-demo.html (Isabella Martinez)
     name: "Clean Light",
     bg: "#faf8f5",
-    bg2: "#f0ede8",
+    bg2: "#f0e8ef",
     card: "#ffffff",
     cardHover: "#f5f3f0",
     accent: "#c4387a",
     accentGlow: "rgba(196, 56, 122, 0.20)",
-    accentHover: "#a82e68",
-    gold: "#8b6914",
-    textPrimary: "#1a1a2e",
-    textSecondary: "#555566",
-    textMuted: "#8a8a9a",
-    border: "rgba(0,0,0,0.08)",
+    accentHover: "#a82e66",
+    gold: "#c9a84c",
+    textPrimary: "#2a2030",
+    textSecondary: "#6a6070",
+    textMuted: "#aaa4b0",
+    border: "rgba(0,0,0,0.06)",
     fontDisplay: "'Raleway', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Raleway:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
     heroLayout: "split",
-    heroBgGradient: "linear-gradient(160deg, #faf8f5 0%, #f0ede8 50%, #faf8f5 100%)",
-    navBg: "rgba(250,248,245,0.90)",
-    navBgScrolled: "rgba(250,248,245,0.97)",
+    heroBgGradient: "linear-gradient(135deg, #faf8f5 60%, #f0e8ef 100%)",
+    navBg: "rgba(255,255,255,0.95)",
+    navBgScrolled: "rgba(255,255,255,0.97)",
     isLight: true,
   },
   fire: {
+    // SOURCE: basketball-demo.html (Marcus Thompson)
     name: "Bold Fire",
     bg: "#08080a",
-    bg2: "#0f0f14",
-    card: "#141418",
+    bg2: "#0d0d10",
+    card: "#111114",
     cardHover: "#1a1a20",
     accent: "#ff6b2b",
     accentGlow: "rgba(255, 107, 43, 0.25)",
-    accentHover: "#e55a1f",
+    accentHover: "#e65a1a",
+    gold: "#c9a84c",
+    textPrimary: "#eae8e4",
+    textSecondary: "#8a8680",
+    textMuted: "#4a4640",
+    border: "rgba(255,255,255,0.05)",
+    fontDisplay: "'Oswald', sans-serif",
+    fontBody: "'Barlow', sans-serif",
+    fontCondensed: "'Barlow Condensed', sans-serif",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
+    heroLayout: "centered",
+    heroBgGradient: "radial-gradient(ellipse at center, #181410 0%, #08080a 70%)",
+    navBg: "rgba(8,8,10,0.92)",
+    navBgScrolled: "rgba(8,8,10,0.95)",
+    isLight: false,
+  },
+  field: {
+    // SOURCE: football-demo.html (Jordan Williams)
+    name: "Field",
+    bg: "#060a07",
+    bg2: "#0c140e",
+    card: "#101a14",
+    cardHover: "#172019",
+    accent: "#2d8a4e",
+    accentGlow: "rgba(45, 138, 78, 0.25)",
+    accentHover: "#247040",
     gold: "#c9a84c",
     textPrimary: "#f0ece4",
     textSecondary: "#9a968e",
@@ -320,107 +350,86 @@ const THEME_CONFIG = {
     fontDisplay: "'Oswald', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
     heroLayout: "centered",
-    heroBgGradient: "linear-gradient(135deg, #08080a 0%, #1a0e08 50%, #08080a 100%)",
-    navBg: "rgba(8,8,10,0.85)",
-    navBgScrolled: "rgba(8,8,10,0.95)",
-    isLight: false,
-  },
-  field: {
-    name: "Field",
-    bg: "#060a07",
-    bg2: "#0c120e",
-    card: "#111a14",
-    cardHover: "#172019",
-    accent: "#2d8a4e",
-    accentGlow: "rgba(45, 138, 78, 0.25)",
-    accentHover: "#247040",
-    gold: "#c9a84c",
-    textPrimary: "#e8f0ea",
-    textSecondary: "#8a9e8f",
-    textMuted: "#526258",
-    border: "rgba(255,255,255,0.06)",
-    fontDisplay: "'Oswald', sans-serif",
-    fontBody: "'Barlow', sans-serif",
-    fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
-    heroLayout: "centered",
-    heroBgGradient: "linear-gradient(135deg, #060a07 0%, #0a1a0e 50%, #060a07 100%)",
-    navBg: "rgba(6,10,7,0.85)",
-    navBgScrolled: "rgba(6,10,7,0.95)",
+    heroBgGradient: "radial-gradient(ellipse at 30% 50%, #101a14 0%, #060a07 70%)",
+    navBg: "rgba(0,0,0,0.85)",
+    navBgScrolled: "rgba(0,0,0,0.95)",
     isLight: false,
   },
   midnight: {
+    // SOURCE: soccer-demo.html (Sofia Reyes)
     name: "Midnight",
     bg: "#060810",
-    bg2: "#0c0e18",
-    card: "#11141e",
+    bg2: "#0c1020",
+    card: "#101828",
     cardHover: "#171a26",
     accent: "#2563eb",
     accentGlow: "rgba(37, 99, 235, 0.25)",
     accentHover: "#1d4fd8",
     gold: "#c9a84c",
-    textPrimary: "#e4e8f0",
-    textSecondary: "#8a90a0",
-    textMuted: "#525868",
+    textPrimary: "#f0ece4",
+    textSecondary: "#9a968e",
+    textMuted: "#5c5952",
     border: "rgba(255,255,255,0.06)",
     fontDisplay: "'Montserrat', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Montserrat:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
     heroLayout: "centered",
-    heroBgGradient: "linear-gradient(135deg, #060810 0%, #0a1028 50%, #060810 100%)",
-    navBg: "rgba(6,8,16,0.85)",
-    navBgScrolled: "rgba(6,8,16,0.95)",
+    heroBgGradient: "radial-gradient(ellipse at 30% 50%, #101828 0%, #060810 70%)",
+    navBg: "rgba(0,0,0,0.85)",
+    navBgScrolled: "rgba(0,0,0,0.95)",
     isLight: false,
   },
   ultraviolet: {
+    // SOURCE: volleyball-demo.html (Ava Chen)
     name: "Ultraviolet",
     bg: "#0a0614",
-    bg2: "#110c1c",
-    card: "#161024",
+    bg2: "#120e20",
+    card: "#18122a",
     cardHover: "#1c142c",
     accent: "#7c3aed",
     accentGlow: "rgba(124, 58, 237, 0.25)",
     accentHover: "#6d28d9",
     gold: "#c9a84c",
-    textPrimary: "#ece4f0",
-    textSecondary: "#9a8ea8",
-    textMuted: "#5c5268",
+    textPrimary: "#f0ece4",
+    textSecondary: "#9a968e",
+    textMuted: "#5c5952",
     border: "rgba(255,255,255,0.06)",
     fontDisplay: "'Raleway', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Raleway:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
     heroLayout: "centered",
-    heroBgGradient: "linear-gradient(135deg, #0a0614 0%, #18082a 50%, #0a0614 100%)",
-    navBg: "rgba(10,6,20,0.85)",
-    navBgScrolled: "rgba(10,6,20,0.95)",
+    heroBgGradient: "radial-gradient(ellipse at 30% 50%, #18122a 0%, #0a0614 70%)",
+    navBg: "rgba(0,0,0,0.85)",
+    navBgScrolled: "rgba(0,0,0,0.95)",
     isLight: false,
   },
   ember: {
+    // SOURCE: track-demo.html (Elijah Brooks)
     name: "Ember",
     bg: "#0c0806",
-    bg2: "#140e0a",
-    card: "#1a1410",
+    bg2: "#14100a",
+    card: "#1c1610",
     cardHover: "#201a16",
     accent: "#ea580c",
     accentGlow: "rgba(234, 88, 12, 0.25)",
     accentHover: "#d24a0a",
     gold: "#c9a84c",
     textPrimary: "#f0ece4",
-    textSecondary: "#9e948a",
-    textMuted: "#685e54",
+    textSecondary: "#9a968e",
+    textMuted: "#5c5952",
     border: "rgba(255,255,255,0.06)",
     fontDisplay: "'Bebas Neue', sans-serif",
     fontBody: "'Barlow', sans-serif",
     fontCondensed: "'Barlow Condensed', sans-serif",
-    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700",
+    fontImport: "family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900",
     heroLayout: "centered",
-    heroBgGradient: "linear-gradient(135deg, #0c0806 0%, #1a0e06 50%, #0c0806 100%)",
-    navBg: "rgba(12,8,6,0.85)",
-    navBgScrolled: "rgba(12,8,6,0.95)",
+    heroBgGradient: "radial-gradient(ellipse at 30% 50%, #1c1610 0%, #0c0806 70%)",
+    navBg: "rgba(0,0,0,0.85)",
+    navBgScrolled: "rgba(0,0,0,0.95)",
     isLight: false,
   },
 };
@@ -466,7 +475,12 @@ function buildSiteHtml(data, bio) {
     theme.accentHover = `#${Math.max(0,r-20).toString(16).padStart(2,'0')}${Math.max(0,g-20).toString(16).padStart(2,'0')}${Math.max(0,b-20).toString(16).padStart(2,'0')}`;
   }
   const isCentered = theme.heroLayout === "centered";
+  const isOverlay = theme.heroLayout === "overlay";   // Dark Pro: full-bleed right image
+  const isSplit = theme.heroLayout === "split";        // Clean Light: grid 1fr 1fr
   const whiteOrPrimary = theme.isLight ? theme.textPrimary : "#ffffff";
+  // Hero h1 font-sizes per demo (exact from source HTML)
+  const heroH1Sizes = { dark: 'clamp(4rem, 12vw, 10rem)', clean: 'clamp(3rem, 6vw, 5rem)', fire: 'clamp(5rem, 15vw, 12rem)' };
+  const heroH1Size = heroH1Sizes[templateKey] || 'clamp(4rem, 12vw, 9rem)'; // T4-7 default
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -578,7 +592,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: ${theme.navBgScrolled}; }
 }
 .hero-eyebrow::before, .hero-eyebrow::after { content: ''; width: 40px; height: 1px; background: var(--accent); }
 .hero-name {
-  font-family: var(--font-display); font-size: clamp(4rem, 10vw, 8rem);
+  font-family: var(--font-display); font-size: ${heroH1Size};
   line-height: 0.9; letter-spacing: 0.04em; color: var(--white); margin-bottom: 0.5rem;
 }
 .hero-tagline {
@@ -651,7 +665,7 @@ section { padding: 6rem 0; }
 .section-subtitle { font-size: 1rem; color: var(--text-secondary); margin-top: 1rem; max-width: 600px; line-height: 1.7; }
 
 /* ABOUT */
-#about { background: var(--bg-secondary); }
+${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, #contact { background: var(--bg-secondary); }'}
 .about-grid { display: grid; grid-template-columns: 340px 1fr; gap: 4rem; align-items: start; }
 .about-photo {
   width: 100%; aspect-ratio: 3/4; background: var(--bg-card); border: 1px solid var(--border);
@@ -839,6 +853,62 @@ ${isCentered ? `/* CENTERED HERO LAYOUT */
 .hero-photo-card { display: none; }
 ` : ""}
 
+${isOverlay ? `/* DARK PRO — LEFT TEXT + RIGHT IMAGE OVERLAY */
+.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,12,0.45) 0%, rgba(10,10,12,0.75) 50%, var(--bg-primary) 100%);
+}
+.hero-inner { padding: 5rem 2rem 5rem 6%; max-width: 100%; }
+.hero-content { max-width: 55%; }
+.hero-photo-card { display: none; }
+.hero-player-img {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 45%; z-index: 1;
+  overflow: hidden; display: flex; align-items: flex-end; justify-content: center;
+}
+.hero-player-img img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center top;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.9) 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.9) 100%);
+}
+.hero-player-img .photo-placeholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); color: var(--text-muted); font-family: var(--font-condensed);
+  font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.5;
+}
+@media (max-width: 900px) {
+  .hero-content { max-width: 100% !important; text-align: center !important; padding-left: 2rem !important; }
+  .hero-player-img { width: 100% !important; left: 0 !important; opacity: 0.4; }
+  .hero-player-img img { object-position: center top !important; mask-image: none !important; -webkit-mask-image: none !important; }
+  .hero-eyebrow { justify-content: center !important; }
+  .hero-stats { justify-content: center !important; }
+  .hero-cta-group { justify-content: center !important; }
+}
+` : ""}
+
+${isSplit ? `/* CLEAN LIGHT — SPLIT GRID HERO */
+.hero {
+  display: grid !important; grid-template-columns: 1fr 1fr; align-items: center;
+  padding: 8rem 5% 4rem; gap: 4rem;
+}
+.hero-bg, .hero-overlay-lines, .scroll-indicator { display: none; }
+.hero-inner {
+  display: contents !important; padding: 0 !important; max-width: none !important;
+  animation: heroFadeIn 1.2s ease-out;
+}
+.hero-photo-card {
+  width: 100% !important; margin: 0 !important; position: static !important;
+  box-shadow: 20px 20px 60px rgba(0,0,0,0.06);
+}
+.hero-photo-card img, .hero-photo-card .photo-placeholder { height: 100% !important; aspect-ratio: 3/4; }
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr !important; padding: 7rem 2rem 3rem !important; text-align: center; }
+  .hero-photo-card { max-width: 360px; margin: 0 auto !important; }
+  .hero-eyebrow { justify-content: center; }
+  .hero-stats { justify-content: center; }
+  .hero-cta-group { justify-content: center; }
+}
+` : ""}
+
 ${theme.isLight ? `/* LIGHT THEME OVERRIDES */
 .contact-item-icon svg { stroke: var(--accent); fill: none; }
 .about-photo::before { background: linear-gradient(to top, var(--bg-secondary), transparent); }
@@ -848,7 +918,39 @@ ${theme.isLight ? `/* LIGHT THEME OVERRIDES */
 .nav-links a:hover { color: var(--text-primary); }
 a { color: var(--text-primary); }
 a:hover { color: var(--accent); }
+.contact-item-icon { background: rgba(${parseInt(theme.accent.slice(1,3),16)}, ${parseInt(theme.accent.slice(3,5),16)}, ${parseInt(theme.accent.slice(5,7),16)}, 0.08); border-color: rgba(${parseInt(theme.accent.slice(1,3),16)}, ${parseInt(theme.accent.slice(3,5),16)}, ${parseInt(theme.accent.slice(5,7),16)}, 0.15); }
+.btn-secondary { color: var(--text-primary); border-color: var(--text-primary); }
+.btn-secondary:hover { background: var(--text-primary); color: var(--bg-primary); }
+.hero-name em { font-style: normal; color: var(--accent); }
+.nav-logo, .hero-name, .section-title, .contact-form h3 { font-weight: 800; }
+.stat-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
+footer { background: #1a1420 !important; border-color: transparent !important; }
+footer .footer-logo, footer .footer-logo span { color: #fff; }
+footer .footer-logo span { color: var(--accent); }
+footer .footer-tagline { color: rgba(255,255,255,0.5); }
+footer .footer-pp { color: rgba(255,255,255,0.4); }
 ` : ""}
+
+${templateKey === 'fire' ? `/* BOLD FIRE — GLOW + TEXT-STROKE + STAT GRADIENT BAR */
+.hero::before {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 500px; height: 500px;
+  background: radial-gradient(circle, ${theme.accentGlow} 0%, transparent 70%);
+  transform: translate(-50%, -50%); pointer-events: none;
+}
+.hero-name .hero-name-stroke {
+  display: block; -webkit-text-stroke: 2px rgba(${parseInt(theme.accent.slice(1,3),16)}, ${parseInt(theme.accent.slice(3,5),16)}, ${parseInt(theme.accent.slice(5,7),16)}, 0.4);
+  color: transparent;
+}
+.stat-card { position: relative; overflow: hidden; }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), ${theme.accentGlow.replace('0.25','1')});
+  opacity: 0; transition: opacity 0.3s;
+}
+.stat-card:hover::before { opacity: 1; }
+.contact-item-icon { background: rgba(${parseInt(theme.accent.slice(1,3),16)}, ${parseInt(theme.accent.slice(3,5),16)}, ${parseInt(theme.accent.slice(5,7),16)}, 0.08); border-color: rgba(${parseInt(theme.accent.slice(1,3),16)}, ${parseInt(theme.accent.slice(3,5),16)}, ${parseInt(theme.accent.slice(5,7),16)}, 0.2); }
+footer { background: var(--bg-card) !important; }
+` : ''}
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
@@ -890,10 +992,20 @@ a:hover { color: var(--accent); }
 <section class="hero" id="home">
   <div class="hero-bg"></div>
   <div class="hero-overlay-lines"></div>
+  ${isOverlay ? `<!-- PP-HERO-PHOTO -->
+  <div class="hero-player-img">
+    <div class="photo-placeholder">Action Photo Coming Soon</div>
+  </div>
+  <!-- /PP-HERO-PHOTO -->` : ''}
   <div class="hero-inner">
     <div class="hero-content">
       <div class="hero-eyebrow">Class of ${escHtml(data.grad_year || "2027")}</div>
-      <h1 class="hero-name">${escHtml(name.toUpperCase()).replace(" ", "<br>")}</h1>
+      <h1 class="hero-name">${templateKey === 'fire'
+        ? escHtml(firstName.toUpperCase()) + '<br><span class="hero-name-stroke">' + escHtml(name.split(" ").slice(1).join(" ").toUpperCase()) + '</span>'
+        : templateKey === 'clean'
+          ? escHtml(firstName.toUpperCase()) + '<br><em>' + escHtml(name.split(" ").slice(1).join(" ").toUpperCase()) + '</em>'
+          : escHtml(name.toUpperCase()).replace(" ", "<br>")
+      }</h1>
       <p class="hero-tagline">${tagline}</p>
       <!-- PP-HERO-STATS -->
       <div class="hero-stats">
@@ -902,19 +1014,19 @@ ${buildHeroStats(data)}
       <!-- /PP-HERO-STATS -->
       <div class="hero-cta-group">
         <a href="#highlights" class="btn-primary">Watch Film</a>
-        <a href="#contact" class="btn-secondary">Contact Me</a>
+        <a href="#contact" class="btn-secondary">Contact${isOverlay ? ' Me' : ''}</a>
       </div>
     </div>
-    <!-- PP-HERO-PHOTO -->
+    ${isSplit ? `<!-- PP-HERO-PHOTO -->
     <div class="hero-photo-card">
-      <div class="photo-placeholder">Photo Coming Soon</div>
+      <div class="photo-placeholder">Add Action Photo</div>
     </div>
-    <!-- /PP-HERO-PHOTO -->
+    <!-- /PP-HERO-PHOTO -->` : ''}
   </div>
-  <div class="scroll-indicator">
+  ${!isSplit ? `<div class="scroll-indicator">
     <span>Scroll</span>
     <div class="scroll-arrow"></div>
-  </div>
+  </div>` : ''}
 </section>
 
 <!-- STATS -->
