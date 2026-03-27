@@ -354,7 +354,7 @@ exports.handler = async (event) => {
       const weight = measurables.athlete_weight || '';
       const hand = measurables.athlete_bats_throws || measurables.athlete_dominant_hand || measurables.athlete_dominant_foot || '';
       const handLabel = (sport === 'soccer') ? 'Dominant Foot' : (sport === 'baseball' || sport === 'softball') ? 'Bats / Throws' : 'Dominant Hand';
-      const gpa = profile.gpa || '';
+      const gpa = measurables.athlete_gpa || profile.athlete_gpa || '';
       const heroItems = [];
       if (height) heroItems.push('      <div class="hero-stat">\n        <div class="hero-stat-value">' + height + '</div>\n        <div class="hero-stat-label">Height</div>\n      </div>');
       if (weight) heroItems.push('      <div class="hero-stat">\n        <div class="hero-stat-value">' + weight + '</div>\n        <div class="hero-stat-label">Weight (lbs)</div>\n      </div>');
