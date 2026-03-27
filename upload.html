@@ -578,32 +578,70 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
     </div>
 
     <div class="card">
-      <div class="card-title">CUSTOM ACCENT COLOR</div>
-      <div class="card-sub">Optional. Override the template's accent color with your own. Leave blank to use the default.</div>
-      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
-        <div class="color-swatches" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <div class="color-swatch" data-color="" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;position:relative;background:linear-gradient(135deg,#333 45%,transparent 45%,transparent 55%,#333 55%);display:flex;align-items:center;justify-content:center" title="Default (use template color)">
-            <span style="font-size:9px;color:var(--text-dim);font-weight:700">DEF</span>
+      <div class="card-title">CUSTOMIZE YOUR COLORS</div>
+      <div class="card-sub">Optional. Override the template's default colors with your own. Leave any blank to use the template default.</div>
+
+      <!-- ACCENT COLOR -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Accent Color <span style="color:var(--text-dim);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">— buttons, links, highlights</span></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+          <div class="color-swatches" data-target="accent" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="color-swatch" data-color="" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;position:relative;background:linear-gradient(135deg,#333 45%,transparent 45%,transparent 55%,#333 55%);display:flex;align-items:center;justify-content:center" title="Default"><span style="font-size:8px;color:var(--text-dim);font-weight:700">DEF</span></div>
+            <div class="color-swatch" data-color="#e63a2e" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#e63a2e" title="Red"></div>
+            <div class="color-swatch" data-color="#2563eb" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#2563eb" title="Blue"></div>
+            <div class="color-swatch" data-color="#2d8a4e" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#2d8a4e" title="Green"></div>
+            <div class="color-swatch" data-color="#ff6b2b" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#ff6b2b" title="Orange"></div>
+            <div class="color-swatch" data-color="#7c3aed" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#7c3aed" title="Purple"></div>
+            <div class="color-swatch" data-color="#c4387a" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#c4387a" title="Pink"></div>
+            <div class="color-swatch" data-color="#c9a84c" data-target="accent" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#c9a84c" title="Gold"></div>
           </div>
-          <div class="color-swatch" data-color="#e63a2e" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#e63a2e" title="Red"></div>
-          <div class="color-swatch" data-color="#2563eb" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#2563eb" title="Blue"></div>
-          <div class="color-swatch" data-color="#2d8a4e" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#2d8a4e" title="Green"></div>
-          <div class="color-swatch" data-color="#ff6b2b" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#ff6b2b" title="Orange"></div>
-          <div class="color-swatch" data-color="#7c3aed" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#7c3aed" title="Purple"></div>
-          <div class="color-swatch" data-color="#c4387a" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#c4387a" title="Pink"></div>
-          <div class="color-swatch" data-color="#ea580c" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#ea580c" title="Ember"></div>
-          <div class="color-swatch" data-color="#c9a84c" onclick="pickColor(this)" style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;background:#c9a84c" title="Gold"></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:var(--text-dim)">or</span>
-          <div style="position:relative;display:flex;align-items:center">
-            <span style="position:absolute;left:12px;font-size:13px;color:var(--text-dim);pointer-events:none">#</span>
-            <input id="f_color_hex" type="text" maxlength="6" placeholder="HEX" oninput="onColorHexInput(this)" style="width:100px;padding:10px 12px 10px 26px;background:var(--navy-light);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-size:13px;font-family:'Barlow',sans-serif;outline:none;letter-spacing:1px">
-            <div id="colorPreviewDot" style="width:28px;height:28px;border-radius:6px;border:2px solid var(--border);margin-left:8px;background:transparent;transition:background 0.2s"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:10px;font-size:12px;color:var(--text-dim);pointer-events:none">#</span><input data-target="accent" type="text" maxlength="6" placeholder="HEX" oninput="onHex3(this)" style="width:90px;padding:8px 10px 8px 24px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:12px;font-family:'Barlow',sans-serif;outline:none;letter-spacing:1px"></div>
+            <div class="color-dot" data-target="accent" style="width:24px;height:24px;border-radius:5px;border:2px solid var(--border);background:transparent;transition:background 0.2s"></div>
           </div>
         </div>
       </div>
+
+      <!-- BACKGROUND COLOR -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Background <span style="color:var(--text-dim);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">— main page background</span></div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div class="color-swatches" data-target="bg" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="color-swatch" data-color="" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;position:relative;background:linear-gradient(135deg,#333 45%,transparent 45%,transparent 55%,#333 55%);display:flex;align-items:center;justify-content:center" title="Default"><span style="font-size:8px;color:var(--text-dim);font-weight:700">DEF</span></div>
+            <div class="color-swatch" data-color="#0a0a0c" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#0a0a0c" title="Onyx"></div>
+            <div class="color-swatch" data-color="#0c1020" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#0c1020" title="Navy"></div>
+            <div class="color-swatch" data-color="#0a0614" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#0a0614" title="Midnight"></div>
+            <div class="color-swatch" data-color="#14100a" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#14100a" title="Warm Black"></div>
+            <div class="color-swatch" data-color="#faf8f5" data-target="bg" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#faf8f5" title="Cream"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:10px;font-size:12px;color:var(--text-dim);pointer-events:none">#</span><input data-target="bg" type="text" maxlength="6" placeholder="HEX" oninput="onHex3(this)" style="width:90px;padding:8px 10px 8px 24px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:12px;font-family:'Barlow',sans-serif;outline:none;letter-spacing:1px"></div>
+            <div class="color-dot" data-target="bg" style="width:24px;height:24px;border-radius:5px;border:2px solid var(--border);background:transparent;transition:background 0.2s"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD COLOR -->
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Card Color <span style="color:var(--text-dim);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">— stat cards, forms, sections</span></div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div class="color-swatches" data-target="card" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="color-swatch" data-color="" data-target="card" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;position:relative;background:linear-gradient(135deg,#333 45%,transparent 45%,transparent 55%,#333 55%);display:flex;align-items:center;justify-content:center" title="Default"><span style="font-size:8px;color:var(--text-dim);font-weight:700">DEF</span></div>
+            <div class="color-swatch" data-color="#16161c" data-target="card" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#16161c" title="Dark Steel"></div>
+            <div class="color-swatch" data-color="#101828" data-target="card" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#101828" title="Blue Steel"></div>
+            <div class="color-swatch" data-color="#1c1610" data-target="card" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#1c1610" title="Warm Steel"></div>
+            <div class="color-swatch" data-color="#ffffff" data-target="card" onclick="pickColor3(this)" style="width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;background:#ffffff" title="White"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:10px;font-size:12px;color:var(--text-dim);pointer-events:none">#</span><input data-target="card" type="text" maxlength="6" placeholder="HEX" oninput="onHex3(this)" style="width:90px;padding:8px 10px 8px 24px;background:var(--navy-light);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:12px;font-family:'Barlow',sans-serif;outline:none;letter-spacing:1px"></div>
+            <div class="color-dot" data-target="card" style="width:24px;height:24px;border-radius:5px;border:2px solid var(--border);background:transparent;transition:background 0.2s"></div>
+          </div>
+        </div>
+      </div>
+
       <input type="hidden" id="f_color" value="">
+      <input type="hidden" id="f_color_bg" value="">
+      <input type="hidden" id="f_color_card" value="">
     </div>
 
     <div class="card">
@@ -671,7 +709,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 
     <div style="margin-top:24px;padding:16px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;display:inline-block">
       <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Questions?</div>
-      <div style="font-size:15px;font-weight:600"><a href="mailto:david@prospectpages.college" style="color:var(--gold);text-decoration:none">david@prospectpages.college</a></div>
+      <div style="font-size:15px;font-weight:600"><a href="/cdn-cgi/l/email-protection#3a5e5b4c535e7a4a4855494a5f594e4a5b5d5f4914595556565f5d5f" style="color:var(--gold);text-decoration:none"><span class="__cf_email__" data-cfemail="e38782958a87a393918c90938680979382848690cd808c8f8f868486">[email&#160;protected]</span></a></div>
     </div>
   </div>
 
@@ -687,7 +725,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
   </a>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var selectedSport = "";
 var selectedTemplate = "dark";
 
@@ -699,47 +737,42 @@ function pickTemplate(el) {
   document.getElementById('f_template').value = selectedTemplate;
 }
 
-// Color picker
-function pickColor(el) {
-  // Deselect all swatches
-  document.querySelectorAll('.color-swatch').forEach(function(s){
-    s.style.borderColor = 'var(--border)';
-    s.style.boxShadow = 'none';
+// ── 3-Color Picker System ──
+var colorMap = { accent: 'f_color', bg: 'f_color_bg', card: 'f_color_card' };
+
+function pickColor3(el) {
+  var target = el.dataset.target;
+  document.querySelectorAll('.color-swatch[data-target="'+target+'"]').forEach(function(s) {
+    s.style.borderColor = 'var(--border)'; s.style.boxShadow = 'none';
   });
-  // Select this swatch
   var color = el.dataset.color || '';
   el.style.borderColor = color || 'var(--gold)';
   el.style.boxShadow = '0 0 0 2px ' + (color || 'var(--gold)');
-  // Update hidden input
-  document.getElementById('f_color').value = color;
-  // Update hex input
-  document.getElementById('f_color_hex').value = color ? color.replace('#','') : '';
-  // Update preview dot
-  document.getElementById('colorPreviewDot').style.background = color || 'transparent';
+  document.getElementById(colorMap[target]).value = color;
+  var hexInp = document.querySelector('input[data-target="'+target+'"][type="text"]');
+  if (hexInp) hexInp.value = color ? color.replace('#','') : '';
+  var dot = document.querySelector('.color-dot[data-target="'+target+'"]');
+  if (dot) dot.style.background = color || 'transparent';
 }
 
-function onColorHexInput(inp) {
+function onHex3(inp) {
+  var target = inp.dataset.target;
   var val = inp.value.replace(/[^0-9a-fA-F]/g, '').slice(0,6);
   inp.value = val;
+  var dot = document.querySelector('.color-dot[data-target="'+target+'"]');
   if (val.length === 6) {
     var hex = '#' + val;
-    document.getElementById('f_color').value = hex;
-    document.getElementById('colorPreviewDot').style.background = hex;
-    // Deselect swatches
-    document.querySelectorAll('.color-swatch').forEach(function(s){
-      s.style.borderColor = 'var(--border)';
-      s.style.boxShadow = 'none';
-      if (s.dataset.color === hex) {
-        s.style.borderColor = hex;
-        s.style.boxShadow = '0 0 0 2px ' + hex;
-      }
+    document.getElementById(colorMap[target]).value = hex;
+    if (dot) dot.style.background = hex;
+    document.querySelectorAll('.color-swatch[data-target="'+target+'"]').forEach(function(s){
+      s.style.borderColor = 'var(--border)'; s.style.boxShadow = 'none';
+      if (s.dataset.color === hex) { s.style.borderColor = hex; s.style.boxShadow = '0 0 0 2px ' + hex; }
     });
   } else if (val.length === 0) {
-    document.getElementById('f_color').value = '';
-    document.getElementById('colorPreviewDot').style.background = 'transparent';
-    document.querySelectorAll('.color-swatch').forEach(function(s){
-      s.style.borderColor = 'var(--border)';
-      s.style.boxShadow = 'none';
+    document.getElementById(colorMap[target]).value = '';
+    if (dot) dot.style.background = 'transparent';
+    document.querySelectorAll('.color-swatch[data-target="'+target+'"]').forEach(function(s){
+      s.style.borderColor = 'var(--border)'; s.style.boxShadow = 'none';
     });
   }
 }
@@ -949,6 +982,8 @@ function submitForm() {
     athlete_twitter: document.getElementById('f_twitter').value,
     athlete_instagram: document.getElementById('f_instagram').value,
     color_pref: document.getElementById('f_color').value,
+    color_bg: document.getElementById('f_color_bg').value,
+    color_card: document.getElementById('f_color_card').value,
     domain_pref: document.getElementById('f_domain').value,
     notes: document.getElementById('f_notes').value,
     drive_link: document.getElementById('f_drive_link').value,
@@ -1012,15 +1047,4 @@ function submitForm() {
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       body: fd
-    }).then(function(r){ return r.json(); }).then(function(d){
-      console.log('Web3Forms fallback:', d.success ? 'sent' : 'failed');
-    }).catch(function(e2){
-      console.error('Web3Forms fallback failed:', e2);
-    });
-
-    window.scrollTo({top:0,behavior:'smooth'});
-  });
-}
-</script>
-</body>
-</html>
+    }).then(function(r){ return r.json(); }).then(
