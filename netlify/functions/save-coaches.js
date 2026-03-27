@@ -34,7 +34,10 @@ exports.handler = async (event) => {
     // Otherwise delete ALL coaches for this college (full replace)
     let deleteUrl = `${PP_URL}/rest/v1/coaches?college_id=eq.${college_id}`;
     if (delete_sports && delete_sports.length > 0) {
-      deleteUrl += `&sport=in.(${delete_sports.map(s => `"${s}"`).join(",")})`;
+      // Also delete case-insensitive variants (e.g. "Baseball" vs "baseball")
+      // Safest: just delete all for this college when doing a sport-scoped replace
+      // The incoming coaches list is the source of truth
+      deleteUrl += `&or=(${delete_sports.map(s => `sport.ilike.${s}`).join(",")})`;
     }
 
     const delRes = await fetch(deleteUrl, {
@@ -43,8 +46,17 @@ exports.handler = async (event) => {
     });
     const deleted = delRes.ok ? (await delRes.json()) : [];
 
+    // Deduplicate coaches by name (case-insensitive) — keep first occurrence
+    const seen = new Set();
+    const uniqueCoaches = coaches.filter((c) => {
+      const key = (c.name || "").toLowerCase().trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
     // Insert new coaches
-    const rows = coaches.map((c) => ({
+    const rows = uniqueCoaches.map((c) => ({
       college_id,
       name: c.name,
       title: c.title || null,
