@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coach Updater — Prospect Pages Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3a;
+      --accent: #3ECDA0;
+      --accent-dim: rgba(62, 205, 160, 0.15);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --yellow: #f59e0b;
+      --yellow-dim: rgba(245, 158, 11, 0.15);
+      --text: #e4e4e7;
+      --text-dim: #71717a;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header svg { flex-shrink: 0; }
+    .header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .header span { color: var(--text-dim); font-size: 13px; }
+    .back-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13px;
+      margin-left: auto;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* ── PIN Gate ── */
+    #pin-gate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 61px);
+      flex-direction: column;
+      gap: 16px;
+    }
+    #pin-gate h2 { font-size: 20px; font-weight: 600; }
+    #pin-gate input {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 24px;
+      letter-spacing: 8px;
+      text-align: center;
+      width: 180px;
+      padding: 12px;
+      border-radius: var(--radius);
+      outline: none;
+    }
+    #pin-gate input:focus { border-color: var(--accent); }
+    #pin-gate .pin-error { color: var(--red); font-size: 13px; display: none; }
+
+    /* ── Main Layout ── */
+    .main { display: none; max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .main.active { display: block; }
+
+    /* ── Sections ── */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* ── College Search ── */
+    .search-wrap { position: relative; }
+    .search-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 15px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      outline: none;
+      font-family: inherit;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--text-dim); }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-top: 4px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+    .dropdown.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover { background: var(--accent-dim); }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item .name { font-weight: 600; font-size: 14px; }
+    .dropdown-item .meta { font-size: 12px; color: var(--text-dim); }
+
+    .selected-college {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(62, 205, 160, 0.3);
+      border-radius: var(--radius);
+      margin-top: 12px;
+    }
+    .selected-college.active { display: flex; }
+    .selected-college .name { font-weight: 600; flex: 1; }
+    .selected-college .id-badge {
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .selected-college .clear-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .selected-college .clear-btn:hover { color: var(--red); }
+
+    /* ── Textarea ── */
+    .paste-area {
+      width: 100%;
+      min-height: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      padding: 16px;
+      border-radius: var(--radius);
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .paste-area:focus { border-color: var(--accent); }
+    .paste-area::placeholder { color: var(--text-dim); }
+    .char-count { text-align: right; font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover:not(:disabled) { background: #34b88e; transform: translateY(-1px); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover:not(:disabled) { background: #dc2626; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--text-dim); }
+
+    .btn-row { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: none;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; } }
+    .status-bar.info { display: block; background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(62, 205, 160, 0.3); }
+    .status-bar.error { display: block; background: var(--red-dim); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-bar.warning { display: block; background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-bar.success { display: block; background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(62, 205, 160, 0.3); }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Results Table ── */
+    .results-section { display: none; }
+    .results-section.active { display: block; }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      padding: 6px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .stat-chip .count { color: var(--accent); font-weight: 700; }
+
+    .sport-filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .sport-pill {
+      padding: 5px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: capitalize;
+    }
+    .sport-pill:hover, .sport-pill.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .results-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--bg);
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .results-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .results-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .results-table .editable {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      padding: 4px 6px;
+      border-radius: 4px;
+      width: 100%;
+      outline: none;
+    }
+    .results-table .editable:hover { border-color: var(--border); }
+    .results-table .editable:focus { border-color: var(--accent); background: var(--bg); }
+
+    .sport-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .delete-row-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .delete-row-btn:hover { color: var(--red); background: var(--red-dim); }
+
+    .table-wrap {
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* scrollbar */
+    .table-wrap::-webkit-scrollbar { width: 6px; }
+    .table-wrap::-webkit-scrollbar-track { background: var(--bg); }
+    .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    /* ── Mode toggle ── */
+    .mode-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      width: fit-content;
+    }
+    .mode-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text-dim);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-btn.active { background: var(--accent); color: var(--bg); }
+    .mode-btn:hover:not(.active) { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ECDA0" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    <div>
+      <h1>Coach Updater</h1>
+      <span>Paste → Parse → Save</span>
+    </div>
+    <a href="/admin" class="back-link">← Back to Admin</a>
+  </div>
+
+  <!-- PIN Gate -->
+  <div id="pin-gate">
+    <h2>Enter Admin PIN</h2>
+    <input type="password" id="pin-input" maxlength="4" inputmode="numeric" placeholder="••••" />
+    <div class="pin-error" id="pin-error">Wrong PIN</div>
+  </div>
+
+  <!-- Main App -->
+  <div class="main" id="main-app">
+
+    <div id="status-bar" class="status-bar"></div>
+
+    <!-- Step 1: Select College -->
+    <div class="section">
+      <div class="section-title">1 — Select School</div>
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="college-search" placeholder="Search colleges... (e.g. Auburn, Florida State)" autocomplete="off" />
+        <div class="dropdown" id="college-dropdown"></div>
+      </div>
+      <div class="selected-college" id="selected-college">
+        <span class="name" id="selected-name"></span>
+        <span class="id-badge" id="selected-id"></span>
+        <button class="clear-btn" id="clear-college" title="Clear selection">&times;</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Paste Content -->
+    <div class="section">
+      <div class="section-title">2 — Paste Staff Page</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="replace">Full Replace</button>
+        <button class="mode-btn" data-mode="append">Append Only</button>
+      </div>
+      <textarea class="paste-area" id="paste-area" placeholder="Copy the coaching staff section from the athletics website and paste it here. Include all sports you want to update. Haiku will parse names, titles, emails, and sports automatically."></textarea>
+      <div class="char-count"><span id="char-count">0</span> chars</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="parse-btn" disabled>
+          <span id="parse-label">Parse with Haiku</span>
+        </button>
+        <button class="btn btn-ghost" id="clear-paste">Clear</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Review & Save -->
+    <div class="section results-section" id="results-section">
+      <div class="section-title">3 — Review & Save</div>
+
+      <div class="stats-row" id="stats-row"></div>
+      <div class="sport-filter-row" id="sport-filters">
+        <span class="sport-pill active" data-sport="all">All</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th style="width:22%">Name</th>
+              <th style="width:28%">Title</th>
+              <th style="width:14%">Sport</th>
+              <th style="width:22%">Email</th>
+              <th style="width:10%">Phone</th>
+              <th style="width:4%"></th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+
+      <div id="haiku-notes" style="margin-top:12px; font-size:12px; color:var(--text-dim);"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="save-btn" disabled>
+          <span id="save-label">Save to Database</span>
+        </button>
+        <button class="btn btn-ghost" id="re-parse-btn">Re-parse</button>
+        <span style="font-size:12px; color:var(--text-dim);" id="save-mode-label">Mode: Full Replace</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Config ──
+    const BASE = window.location.origin;
+    const PIN = "1776";
+
+    // ── State ──
+    let selectedCollege = null;
+    let parsedCoaches = [];
+    let mode = "replace"; // "replace" or "append"
+    let sportFilter = "all";
+
+    // ── PIN Gate ──
+    const pinInput = document.getElementById("pin-input");
+    const pinError = document.getElementById("pin-error");
+    const pinGate = document.getElementById("pin-gate");
+    const mainApp = document.getElementById("main-app");
+
+    pinInput.addEventListener("input", () => {
+      if (pinInput.value.length === 4) {
+        if (pinInput.value === PIN) {
+          pinGate.style.display = "none";
+          mainApp.classList.add("active");
+          document.getElementById("college-search").focus();
+        } else {
+          pinError.style.display = "block";
+          pinInput.value = "";
+          setTimeout(() => pinError.style.display = "none", 2000);
+        }
+      }
+    });
+
+    // ── College Search ──
+    const searchInput = document.getElementById("college-search");
+    const dropdown = document.getElementById("college-dropdown");
+    let searchTimeout = null;
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      const q = searchInput.value.trim();
+      if (q.length < 2) { dropdown.classList.remove("open"); return; }
+      searchTimeout = setTimeout(() => searchColleges(q), 250);
+    });
+
+    searchInput.addEventListener("blur", () => {
+      setTimeout(() => dropdown.classList.remove("open"), 200);
+    });
+
+    async function searchColleges(q) {
+      try {
+        const res = await fetch(`${BASE}/.netlify/functions/search-colleges?q=${encodeURIComponent(q)}`);
+        const colleges = await res.json();
+        if (colleges.error) throw new Error(colleges.error);
+        renderDropdown(colleges);
+      } catch (e) {
+        showStatus(`College search failed: ${e.message}`, "error");
+      }
+    }
+
+    function renderDropdown(colleges) {
+      if (!colleges.length) { dropdown.classList.remove("open"); return; }
+      dropdown.innerHTML = colleges.map(c => `
+        <div class="dropdown-item" data-id="${c.id}" data-name="${c.name}">
+          <div class="name">${c.name}</div>
+          <div class="meta">${c.state || ""} · ${c.division || ""} · ${c.conference || ""} · ID: ${c.id}</div>
+        </div>
+      `).join("");
+      dropdown.classList.add("open");
+
+      dropdown.querySelectorAll(".dropdown-item").forEach(item => {
+        item.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          selectCollege({
+            id: item.dataset.id,
+            name: item.dataset.name,
+          });
+        });
+      });
+    }
+
+    function selectCollege(college) {
+      selectedCollege = college;
+      searchInput.value = "";
+      dropdown.classList.remove("open");
+      document.getElementById("selected-name").textContent = college.name;
+      document.getElementById("selected-id").textContent = `ID: ${college.id}`;
+      document.getElementById("selected-college").classList.add("active");
+      updateParseBtn();
+    }
+
+    document.getElementById("clear-college").addEventListener("click", () => {
+      selectedCollege = null;
+      document.getElementById("selected-college").classList.remove("active");
+      updateParseBtn();
+    });
+
+    // ── Paste Area ──
+    const pasteArea = document.getElementById("paste-area");
+    const charCount = document.getElementById("char-count");
+
+    pasteArea.addEventListener("input", () => {
+      charCount.textContent = pasteArea.value.length.toLocaleString();
+      updateParseBtn();
+    });
+
+    document.getElementById("clear-paste").addEventListener("click", () => {
+      pasteArea.value = "";
+      charCount.textContent = "0";
+      updateParseBtn();
+    });
+
+    function updateParseBtn() {
+      document.getElementById("parse-btn").disabled = !(selectedCollege && pasteArea.value.trim().length > 20);
+    }
+
+    // ── Mode Toggle ──
+    document.querySelectorAll(".mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        document.getElementById("save-mode-label").textContent =
+          mode === "replace" ? "Mode: Full Replace (deletes existing coaches for parsed sports)" : "Mode: Append Only (adds without deleting)";
+      });
+    });
+
+    // ── Parse ──
+    document.getElementById("parse-btn").addEventListener("click", doParse);
+    document.getElementById("re-parse-btn").addEventListener("click", doParse);
+
+    async function doParse() {
+      const parseBtn = document.getElementById("parse-btn");
+      const parseLabel = document.getElementById("parse-label");
+      parseBtn.disabled = true;
+      parseLabel.innerHTML = '<span class="spinner"></span> Parsing...';
+      showStatus("Sending to Haiku for parsing...", "info");
+
+      try {
+        const res = await fetch(`${BASE}/.netlify/functions/parse-staff-page`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            raw_text: pasteArea.value,
+            school_name: selectedCollege.name,
+          }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        parsedCoaches = data.coaches || [];
+        showStatus(`Parsed ${parsedCoaches.length} coaches across ${(data.sports_found || []).length} sports`, "success");
+        renderResults(data);
+
+      } catch (e) {
+        showStatus(`Parse failed: ${e.message}`, "error");
+      } finally {
+        parseLabel.textContent = "Parse with Haiku";
+        updateParseBtn();
+      }
+    }
+
+    // ── Render Results ──
+    function renderResults(data) {
+      const section = document.getElementById("results-section");
+      section.classList.add("active");
+
+      // Stats
+      const sports = [...new Set(parsedCoaches.map(c => c.sport))];
+      const withEmail = parsedCoaches.filter(c => c.email && c.email !== "null").length;
+      document.getElementById("stats-row").innerHTML = `
+        <div class="stat-chip"><span class="count">${parsedCoaches.length}</span> coaches</div>
+        <div class="stat-chip"><span class="count">${sports.length}</span> sports</div>
+        <div class="stat-chip"><span class="count">${withEmail}</span> with email</div>
+      `;
+
+      // Sport filters
+      const filterRow = document.getElementById("sport-filters");
+      filterRow.innerHTML = `<span class="sport-pill active" data-sport="all">All (${parsedCoaches.length})</span>` +
+        sports.map(s => {
+          const count = parsedCoaches.filter(c => c.sport === s).length;
+          return `<span class="sport-pill" data-sport="${s}">${s.replace("_w", " (W)")} (${count})</span>`;
+        }).join("");
+
+      filterRow.querySelectorAll(".sport-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          filterRow.querySelectorAll(".sport-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          sportFilter = pill.dataset.sport;
+          renderTable();
+        });
+      });
+
+      // Notes
+      if (data.notes) {
+        document.getElementById("haiku-notes").textContent = `Haiku notes: ${data.notes}`;
+      }
+
+      sportFilter = "all";
+      renderTable();
+      document.getElementById("save-btn").disabled = false;
+
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderTable() {
+      const filtered = sportFilter === "all"
+        ? parsedCoaches
+        : parsedCoaches.filter(c => c.sport === sportFilter);
+
+      const tbody = document.getElementById("results-body");
+      tbody.innerHTML = filtered.map((c, i) => {
+        const idx = parsedCoaches.indexOf(c);
+        return `<tr data-idx="${idx}">
+          <td><input class="editable" data-field="name" value="${esc(c.name)}" /></td>
+          <td><input class="editable" data-field="title" value="${esc(c.title || "")}" /></td>
+          <td><span class="sport-tag">${esc((c.sport || "").replace("_w", " (W)"))}</span></td>
+          <td><input class="editable" data-field="email" value="${esc(c.email || "")}" /></td>
+          <td><input class="editable" data-field="phone" value="${esc(c.phone || "")}" /></td>
+          <td><button class="delete-row-btn" title="Remove">✕</button></td>
+        </tr>`;
+      }).join("");
+
+      // Inline editing
+      tbody.querySelectorAll(".editable").forEach(input => {
+        input.addEventListener("change", () => {
+          const idx = parseInt(input.closest("tr").dataset.idx);
+          const field = input.dataset.field;
+          parsedCoaches[idx][field] = input.value || null;
+        });
+      });
+
+      // Row deletion
+      tbody.querySelectorAll(".delete-row-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.closest("tr").dataset.idx);
+          parsedCoaches.splice(idx, 1);
+          renderResults({ coaches: parsedCoaches, notes: "" });
+        });
+      });
+    }
+
+    function esc(str) {
+      return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // ── Save ──
+    document.getElementById("save-btn").addEventListener("click", doSave);
+
+    async function doSave() {
+      if (!selectedCollege || !parsedCoaches.length) return;
+
+      const sports = [...new Set(parsedCoaches.map(c => c.sport))];
+      const count = parsedCoaches.length;
+      const modeLabel = mode === "replace" ? "REPLACE" : "APPEND";
+
+      if (!confirm(`${modeLabel} ${count} coaches across ${sports.length} sports for ${selectedCollege.name}?\n\n${mode === "replace" ? "This will DELETE existing coaches for: " + sports.join(", ") : "This will ADD coaches without deleting existing ones."}\n\nContinue?`)) {
+        return;
+      }
+
+      const saveBtn = document.getElementById("save-btn");
+      const saveLabel = document.getElementById("save-label");
+      saveBtn.disabled = true;
+      saveLabel.innerHTML = '<span class="spinner"></span> Saving...';
+      showStatus("Writing to database...", "info");
+
+      try {
+        const payload = {
+          college_id: selectedCollege.id,
+          coaches: parsedCoaches,
+        };
+
+        // In replace mode, tell the backend which sports to delete
+        if (mode === "replace") {
+          payload.delete_sports = sports;
+        } else {
+          payload.delete_sports = []; // Append mode — don't delete anything
+        }
+
+        const res = await fetch(`${BASE}/.netlify/functions/save-coaches`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        showStatus(`Done! Deleted ${data.deleted} old → Inserted ${data.inserted} new coaches for: ${data.sports.join(", ")}`, "success");
+
+        // Reset for next school
+        saveLabel.textContent = "✓ Saved!";
+        setTimeout(() => { saveLabel.textContent = "Save to Database"; }, 3000);
+
+      } catch (e) {
+        showStatus(`Save failed: ${e.message}`, "error");
+        saveBtn.disabled = false;
+        saveLabel.textContent = "Save to Database";
+      }
+    }
+
+    // ── Status ──
+    function showStatus(msg, type) {
+      const bar = document.getElementById("status-bar");
+      bar.className = `status-bar ${type}`;
+      bar.textContent = msg;
+    }
+  </script>
+
+</body>
+</html>
