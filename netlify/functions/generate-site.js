@@ -464,15 +464,65 @@ function buildSiteHtml(data, bio) {
   // Resolve theme
   const templateKey = data.template && THEME_CONFIG[data.template] ? data.template : "dark";
   const theme = { ...THEME_CONFIG[templateKey] };
-  // Color picker override
-  if (data.color_pref && /^#[0-9a-fA-F]{6}$/.test(data.color_pref)) {
+
+  // ── 3-Color Custom Override System ──
+  // Users can override: accent, background, card. Everything else auto-derives.
+  const isHex = (v) => v && /^#[0-9a-fA-F]{6}$/.test(v);
+  const hexToRgb = (h) => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const rgbToHex = (r,g,b) => '#' + [r,g,b].map(v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+  const luminance = (r,g,b) => (0.299*r + 0.587*g + 0.114*b) / 255;
+  const shift = (r,g,b,amt) => [r+amt, g+amt, b+amt];
+  const mix = (a,b,t) => a.map((v,i) => v + (b[i] - v) * t);
+
+  // 1. Accent override
+  if (isHex(data.color_pref)) {
+    const [r,g,b] = hexToRgb(data.color_pref);
     theme.accent = data.color_pref;
-    // Derive glow and hover from custom accent
-    const r = parseInt(data.color_pref.slice(1,3), 16);
-    const g = parseInt(data.color_pref.slice(3,5), 16);
-    const b = parseInt(data.color_pref.slice(5,7), 16);
     theme.accentGlow = `rgba(${r}, ${g}, ${b}, 0.25)`;
-    theme.accentHover = `#${Math.max(0,r-20).toString(16).padStart(2,'0')}${Math.max(0,g-20).toString(16).padStart(2,'0')}${Math.max(0,b-20).toString(16).padStart(2,'0')}`;
+    theme.accentHover = rgbToHex(r-20, g-20, b-20);
+  }
+
+  // 2. Background override — auto-derives text, borders, nav, hero gradient, isLight
+  if (isHex(data.color_bg)) {
+    const [r,g,b] = hexToRgb(data.color_bg);
+    const lum = luminance(r,g,b);
+    theme.bg = data.color_bg;
+    theme.isLight = lum > 0.5;
+    // bg2: shift slightly toward card (or lighter/darker)
+    const bg2Shift = theme.isLight ? -8 : 8;
+    theme.bg2 = rgbToHex(...shift(r,g,b, bg2Shift));
+    // Text colors based on luminance
+    if (theme.isLight) {
+      theme.textPrimary = rgbToHex(...shift(r,g,b, -180).map(v => Math.max(0,v)));
+      theme.textSecondary = rgbToHex(...shift(r,g,b, -110).map(v => Math.max(0,v)));
+      theme.textMuted = rgbToHex(...shift(r,g,b, -60).map(v => Math.max(0,v)));
+      theme.border = 'rgba(0,0,0,0.06)';
+      theme.navBg = `rgba(${r},${g},${b},0.95)`;
+      theme.navBgScrolled = `rgba(${r},${g},${b},0.97)`;
+    } else {
+      theme.textPrimary = rgbToHex(...shift(r,g,b, 200).map(v => Math.min(255,v)));
+      theme.textSecondary = rgbToHex(...shift(r,g,b, 130).map(v => Math.min(255,v)));
+      theme.textMuted = rgbToHex(...shift(r,g,b, 70).map(v => Math.min(255,v)));
+      theme.border = 'rgba(255,255,255,0.06)';
+      theme.navBg = `rgba(${Math.max(0,r-5)},${Math.max(0,g-5)},${Math.max(0,b-5)},0.85)`;
+      theme.navBgScrolled = `rgba(${Math.max(0,r-5)},${Math.max(0,g-5)},${Math.max(0,b-5)},0.95)`;
+    }
+    // Hero gradient uses card color if available, otherwise derived
+    const cardRgb = isHex(data.color_card) ? hexToRgb(data.color_card) : shift(r,g,b, theme.isLight ? -10 : 10).map(v => Math.max(0,Math.min(255,v)));
+    if (theme.heroLayout === 'centered') {
+      theme.heroBgGradient = `radial-gradient(ellipse at 30% 50%, ${rgbToHex(...cardRgb)} 0%, ${data.color_bg} 70%)`;
+    } else if (theme.heroLayout === 'split') {
+      theme.heroBgGradient = `linear-gradient(135deg, ${data.color_bg} 60%, ${theme.bg2} 100%)`;
+    } else {
+      theme.heroBgGradient = `linear-gradient(135deg, ${rgbToHex(...shift(r,g,b,3))} 0%, ${rgbToHex(...shift(r,g,b,12))} 50%, ${data.color_bg} 100%)`;
+    }
+  }
+
+  // 3. Card override
+  if (isHex(data.color_card)) {
+    const [r,g,b] = hexToRgb(data.color_card);
+    theme.card = data.color_card;
+    theme.cardHover = rgbToHex(...shift(r,g,b, theme.isLight ? -6 : 6));
   }
   const isCentered = theme.heroLayout === "centered";
   const isOverlay = theme.heroLayout === "overlay";   // Dark Pro: full-bleed right image
@@ -1316,6 +1366,8 @@ exports.handler = async (event) => {
       athlete_twitter: data.athlete_twitter || null,
       athlete_instagram: data.athlete_instagram || null,
       color_pref: data.color_pref || null,
+      color_bg: data.color_bg || null,
+      color_card: data.color_card || null,
       domain_pref: data.domain_pref || null,
       notes: data.notes || null,
       drive_link: data.drive_link || null,
