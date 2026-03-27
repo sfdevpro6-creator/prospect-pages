@@ -89,6 +89,18 @@ PARSING RULES:
     const clean = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
     const parsed = JSON.parse(clean);
 
+    // Deduplicate by name (case-insensitive) — pasted text often has repeats
+    if (parsed.coaches && Array.isArray(parsed.coaches)) {
+      const seen = new Set();
+      parsed.coaches = parsed.coaches.filter((c) => {
+        const key = (c.name || "").toLowerCase().trim();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      parsed.total_parsed = parsed.coaches.length;
+    }
+
     return { statusCode: 200, headers, body: JSON.stringify(parsed) };
 
   } catch (e) {
