@@ -55,10 +55,14 @@ nav.scrolled{background:rgba(0,29,74,0.98);box-shadow:0 4px 30px rgba(0,0,0,0.2)
 .faq-drop-a{font-size:0.82rem;color:var(--text2);line-height:1.65;max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.3s,opacity 0.3s;opacity:0}
 .faq-drop-item.open .faq-drop-a{max-height:200px;padding-top:0.6rem;opacity:1}
 @media(max-width:768px){
-  .nav-links{display:none;position:fixed;inset:0;background:rgba(0,29,74,0.98);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:2rem;z-index:200}
+  .nav-links{display:none;position:fixed;inset:0;background:#001d4a;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;z-index:200}
   .nav-links.open{display:flex}
+  nav.nav-open{position:fixed;inset:0;z-index:100;padding:0.7rem 2.5rem;background:#001d4a;align-items:flex-start;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .nav-links>a{color:#fff;font-size:1.1rem;letter-spacing:0.2em;padding:0.5rem 1rem}
+  .nav-cta{font-size:1rem!important;padding:0.8rem 2rem!important}
   .nav-toggle{display:flex;z-index:201}
   .nav-faq>a::after{display:none}
+  .nav-faq>a{color:#fff!important;font-size:1.1rem!important;letter-spacing:0.2em}
   .faq-drop{position:static;width:100%;background:transparent;box-shadow:none;opacity:1;visibility:visible;transform:none;pointer-events:auto;max-height:0;overflow:hidden;transition:max-height 0.4s;border-radius:0}
   .faq-drop::after{display:none}
   .faq-drop-header{display:none}
@@ -206,8 +210,8 @@ footer a:hover{color:#fff}
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Do I really not pay until I see it?</div><div class="faq-drop-a">Correct. We build the entire site, send you a preview link, and you only pay if you love it. Payment is due within 48 hours of delivery. If it's not paid, the site comes down.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What do I need to provide?</div><div class="faq-drop-a">Fill out our intake form with your athlete's info (stats, contact, coach references) and upload your photos and game film on our upload page. The more content you send, the better the site looks.</div></div>
           <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Can I update the site after it's built?</div><div class="faq-drop-a">Yes! Send us updated stats, new photos, or additional game film anytime and we'll update the site for you. Updates are included at no extra charge.</div></div>
-          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What about the custom domain?</div><div class="faq-drop-a">We'll purchase and set up a custom domain for your athlete (like FirstnameLastname.com). The first year of your domain and hosting is included in the $400. We handle all the technical setup.</div></div>
-          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Is there a monthly or annual fee?</div><div class="faq-drop-a">Your $400 covers the full site build plus the first year of hosting and your custom domain. After year one, it's $100/year to keep the site live and the domain active. No monthly fees.</div></div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">What about the custom domain?</div><div class="faq-drop-a">We'll purchase and set up a custom domain for your athlete (like FirstnameLastname.com). Domain and hosting are included in the $400. We handle all the technical setup.</div></div>
+          <div class="faq-drop-item" onclick="this.classList.toggle('open')"><div class="faq-drop-q">Is there a monthly or annual fee?</div><div class="faq-drop-a">Your $400 covers the full site build, hosting, and your custom domain. No monthly fees, no hidden costs.</div></div>
         </div>
       </div>
     </div>
@@ -312,10 +316,10 @@ footer a:hover{color:#fff}
         <div class="pricing-feature"><div class="pricing-check">✓</div><span>Mobile-optimized — looks great on any device</span></div>
         <div class="pricing-feature"><div class="pricing-check">✓</div><span>Custom colors to match school or travel team</span></div>
         <div class="pricing-feature"><div class="pricing-check">✓</div><span>Google Analytics tracking included</span></div>
-        <div class="pricing-feature"><div class="pricing-check">✓</div><span>First year of hosting & custom domain included</span></div>
+        <div class="pricing-feature"><div class="pricing-check">✓</div><span>Hosting & custom domain included</span></div>
         <div class="pricing-feature"><div class="pricing-check">✓</div><span>Stat & bio updates included at no extra cost</span></div>
         <div class="pricing-highlight"><p>No Payment Until You See The Finished Site</p><small>You only pay after you've reviewed and approved. Payment due within 48 hours.</small></div>
-        <div class="pricing-highlight" style="margin-top:0.8rem;"><p style="font-size:0.75rem;">After Year 1: $100/year renewal</p><small>Keeps your site live, domain active, and hosting maintained.</small></div>
+        <div class="pricing-highlight" style="margin-top:0.8rem;"><p style="font-size:0.75rem;">One-Time Payment — No Recurring Fees</p><small>Your site stays live. No subscriptions, no surprises.</small></div>
         <div class="pricing-cta"><a href="/upload.html" class="btn btn-red">Get Started Now</a></div>
       </div>
     </div>
@@ -420,8 +424,8 @@ footer a:hover{color:#fff}
 </div>
 
 <script>
-document.getElementById('navToggle').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');});
-document.querySelectorAll('.nav-links>a').forEach(function(a){a.addEventListener('click',function(){document.getElementById('navLinks').classList.remove('open')});});
+document.getElementById('navToggle').addEventListener('click',function(){var nl=document.getElementById('navLinks');nl.classList.toggle('open');document.querySelector('nav').classList.toggle('nav-open');});
+document.querySelectorAll('.nav-links>a').forEach(function(a){a.addEventListener('click',function(){document.getElementById('navLinks').classList.remove('open');document.querySelector('nav').classList.remove('nav-open');});});
 (function(){var faqNav=document.getElementById('navFaq');var faqLink=faqNav.querySelector('a');faqLink.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(window.innerWidth<=768){faqNav.classList.toggle('mob-open');}else{faqNav.classList.toggle('faq-open');}});document.addEventListener('click',function(e){if(!faqNav.contains(e.target)){faqNav.classList.remove('faq-open');}});faqNav.querySelector('.faq-drop').addEventListener('click',function(e){e.stopPropagation();});})();
 window.addEventListener('scroll',function(){document.querySelector('nav').classList.toggle('scrolled',window.scrollY>60);});
 function switchDemo(el,url,label){document.querySelectorAll('.sport-pick').forEach(function(p){p.classList.remove('active')});el.classList.add('active');document.getElementById('demoUrl').textContent=label;document.getElementById('demoFrame').src=url;}
