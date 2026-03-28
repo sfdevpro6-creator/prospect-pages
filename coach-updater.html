@@ -45,14 +45,34 @@
     .header svg { flex-shrink: 0; }
     .header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
     .header span { color: var(--text-dim); font-size: 13px; }
-    .back-link {
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 13px;
-      margin-left: auto;
-      transition: color 0.2s;
+    /* ── Site Nav Dropdown ── */
+    .site-nav { position: relative; margin-left: auto; }
+    .site-nav-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; background: transparent; border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text-dim); cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.02em; transition: all 0.2s;
     }
-    .back-link:hover { color: var(--accent); }
+    .site-nav-btn:hover { border-color: var(--accent); color: var(--text); }
+    .site-nav-btn svg { transition: transform 0.2s; }
+    .site-nav.open .site-nav-btn svg { transform: rotate(180deg); }
+    .site-nav-menu {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      min-width: 200px; padding: 6px; z-index: 100;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .site-nav.open .site-nav-menu { display: block; }
+    .site-nav-menu a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; color: var(--text-dim); text-decoration: none;
+      border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.15s;
+    }
+    .site-nav-menu a:hover { background: var(--accent-dim); color: var(--text); }
+    .site-nav-menu a.active { color: var(--accent); background: var(--accent-dim); }
+    .site-nav-menu a svg { width: 16px; height: 16px; stroke-width: 1.8; opacity: 0.6; flex-shrink: 0; }
+    .site-nav-divider { height: 1px; background: var(--border); margin: 4px 8px; }
 
     /* ── PIN Gate ── */
     #pin-gate {
@@ -404,7 +424,35 @@
       <h1>Coach Updater</h1>
       <span>Paste → Parse → Save</span>
     </div>
-    <a href="/admin" class="back-link">← Back to Admin</a>
+    <div class="site-nav" id="site-nav">
+      <button class="site-nav-btn" onclick="document.getElementById('site-nav').classList.toggle('open')">
+        Navigate
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="site-nav-menu">
+        <a href="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Home
+        </a>
+        <a href="/admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Admin Panel
+        </a>
+        <a href="/coach-updater.html" class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Coach Updater
+        </a>
+        <div class="site-nav-divider"></div>
+        <a href="/dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+          Client Dashboard
+        </a>
+        <a href="/upload.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+          Intake Form
+        </a>
+      </div>
+    </div>
   </div>
 
   <!-- PIN Gate -->
@@ -625,6 +673,12 @@
         document.getElementById("save-mode-label").textContent =
           mode === "replace" ? "Mode: Full Replace (deletes existing coaches for parsed sports)" : "Mode: Append Only (adds without deleting)";
       });
+    });
+
+    // ── Site Nav Dropdown — close on outside click ──
+    document.addEventListener("click", (e) => {
+      const nav = document.getElementById("site-nav");
+      if (nav && !nav.contains(e.target)) nav.classList.remove("open");
     });
 
     // ── URL Scraper ──
