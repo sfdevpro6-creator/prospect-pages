@@ -887,7 +887,7 @@
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        showStatus(`Done! Deleted ${data.deleted} old → Inserted ${data.inserted} new coaches for: ${data.sports.join(", ")}`, "success");
+        showStatus(`Done! Found ${data.existing_before || "?"} existing → Deleted ${data.deleted} → Inserted ${data.inserted} new coaches for: ${data.sports.join(", ")}`, "success");
 
         // Reset for next school
         saveLabel.textContent = "✓ Saved!";
