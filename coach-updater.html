@@ -654,14 +654,16 @@
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        pasteArea.value = data.text;
-        document.getElementById("char-count").textContent = data.text.length;
-        updateParseBtn();
-
         const msg = data.warning
-          ? `Scraped ${data.text.length} chars (warning: ${data.warning})`
-          : `Scraped ${data.chars} chars from page. Review below, then click Parse.`;
+          ? data.warning
+          : `Scraped ${data.chars} chars from page${data.method === "scrapingbee" ? " (via ScrapingBee)" : ""}. Review below, then click Parse.`;
         showStatus(msg, data.warning ? "error" : "success");
+
+        if (data.text) {
+          pasteArea.value = data.text;
+          document.getElementById("char-count").textContent = data.text.length;
+          updateParseBtn();
+        }
 
       } catch (e) {
         showStatus(`Scrape failed: ${e.message}. Try pasting the page content manually.`, "error");
