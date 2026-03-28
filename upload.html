@@ -1048,3 +1048,12 @@ function submitForm() {
       method: 'POST',
       body: fd
     }).then(function(r){ return r.json(); }).then(
+      function(result){ console.log('Web3Forms backup:', result.success ? 'sent' : 'failed'); }
+    ).catch(function(e){ console.error('Web3Forms backup error:', e); });
+
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+</script>
+</body>
+</html>
