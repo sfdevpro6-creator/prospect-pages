@@ -435,11 +435,25 @@
 
     <!-- Step 2: Paste Content -->
     <div class="section">
-      <div class="section-title">2 — Paste Staff Page</div>
+      <div class="section-title">2 — Staff Page</div>
       <div class="mode-toggle">
         <button class="mode-btn active" data-mode="replace">Full Replace</button>
         <button class="mode-btn" data-mode="append">Append Only</button>
       </div>
+
+      <!-- URL Scraper -->
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input type="text" class="search-input" id="scrape-url" placeholder="Paste athletics staff page URL (e.g. auburntigers.com/staff-directory)" style="flex:1; font-size:13px;" />
+        <button class="btn btn-primary" id="scrape-btn" style="width:auto; padding:0 20px; white-space:nowrap;" disabled>
+          <span id="scrape-label">Scrape Page</span>
+        </button>
+      </div>
+      <div style="font-size:11px; color:var(--text-dim); margin:-8px 0 12px; display:flex; align-items:center; gap:16px;">
+        <span>Enter a URL to auto-scrape, or paste content manually below</span>
+        <span style="flex:1; border-top:1px solid var(--border)"></span>
+        <span>OR paste manually</span>
+      </div>
+
       <textarea class="paste-area" id="paste-area" placeholder="Copy the coaching staff section from the athletics website and paste it here. Include all sports you want to update. Haiku will parse names, titles, emails, and sports automatically."></textarea>
       <div class="char-count"><span id="char-count">0</span> chars</div>
       <div class="btn-row">
@@ -611,6 +625,50 @@
         document.getElementById("save-mode-label").textContent =
           mode === "replace" ? "Mode: Full Replace (deletes existing coaches for parsed sports)" : "Mode: Append Only (adds without deleting)";
       });
+    });
+
+    // ── URL Scraper ──
+    const scrapeUrl = document.getElementById("scrape-url");
+    const scrapeBtn = document.getElementById("scrape-btn");
+
+    scrapeUrl.addEventListener("input", () => {
+      const val = scrapeUrl.value.trim();
+      scrapeBtn.disabled = !val || val.length < 5;
+    });
+
+    scrapeBtn.addEventListener("click", async () => {
+      let url = scrapeUrl.value.trim();
+      if (!url) return;
+      if (!url.startsWith("http")) url = "https://" + url;
+
+      scrapeBtn.disabled = true;
+      document.getElementById("scrape-label").innerHTML = '<span class="spinner"></span> Scraping...';
+      showStatus("Fetching staff page...", "info");
+
+      try {
+        const res = await fetch(`${BASE}/.netlify/functions/scrape-staff-page`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        pasteArea.value = data.text;
+        document.getElementById("char-count").textContent = data.text.length;
+        updateParseBtn();
+
+        const msg = data.warning
+          ? `Scraped ${data.text.length} chars (warning: ${data.warning})`
+          : `Scraped ${data.chars} chars from page. Review below, then click Parse.`;
+        showStatus(msg, data.warning ? "error" : "success");
+
+      } catch (e) {
+        showStatus(`Scrape failed: ${e.message}. Try pasting the page content manually.`, "error");
+      } finally {
+        document.getElementById("scrape-label").textContent = "Scrape Page";
+        scrapeBtn.disabled = !scrapeUrl.value.trim();
+      }
     });
 
     // ── Parse ──
