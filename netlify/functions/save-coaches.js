@@ -36,14 +36,21 @@ exports.handler = async (event) => {
     const shouldDelete = delete_sports && delete_sports.length > 0;
 
     if (shouldDelete) {
+      // Use clean headers for DELETE — no Content-Type on a bodyless request
+      const deleteHeaders = {
+        apikey: SUPA_KEY,
+        Authorization: `Bearer ${SUPA_KEY}`,
+        Prefer: "return=representation",
+      };
+
       const deleteUrl = `${PP_URL}/rest/v1/coaches?college_id=eq.${college_id}`;
       const delRes = await fetch(deleteUrl, {
         method: "DELETE",
-        headers: { ...supaHeaders, Prefer: "return=representation" },
+        headers: deleteHeaders,
       });
       if (!delRes.ok) {
         const err = await delRes.text().catch(() => "");
-        return { statusCode: 502, headers, body: JSON.stringify({ error: `Delete failed: ${err.slice(0, 300)}` }) };
+        return { statusCode: 502, headers, body: JSON.stringify({ error: `Delete failed (${delRes.status}): ${err.slice(0, 300)}` }) };
       }
       deleted = await delRes.json();
     }
