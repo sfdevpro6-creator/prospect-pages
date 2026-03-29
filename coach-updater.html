@@ -757,15 +757,37 @@
             school_name: selectedCollege.name,
           }),
         });
-        const parseData = await parseRes.json();
+
+        if (!parseRes.ok) {
+          const errText = await parseRes.text().catch(() => "");
+          throw new Error(`Parse returned HTTP ${parseRes.status}. Click "Parse with Haiku" to retry.`);
+        }
+
+        let parseData;
+        try {
+          parseData = await parseRes.json();
+        } catch (jsonErr) {
+          throw new Error("Parse returned invalid response. Click 'Parse with Haiku' to retry.");
+        }
+
         if (parseData.error) throw new Error(parseData.error);
 
-        parsedCoaches = parseData.coaches || [];
+        // Sanitize coaches — ensure no null values crash rendering
+        parsedCoaches = (parseData.coaches || []).map(c => ({
+          name: c.name || "Unknown",
+          title: c.title || "",
+          sport: c.sport || "unknown",
+          email: c.email || null,
+          phone: c.phone || null,
+          is_recruiting_contact: c.is_recruiting_contact || false,
+        })).filter(c => c.name && c.name !== "Unknown");
+
+        parseData.coaches = parsedCoaches;
         showStatus(`Found ${parsedCoaches.length} coaches across ${(parseData.sports_found || []).length} sports`, "success");
         renderResults(parseData);
 
       } catch (e) {
-        showStatus(`Scrape failed: ${e.message}. Try pasting the page content manually.`, "error");
+        showStatus(`Failed: ${e.message}. Try pasting the page content manually.`, "error");
       } finally {
         document.getElementById("scrape-label").textContent = "Scrape Page";
         scrapeBtn.disabled = !scrapeUrl.value.trim();
@@ -795,7 +817,15 @@
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        parsedCoaches = data.coaches || [];
+        parsedCoaches = (data.coaches || []).map(c => ({
+          name: c.name || "Unknown",
+          title: c.title || "",
+          sport: c.sport || "unknown",
+          email: c.email || null,
+          phone: c.phone || null,
+          is_recruiting_contact: c.is_recruiting_contact || false,
+        })).filter(c => c.name && c.name !== "Unknown");
+        data.coaches = parsedCoaches;
         showStatus(`Parsed ${parsedCoaches.length} coaches across ${(data.sports_found || []).length} sports`, "success");
         renderResults(data);
 
@@ -813,7 +843,7 @@
       section.classList.add("active");
 
       // Stats
-      const sports = [...new Set(parsedCoaches.map(c => c.sport))];
+      const sports = [...new Set(parsedCoaches.map(c => c.sport).filter(Boolean))];
       const withEmail = parsedCoaches.filter(c => c.email && c.email !== "null").length;
       document.getElementById("stats-row").innerHTML = `
         <div class="stat-chip"><span class="count">${parsedCoaches.length}</span> coaches</div>
@@ -826,7 +856,7 @@
       filterRow.innerHTML = `<span class="sport-pill active" data-sport="all">All (${parsedCoaches.length})</span>` +
         sports.map(s => {
           const count = parsedCoaches.filter(c => c.sport === s).length;
-          return `<span class="sport-pill" data-sport="${s}">${s.replace("_w", " (W)")} (${count})</span>`;
+          return `<span class="sport-pill" data-sport="${s}">${(s || "unknown").replace("_w", " (W)")} (${count})</span>`;
         }).join("");
 
       filterRow.querySelectorAll(".sport-pill").forEach(pill => {
