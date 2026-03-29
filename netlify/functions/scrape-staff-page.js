@@ -138,23 +138,33 @@ async function basicFetch(url, headers) {
 }
 
 /**
- * Convert HTML to clean text, preserving structure useful for Haiku parsing
+ * Convert HTML to clean text, preserving structure useful for Haiku parsing.
+ * Smart extraction: tries to find the staff directory table/content first,
+ * strips navigation menus and cruft aggressively.
  */
 function htmlToText(html) {
   let text = html;
 
-  // Remove script, style, nav, footer, header blocks
+  // ── STEP 1: Try to extract just the staff table/content area ──
+  // Sidearm sites wrap the directory in a specific container
+  const staffSection = findStaffSection(html);
+  if (staffSection && staffSection.length > 200) {
+    text = staffSection;
+  }
+
+  // ── STEP 2: Remove junk blocks ──
   text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
   text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
   text = text.replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, "");
   text = text.replace(/<!--[\s\S]*?-->/g, "");
+  text = text.replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "");
+  text = text.replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "");
+  text = text.replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "");
 
-  // Convert block elements to newlines
-  text = text.replace(/<\/?(?:div|p|br|hr|li|tr|h[1-6]|section|article|aside|dd|dt|figcaption|blockquote)[^>]*>/gi, "\n");
+  // Remove menus and dropdowns (common Sidearm patterns)
+  text = text.replace(/<ul[^>]*class="[^"]*(?:menu|nav|dropdown)[^"]*"[^>]*>[\s\S]*?<\/ul>/gi, "");
 
-  // Convert table cells to tabs (preserves table structure for Haiku)
-  text = text.replace(/<\/?(td|th)[^>]*>/gi, "\t");
-
+  // ── STEP 3: Extract structured content ──
   // Extract href from mailto links (preserve email addresses)
   text = text.replace(/<a[^>]*href\s*=\s*["']mailto:([^"'?]+)[^"']*["'][^>]*>[^<]*<\/a>/gi, " $1 ");
 
@@ -163,6 +173,12 @@ function htmlToText(html) {
 
   // Extract Twitter/X handles from links
   text = text.replace(/<a[^>]*href\s*=\s*["']https?:\/\/(?:twitter|x)\.com\/(@?[\w]+)["'][^>]*>[^<]*<\/a>/gi, " @$1 ");
+
+  // Convert block elements to newlines
+  text = text.replace(/<\/?(?:div|p|br|hr|li|tr|h[1-6]|section|article|aside|dd|dt|figcaption|blockquote)[^>]*>/gi, "\n");
+
+  // Convert table cells to tabs (preserves table structure for Haiku)
+  text = text.replace(/<\/?(td|th)[^>]*>/gi, "\t");
 
   // Strip remaining HTML tags
   text = text.replace(/<[^>]+>/g, " ");
@@ -177,16 +193,57 @@ function htmlToText(html) {
     .replace(/&nbsp;/g, " ")
     .replace(/&#\d+;/g, " ");
 
-  // Clean up whitespace
+  // ── STEP 4: Remove common nav/menu text lines ──
+  const navJunkLines = /^\s*(Skip To Main Content|Pause All Rotators|Opens in new window|Opens in a new window|Search Button|Keyword Search|Filter By|All Categories|Main Navigation Menu|Search:|Print)\s*$/gmi;
+  text = text.replace(navJunkLines, "");
+
+  // Remove standalone single-word nav items that are just link text
+  const standaloneNavWords = /^\s*(Schedule|Roster|News|Tickets|Facebook|Instagram|YouTube|Twitter|X)\s*$/gmi;
+  text = text.replace(standaloneNavWords, "");
+
+  // ── STEP 5: Clean up whitespace ──
   text = text.replace(/\t+/g, "\t");
   text = text.replace(/[ \t]+\n/g, "\n");
   text = text.replace(/\n{3,}/g, "\n\n");
   text = text.replace(/^[\s\n]+|[\s\n]+$/g, "");
 
-  // Cap at 12000 chars (Haiku handles ~8000 but we want buffer for the user to review)
+  // Cap at 12000 chars
   if (text.length > 12000) {
     text = text.slice(0, 12000) + "\n\n[... truncated ...]";
   }
 
   return text;
+}
+
+/**
+ * Try to find the main staff directory content section in the HTML.
+ * Sidearm sites use specific class names and ID patterns.
+ */
+function findStaffSection(html) {
+  // Try common patterns for staff directory content areas
+
+  // Pattern 1: Sidearm staff directory table
+  const tableMatch = html.match(/<table[^>]*class="[^"]*sidearm-table[^"]*"[^>]*>[\s\S]*?<\/table>/i);
+  if (tableMatch) return tableMatch[0];
+
+  // Pattern 2: Any table that contains "staff-directory" links
+  const staffTableMatch = html.match(/<table[^>]*>[\s\S]*?staff-directory[\s\S]*?<\/table>/i);
+  if (staffTableMatch && staffTableMatch[0].length > 500) return staffTableMatch[0];
+
+  // Pattern 3: Main content area with role="main" or id="main-content"
+  const mainMatch = html.match(/<main[^>]*>[\s\S]*?<\/main>/i)
+    || html.match(/<div[^>]*id="main-content"[^>]*>[\s\S]*?<\/div>\s*<(?:footer|div[^>]*class="[^"]*footer)/i)
+    || html.match(/<div[^>]*role="main"[^>]*>[\s\S]*?<\/div>\s*<(?:footer|div[^>]*class="[^"]*footer)/i);
+  if (mainMatch) return mainMatch[0];
+
+  // Pattern 4: Content between "Staff Directory" heading and footer
+  const headingMatch = html.match(/<h[12][^>]*>\s*Staff Directory\s*<\/h[12]>([\s\S]*?)(?:<footer|<div[^>]*class="[^"]*footer)/i);
+  if (headingMatch) return headingMatch[0];
+
+  // Pattern 5: Content starting from "Members By Category" (Sidearm specific)
+  const categoryMatch = html.match(/Members By Category[\s\S]*?(?:<footer|<\/body)/i);
+  if (categoryMatch) return categoryMatch[0];
+
+  // No specific section found — return null to use full page
+  return null;
 }
