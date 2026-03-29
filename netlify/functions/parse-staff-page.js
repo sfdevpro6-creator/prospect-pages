@@ -26,7 +26,7 @@ exports.handler = async (event) => {
 SCHOOL: ${school_name || "Unknown"}
 
 RAW STAFF PAGE CONTENT:
-${raw_text.slice(0, 10000)}
+${raw_text.slice(0, 25000)}
 
 Extract ONLY coaching staff. Respond with valid JSON only — no markdown, no backticks, no explanation.
 
@@ -92,7 +92,7 @@ CRITICAL: Only return coaches for these 7 sports. Every coach MUST have a sport 
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 4000,
+        max_tokens: 8000,
         messages: [{ role: "user", content: prompt }],
       }),
     });
