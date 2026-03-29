@@ -422,7 +422,7 @@
     </svg>
     <div>
       <h1>Coach Updater</h1>
-      <span>Paste → Parse → Save</span>
+      <span>URL or Paste → Review → Save</span>
     </div>
     <div class="site-nav" id="site-nav">
       <button class="site-nav-btn" onclick="document.getElementById('site-nav').classList.toggle('open')">
@@ -497,9 +497,9 @@
         </button>
       </div>
       <div style="font-size:11px; color:var(--text-dim); margin:-8px 0 12px; display:flex; align-items:center; gap:16px;">
-        <span>Enter a URL to auto-scrape, or paste content manually below</span>
+        <span>Paste a URL above — auto-scrapes + parses instantly</span>
         <span style="flex:1; border-top:1px solid var(--border)"></span>
-        <span>OR paste manually</span>
+        <span>OR paste content manually below</span>
       </div>
 
       <textarea class="paste-area" id="paste-area" placeholder="Copy the coaching staff section from the athletics website and paste it here. Include all sports you want to update. Haiku will parse names, titles, emails, and sports automatically."></textarea>
@@ -681,7 +681,7 @@
       if (nav && !nav.contains(e.target)) nav.classList.remove("open");
     });
 
-    // ── URL Scraper ──
+    // ── URL Scraper (auto-fires on paste) ──
     const scrapeUrl = document.getElementById("scrape-url");
     const scrapeBtn = document.getElementById("scrape-btn");
 
@@ -690,7 +690,27 @@
       scrapeBtn.disabled = !val || val.length < 5;
     });
 
-    scrapeBtn.addEventListener("click", async () => {
+    // Auto-fire on paste
+    scrapeUrl.addEventListener("paste", () => {
+      setTimeout(() => {
+        const val = scrapeUrl.value.trim();
+        if (val && (val.startsWith("http") || val.includes("."))) {
+          doScrapeAndParse();
+        }
+      }, 100);
+    });
+
+    // Also fire on Enter
+    scrapeUrl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        doScrapeAndParse();
+      }
+    });
+
+    scrapeBtn.addEventListener("click", doScrapeAndParse);
+
+    async function doScrapeAndParse() {
       let url = scrapeUrl.value.trim();
       if (!url) return;
       if (!url.startsWith("http")) url = "https://" + url;
@@ -700,24 +720,49 @@
       showStatus("Fetching staff page...", "info");
 
       try {
-        const res = await fetch(`${BASE}/.netlify/functions/scrape-staff-page`, {
+        // STEP 1: Scrape
+        const scrapeRes = await fetch(`${BASE}/.netlify/functions/scrape-staff-page`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
+        const scrapeData = await scrapeRes.json();
+        if (scrapeData.error) throw new Error(scrapeData.error);
 
-        const msg = data.warning
-          ? data.warning
-          : `Scraped ${data.chars} chars from page${data.method === "scrapingbee" ? " (via ScrapingBee)" : ""}. Review below, then click Parse.`;
-        showStatus(msg, data.warning ? "error" : "success");
-
-        if (data.text) {
-          pasteArea.value = data.text;
-          document.getElementById("char-count").textContent = data.text.length;
-          updateParseBtn();
+        if (!scrapeData.text || scrapeData.text.length < 20) {
+          throw new Error("Page returned very little text. Try pasting content manually.");
         }
+
+        // Fill paste area as backup / visibility
+        pasteArea.value = scrapeData.text;
+        document.getElementById("char-count").textContent = scrapeData.text.length;
+        updateParseBtn();
+
+        const method = scrapeData.method === "scrapingbee" ? " (via ScrapingBee)" : "";
+        showStatus(`Scraped ${scrapeData.text.length} chars${method}. Auto-parsing...`, "info");
+
+        // STEP 2: Auto-parse (skip the manual Parse click)
+        document.getElementById("scrape-label").innerHTML = '<span class="spinner"></span> Parsing...';
+
+        if (!selectedCollege) {
+          showStatus(`Scraped ${scrapeData.text.length} chars${method}. Select a college first, then click Parse.`, "warning");
+          return;
+        }
+
+        const parseRes = await fetch(`${BASE}/.netlify/functions/parse-staff-page`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            raw_text: scrapeData.text,
+            school_name: selectedCollege.name,
+          }),
+        });
+        const parseData = await parseRes.json();
+        if (parseData.error) throw new Error(parseData.error);
+
+        parsedCoaches = parseData.coaches || [];
+        showStatus(`Found ${parsedCoaches.length} coaches across ${(parseData.sports_found || []).length} sports`, "success");
+        renderResults(parseData);
 
       } catch (e) {
         showStatus(`Scrape failed: ${e.message}. Try pasting the page content manually.`, "error");
@@ -725,7 +770,7 @@
         document.getElementById("scrape-label").textContent = "Scrape Page";
         scrapeBtn.disabled = !scrapeUrl.value.trim();
       }
-    });
+    }
 
     // ── Parse ──
     document.getElementById("parse-btn").addEventListener("click", doParse);
