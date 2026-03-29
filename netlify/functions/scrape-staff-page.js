@@ -194,12 +194,19 @@ function htmlToText(html) {
     .replace(/&#\d+;/g, " ");
 
   // ── STEP 4: Remove common nav/menu text lines ──
-  const navJunkLines = /^\s*(Skip To Main Content|Pause All Rotators|Opens in new window|Opens in a new window|Search Button|Keyword Search|Filter By|All Categories|Main Navigation Menu|Search:|Print)\s*$/gmi;
+  const navJunkLines = /^\s*(Skip To Main Content|Pause All Rotators|Opens in new window|Opens in a new window|Search Button|Keyword Search|Filter By|All Categories|Main Navigation Menu|Search:|Print|Copyright ©.*|All rights reserved.*|Terms of Service.*|Privacy Policy.*|Accessibility.*|Do Not Sell.*|Sidearm Sports.*|Staff Directory Members By Category.*|Powered by.*)\s*$/gmi;
   text = text.replace(navJunkLines, "");
 
   // Remove standalone single-word nav items that are just link text
-  const standaloneNavWords = /^\s*(Schedule|Roster|News|Tickets|Facebook|Instagram|YouTube|Twitter|X)\s*$/gmi;
+  const standaloneNavWords = /^\s*(Schedule|Roster|News|Tickets|Facebook|Instagram|YouTube|Twitter|X|Camps|Traditions|Compliance|Facilities|Recruiting|Fan Guide|Visitor's Guide|Quick Facts|Code of Conduct|Archives?|Archived Stories|Composite Calendar|Season Tickets|Buy Tickets|Mini Plans.*|Student Central|Single-Game Tickets|Nanook Shop|Support|NIL|SAAC|Hall of Fame|Give Now|How to Give|Employment.*|Mission|Department Philosophy|Sports Information|Academic Advising|Reports|Handbook|Resources|Department|Inside Athletics|Fan Central|Men's Sports|Women's Sports|Follow Along|General Information|Events|Information)\s*$/gmi;
   text = text.replace(standaloneNavWords, "");
+
+  // Remove address blocks (Physical Address, Mailing Address, PO Box lines)
+  text = text.replace(/^\s*(Physical|Mailing)\s*(Address|&).*$/gmi, "");
+  text = text.replace(/^\s*P\.?O\.?\s*Box\s+\d+.*$/gmi, "");
+  text = text.replace(/^\s*Fax:?\s*[\d-().]+\s*$/gmi, "");
+  text = text.replace(/^\s*\d{3,5}\s+\w+\s+(Dr|Drive|Loop|Lane|Ln|St|Street|Ave|Blvd|Road|Rd|Way|Circle)\b.*$/gmi, "");
+  text = text.replace(/^\s*[A-Z][a-z]+,\s*[A-Z]{2}\s+\d{5}.*$/gmi, "");
 
   // ── STEP 5: Clean up whitespace ──
   text = text.replace(/\t+/g, "\t");
@@ -207,9 +214,9 @@ function htmlToText(html) {
   text = text.replace(/\n{3,}/g, "\n\n");
   text = text.replace(/^[\s\n]+|[\s\n]+$/g, "");
 
-  // Cap at 12000 chars
-  if (text.length > 12000) {
-    text = text.slice(0, 12000) + "\n\n[... truncated ...]";
+  // Cap at 30000 chars — Haiku can handle large context
+  if (text.length > 30000) {
+    text = text.slice(0, 30000) + "\n\n[... truncated ...]";
   }
 
   return text;
