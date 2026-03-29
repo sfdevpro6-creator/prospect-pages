@@ -408,6 +408,96 @@
     }
     .mode-btn.active { background: var(--accent); color: var(--bg); }
     .mode-btn:hover:not(.active) { color: var(--text); }
+
+    /* ── Current Coaches Panel ── */
+    .current-section { display: none; }
+    .current-section.active { display: block; }
+    .current-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .current-header .section-title { margin-bottom: 0; }
+    .current-stats {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .current-stats .cstat {
+      padding: 4px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .current-stats .cstat strong { color: var(--accent); }
+    .current-sport-group { margin-bottom: 16px; }
+    .current-sport-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      cursor: pointer;
+    }
+    .current-sport-label span {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+    .current-sport-label .del-sport-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .current-sport-label .del-sport-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+    .current-coach-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-top: none;
+      font-size: 13px;
+      gap: 12px;
+    }
+    .current-coach-row:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+    .current-coach-row:hover { background: rgba(255,255,255,0.02); }
+    .current-coach-row .cc-name { font-weight: 600; min-width: 160px; }
+    .current-coach-row .cc-title { color: var(--text-dim); flex: 1; }
+    .current-coach-row .cc-email { color: var(--accent); font-size: 12px; min-width: 180px; }
+    .current-coach-row .cc-email a { color: var(--accent); text-decoration: none; }
+    .current-coach-row .cc-del {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .current-coach-row .cc-del:hover { color: var(--red); background: var(--red-dim); }
+    .current-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    .current-loading {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -478,6 +568,17 @@
         <span class="name" id="selected-name"></span>
         <span class="id-badge" id="selected-id"></span>
         <button class="clear-btn" id="clear-college" title="Clear selection">&times;</button>
+      </div>
+    </div>
+
+    <!-- Current Coaches Panel -->
+    <div class="section current-section" id="current-section">
+      <div class="current-header">
+        <div class="section-title">Current Coaches in Database</div>
+        <div class="current-stats" id="current-stats"></div>
+      </div>
+      <div id="current-coaches-body">
+        <div class="current-loading">Select a school to view current coaches...</div>
       </div>
     </div>
 
@@ -637,13 +738,127 @@
       document.getElementById("selected-id").textContent = `ID: ${college.id}`;
       document.getElementById("selected-college").classList.add("active");
       updateParseBtn();
+      loadCurrentCoaches(college.id);
     }
 
     document.getElementById("clear-college").addEventListener("click", () => {
       selectedCollege = null;
       document.getElementById("selected-college").classList.remove("active");
+      document.getElementById("current-section").classList.remove("active");
       updateParseBtn();
     });
+
+    // ── Current Coaches ──
+    const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
+    const SUPABASE_KEY_VAL = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZGNhanNqcmVheXZpbnV0d3lyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDI5ODg1MCwiZXhwIjoyMDg5ODc0ODUwfQ.UAoRgpFFwAKOV_kBk-AeeeVe5qMIgma_MZeczUN14nw";
+
+    async function loadCurrentCoaches(collegeId) {
+      const section = document.getElementById("current-section");
+      const body = document.getElementById("current-coaches-body");
+      section.classList.add("active");
+      body.innerHTML = '<div class="current-loading"><span class="spinner"></span> Loading...</div>';
+
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaches?college_id=eq.${collegeId}&select=id,name,title,sport,email,phone,verified_at,flagged_outdated&order=sport.asc,name.asc`,
+          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        const coaches = await res.json();
+
+        if (!coaches.length) {
+          body.innerHTML = '<div class="current-empty">No coaches in database for this school.</div>';
+          document.getElementById("current-stats").innerHTML = '<div class="cstat"><strong>0</strong> coaches</div>';
+          return;
+        }
+
+        renderCurrentCoaches(coaches, collegeId);
+      } catch (e) {
+        body.innerHTML = `<div class="current-empty" style="color:var(--red)">Error: ${e.message}</div>`;
+      }
+    }
+
+    function renderCurrentCoaches(coaches, collegeId) {
+      const body = document.getElementById("current-coaches-body");
+      const stats = document.getElementById("current-stats");
+
+      // Stats
+      const sports = [...new Set(coaches.map(c => c.sport))];
+      const verified = coaches.filter(c => c.verified_at).length;
+      const flagged = coaches.filter(c => c.flagged_outdated).length;
+      stats.innerHTML = `
+        <div class="cstat"><strong>${coaches.length}</strong> coaches</div>
+        <div class="cstat"><strong>${sports.length}</strong> sports</div>
+        <div class="cstat"><strong>${verified}</strong> verified</div>
+        ${flagged ? `<div class="cstat" style="border-color:var(--yellow);color:var(--yellow)"><strong>${flagged}</strong> flagged</div>` : ""}
+      `;
+
+      // Group by sport
+      const bySport = {};
+      coaches.forEach(c => {
+        const s = c.sport || "unknown";
+        if (!bySport[s]) bySport[s] = [];
+        bySport[s].push(c);
+      });
+
+      let html = "";
+      for (const sport of Object.keys(bySport).sort()) {
+        const list = bySport[sport];
+        html += `<div class="current-sport-group">
+          <div class="current-sport-label">
+            <span>${sport.replace("_w", " (W)")} (${list.length})</span>
+            <button class="del-sport-btn" onclick="deleteCoachesBySport(${collegeId}, '${sport}')">Delete All ${sport.replace("_w", " (W)")}</button>
+          </div>`;
+
+        for (const c of list) {
+          const emailHtml = c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '<span style="color:#555">none</span>';
+          const verifiedDot = c.verified_at
+            ? '<span title="Verified" style="color:var(--accent)">●</span>'
+            : c.flagged_outdated
+              ? '<span title="Flagged outdated" style="color:var(--yellow)">●</span>'
+              : '<span title="Not verified" style="color:#555">○</span>';
+          html += `<div class="current-coach-row">
+            ${verifiedDot}
+            <span class="cc-name">${esc(c.name)}</span>
+            <span class="cc-title">${esc(c.title || "")}</span>
+            <span class="cc-email">${emailHtml}</span>
+            <button class="cc-del" onclick="deleteCoach(${c.id}, ${collegeId})" title="Delete">✕</button>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      body.innerHTML = html;
+    }
+
+    async function deleteCoach(coachId, collegeId) {
+      if (!confirm("Delete this coach?")) return;
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaches?id=eq.${coachId}`,
+          { method: "DELETE", headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        if (!res.ok) throw new Error("Delete failed");
+        showStatus("Coach deleted.", "success");
+        loadCurrentCoaches(collegeId);
+      } catch (e) {
+        showStatus(`Delete failed: ${e.message}`, "error");
+      }
+    }
+
+    async function deleteCoachesBySport(collegeId, sport) {
+      if (!confirm(`Delete ALL ${sport.replace("_w", " (W)")} coaches for this school?`)) return;
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaches?college_id=eq.${collegeId}&sport=eq.${sport}`,
+          { method: "DELETE", headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        if (!res.ok) throw new Error("Delete failed");
+        showStatus(`All ${sport} coaches deleted.`, "success");
+        loadCurrentCoaches(collegeId);
+      } catch (e) {
+        showStatus(`Delete failed: ${e.message}`, "error");
+      }
+    }
 
     // ── Paste Area ──
     const pasteArea = document.getElementById("paste-area");
@@ -967,6 +1182,9 @@
         // Reset for next school
         saveLabel.textContent = "✓ Saved!";
         setTimeout(() => { saveLabel.textContent = "Save to Database"; }, 3000);
+
+        // Refresh current coaches panel
+        if (selectedCollege) loadCurrentCoaches(selectedCollege.id);
 
       } catch (e) {
         showStatus(`Save failed: ${e.message}`, "error");
