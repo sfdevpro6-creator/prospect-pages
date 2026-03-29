@@ -1,8 +1,7 @@
 // scrape-staff-page.js — Netlify function
 // Takes { url }, fetches page via ScrapingBee with JS rendering, returns extracted text
 // The coach-updater then passes this text to parse-staff-page for Haiku extraction
-
-const fetch = require("node-fetch");
+// Uses built-in fetch (Node 18+)
 
 exports.handler = async (event) => {
   const headers = {
@@ -15,7 +14,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "POST only" }) };
 
-  const SB_KEY = process.env.SCRAPINGBEE_KEY;
+  const SB_KEY = process.env.SCRAPINGBEE_API_KEY || process.env.SCRAPINGBEE_KEY;
   if (!SB_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing SCRAPINGBEE_KEY env var" }) };
 
   try {
@@ -41,9 +40,13 @@ exports.handler = async (event) => {
       timeout: "30000",
     });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
+
     const sbRes = await fetch(`https://app.scrapingbee.com/api/v1?${sbParams.toString()}`, {
-      timeout: 35000,
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!sbRes.ok) {
       const errText = await sbRes.text().catch(() => "");
@@ -91,12 +94,16 @@ exports.handler = async (event) => {
  */
 async function basicFetch(url, headers) {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const res = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
-      timeout: 15000,
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       return { statusCode: 200, headers, body: JSON.stringify({ 
