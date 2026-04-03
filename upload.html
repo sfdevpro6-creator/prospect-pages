@@ -73,8 +73,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 .sport-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
 
 /* Section show/hide */
-.form-section{display:none;animation:fadeUp 0.35s ease}
-.form-section.visible{display:block}
+.form-section{display:none;animation:fadeUp 0.35s ease;overflow:hidden}
+.form-section.visible{display:block;overflow:visible}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
 /* Buttons */
