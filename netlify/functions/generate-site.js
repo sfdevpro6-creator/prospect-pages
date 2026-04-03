@@ -1501,6 +1501,7 @@ exports.handler = async (event) => {
         invite_code: inviteCode,
         site_id: inserted?.[0]?.id,
         athlete_name: data.athlete_name,
+        preview_html: siteHtml,
       }),
     };
   } catch (error) {
