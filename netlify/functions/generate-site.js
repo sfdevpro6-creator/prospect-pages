@@ -677,7 +677,7 @@ nav.scrolled { padding: 0.8rem 3rem; background: ${theme.navBgScrolled}; }
 .hero-photo-card {
   width: 320px; flex-shrink: 0; align-self: flex-start;
   margin-bottom: -100px; position: relative; z-index: 3;
-  border: 1px solid var(--border); background: var(--bg-card); overflow: hidden;
+  border: 1px solid var(--border); background: var(--bg-card); overflow: hidden; border-radius: 10px;
 }
 .hero-photo-card img {
   width: 100%; height: 420px; object-fit: cover; display: block;
@@ -692,13 +692,14 @@ nav.scrolled { padding: 0.8rem 3rem; background: ${theme.navBgScrolled}; }
   letter-spacing: 0.18em; text-transform: uppercase; padding: 1rem 2.5rem;
   background: var(--accent); color: var(--white); border: none; cursor: pointer;
   text-decoration: none; transition: all 0.3s; position: relative; overflow: hidden;
+  border-radius: 6px;
 }
 .btn-primary:hover { background: ${theme.accentHover}; transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow); }
 .btn-secondary {
   font-family: var(--font-condensed); font-weight: 700; font-size: 0.85rem;
   letter-spacing: 0.18em; text-transform: uppercase; padding: 1rem 2.5rem;
   background: transparent; color: var(--text-primary); border: 1px solid rgba(255,255,255,0.2);
-  cursor: pointer; text-decoration: none; transition: all 0.3s;
+  cursor: pointer; text-decoration: none; transition: all 0.3s; border-radius: 6px;
 }
 .btn-secondary:hover { border-color: var(--text-primary); background: rgba(255,255,255,0.04); }
 .scroll-indicator {
@@ -737,7 +738,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
   width: 100%; aspect-ratio: 3/4; background: var(--bg-card); border: 1px solid var(--border);
   position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
   color: var(--text-muted); font-family: var(--font-condensed); font-size: 0.8rem;
-  letter-spacing: 0.15em; text-transform: uppercase;
+  letter-spacing: 0.15em; text-transform: uppercase; border-radius: 10px;
 }
 .about-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .about-photo::before {
@@ -747,7 +748,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 .about-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
 .info-card {
   background: var(--bg-card); border: 1px solid var(--border); padding: 1.2rem 1.5rem;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s; border-radius: 8px;
 }
 .info-card:hover { border-color: var(--card-border-hover); }
 .info-card-label {
@@ -765,7 +766,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
 .stat-card {
   background: var(--bg-card); border: 1px solid var(--border); padding: 2rem 1.5rem;
-  text-align: center; transition: all 0.4s;
+  text-align: center; transition: all 0.4s; border-radius: 8px;
 }
 .stat-card:hover { border-color: var(--card-border-hover); transform: translateY(-4px); }
 .stat-number { font-family: var(--font-display); font-size: 3rem; color: var(--card-text); line-height: 1; }
@@ -840,7 +841,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 .achievement-card {
   background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem 1.5rem 1.5rem 1.8rem;
   display: flex; gap: 1rem; align-items: flex-start; transition: all 0.4s;
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; border-radius: 8px;
 }
 .achievement-card::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
@@ -864,7 +865,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 .contact-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
 .contact-item-icon {
   width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 8px;
 }
 .contact-item-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; }
 .contact-item-label {
@@ -875,7 +876,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 .contact-item-value a { color: var(--text-primary); text-decoration: none; }
 .contact-item-value a:hover { color: var(--accent); }
 .contact-form {
-  background: var(--bg-card); border: 1px solid var(--border); padding: 2.5rem;
+  background: var(--bg-card); border: 1px solid var(--border); padding: 2.5rem; border-radius: 10px;
 }
 .contact-form h3 { font-family: var(--font-display); font-size: 1.8rem; color: var(--card-text); margin-bottom: 1.5rem; }
 .form-group { margin-bottom: 1.2rem; }
@@ -885,7 +886,7 @@ ${theme.isLight ? '#about { background: var(--bg-secondary); }' : '#highlights, 
 }
 .form-group input, .form-group textarea {
   width: 100%; padding: 0.9rem 1rem; background: var(--bg-primary);
-  border: 1px solid var(--border); color: var(--text-primary);
+  border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;
   font-family: var(--font-body); font-size: 0.95rem; transition: border-color 0.3s; outline: none;
 }
 .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
