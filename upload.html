@@ -100,6 +100,17 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
 .thank-you h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px}
 .thank-you p{font-size:15px;color:var(--text-muted);max-width:400px;margin:0 auto;line-height:1.7}
 
+/* Site Preview */
+.site-preview{margin-top:32px;max-width:900px;margin-left:auto;margin-right:auto;text-align:left}
+.site-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
+.site-preview-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--cream)}
+.site-preview-note{font-size:11px;color:var(--text-dim);max-width:340px;text-align:right;line-height:1.5}
+.site-preview-frame{width:100%;height:70vh;min-height:500px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#0a0a0c}
+.site-preview-frame iframe{width:100%;height:100%;border:none}
+.site-preview-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;margin-top:12px}
+.site-preview-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.site-preview-bar span{font-size:12px;color:var(--text-dim);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px}
+
 /* Generating animation */
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
@@ -707,8 +718,26 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);mi
       <div style="font-size:12px;color:var(--text-muted);line-height:1.6">Save this code. Use it to sign up at<br><a href="/dashboard" style="color:var(--gold);text-decoration:none;font-weight:600">prospectpages.net/dashboard</a><br>to manage your athlete's profile, upload game film, and send emails to coaches.</div>
     </div>
 
+    <!-- Site Preview -->
+    <div class="site-preview" id="sitePreviewBlock" style="display:none">
+      <div class="site-preview-header">
+        <div class="site-preview-title">SITE PREVIEW</div>
+        <div class="site-preview-note">This is an auto-generated preview. We'll review everything and make final adjustments before publishing.</div>
+      </div>
+      <div class="site-preview-frame">
+        <iframe id="sitePreviewFrame" sandbox="allow-same-origin" title="Site Preview"></iframe>
+      </div>
+      <div class="site-preview-bar">
+        <div class="site-preview-dot"></div>
+        <span>Preview only — photos, videos, and final polish will be added before your site goes live</span>
+      </div>
+      <div style="margin-top:16px;text-align:center">
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;max-width:500px;margin:0 auto">See something you'd like to change? No problem — just email us and we'll take care of it before publishing.</p>
+      </div>
+    </div>
+
     <div style="margin-top:24px;padding:16px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;display:inline-block">
-      <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Questions?</div>
+      <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Questions or Changes?</div>
       <div style="font-size:15px;font-weight:600"><a href="mailto:david@prospectpages.college" style="color:var(--gold);text-decoration:none">david@prospectpages.college</a></div>
     </div>
   </div>
@@ -1020,6 +1049,12 @@ function submitForm() {
         document.getElementById('inviteCodeDisplay').textContent = data.invite_code;
         document.getElementById('inviteCodeBlock').style.display = 'block';
       }
+      // Show site preview if HTML was returned
+      if(data.preview_html) {
+        var previewFrame = document.getElementById('sitePreviewFrame');
+        previewFrame.srcdoc = data.preview_html;
+        document.getElementById('sitePreviewBlock').style.display = 'block';
+      }
       // Complete the animation
       genSteps.forEach(function(s){ s.classList.add('active','done'); });
     } else {
@@ -1033,6 +1068,7 @@ function submitForm() {
     document.getElementById('generating').style.display='none';
     document.getElementById('thankYou').style.display='block';
     document.getElementById('inviteCodeBlock').style.display = 'none';
+    document.getElementById('sitePreviewBlock').style.display = 'none';
 
     // Fire Web3Forms as backup notification so David gets the data
     var fd = new FormData();
