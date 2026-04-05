@@ -204,18 +204,18 @@ function injectPhotos(html, photos) {
         /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
         `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
       );
-      // Legacy background approach fallback
+      // Legacy background approach fallback — match multiline CSS block
       result = result.replace(
-        /\.hero-bg\s*\{[^}]*\}/,
+        /\.hero-bg\s*\{[\s\S]*?\}/,
         `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
       );
     }
   }
 
   if (photos.headshot_url) {
-    // Match either "PHOTO COMING SOON" text or a previously injected img tag
+    // Match about-photo div with any content inside (multiline), including whitespace
     result = result.replace(
-      /<div class="about-photo reveal">(?:PHOTO COMING SOON|<img[^>]*>)<\/div>/,
+      /<div class="about-photo reveal">\s*(?:PHOTO COMING SOON|[\s\S]*?)\s*<\/div>/,
       `<div class="about-photo reveal"><img src="${photos.headshot_url}" alt="Athlete headshot"></div>`
     );
   }
@@ -289,7 +289,7 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const NETLIFY_TOKEN = process.env.NETLIFY_AUTH_TOKEN;
+  const NETLIFY_TOKEN = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_TOKEN;
   if (!NETLIFY_TOKEN) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'NETLIFY_AUTH_TOKEN not configured' }) };
   }
