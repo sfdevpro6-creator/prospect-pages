@@ -138,6 +138,48 @@ async function basicFetch(url, headers) {
 }
 
 /**
+ * Process HTML tables into clean tab-delimited text.
+ * Extracts each <tr> as a single line with cells tab-separated.
+ * Within each <td>, all HTML is stripped and whitespace collapsed to a single space.
+ * Mailto hrefs are extracted so emails aren't lost to link text.
+ * This replaces the raw <table> HTML so the rest of htmlToText gets clean rows.
+ */
+function processTablesClean(html) {
+  // Match all <table> blocks
+  return html.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (tableHtml) => {
+    const rows = [];
+    // Match each <tr>
+    const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+    let trMatch;
+    while ((trMatch = trRegex.exec(tableHtml)) !== null) {
+      const cells = [];
+      // Match each <td> or <th>
+      const tdRegex = /<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi;
+      let tdMatch;
+      while ((tdMatch = tdRegex.exec(trMatch[1])) !== null) {
+        let cell = tdMatch[1];
+        // Extract mailto hrefs before stripping tags
+        cell = cell.replace(/<a[^>]*href\s*=\s*["']mailto:([^"'?]+)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, " $1 ");
+        // Extract tel hrefs
+        cell = cell.replace(/<a[^>]*href\s*=\s*["']tel:([^"']+)["'][^>]*>[\s\S]*?<\/a>/gi, " $1 ");
+        // Strip all remaining HTML tags
+        cell = cell.replace(/<[^>]+>/g, " ");
+        // Decode entities
+        cell = cell.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                   .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ").replace(/&#\d+;/g, " ");
+        // Collapse whitespace to single space
+        cell = cell.replace(/\s+/g, " ").trim();
+        cells.push(cell);
+      }
+      if (cells.length && cells.some(c => c.length > 0)) {
+        rows.push(cells.join("\t"));
+      }
+    }
+    return "\n" + rows.join("\n") + "\n";
+  });
+}
+
+/**
  * Convert HTML to clean text, preserving structure useful for Haiku parsing.
  * Smart extraction: tries to find the staff directory table/content first,
  * strips navigation menus and cruft aggressively.
@@ -151,6 +193,13 @@ function htmlToText(html) {
   if (staffSection && staffSection.length > 200) {
     text = staffSection;
   }
+
+  // ── STEP 1.5: Process HTML tables into clean tab-delimited rows ──
+  // Sidearm staff directories use <table> with Name/Title/Phone/Email columns.
+  // Generic tag stripping breaks row integrity (nested <a>, <div>, <img> inside <td>
+  // produce newlines, splitting name/title/phone/email across multiple lines).
+  // This step extracts tables structurally so each person stays on one line.
+  text = processTablesClean(text);
 
   // ── STEP 2: Remove junk blocks ──
   text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
