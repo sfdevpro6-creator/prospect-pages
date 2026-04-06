@@ -140,12 +140,21 @@ function AuthScreen({ onAuth }) {
             if (codeData.client_name) profileData.full_name = codeData.client_name;
             if (codeData.sport) profileData.athlete_sport = codeData.sport;
             if (codeData.athlete_site_url) profileData.recruiting_site_url = codeData.athlete_site_url;
-            // Look up site record by invite code to get netlify_site_id
+            // Look up site record by invite code to get netlify_site_id and coach refs
             try {
-              const siteRows = await supaFetch(`/rest/v1/sites?invite_code=eq.${encodeURIComponent(inviteCode.trim().toUpperCase())}&select=netlify_site_id,site_url`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
-              if (siteRows?.length && siteRows[0].netlify_site_id) {
-                profileData.netlify_site_id = siteRows[0].netlify_site_id;
-                if (!profileData.recruiting_site_url && siteRows[0].site_url) profileData.recruiting_site_url = siteRows[0].site_url;
+              const siteRows = await supaFetch(`/rest/v1/sites?invite_code=eq.${encodeURIComponent(inviteCode.trim().toUpperCase())}&select=netlify_site_id,site_url,hs_coach_name,hs_coach_contact,travel_coach_name,travel_coach_contact,athlete_name,athlete_email,position,grad_year`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
+              if (siteRows?.length) {
+                const s = siteRows[0];
+                if (s.netlify_site_id) profileData.netlify_site_id = s.netlify_site_id;
+                if (!profileData.recruiting_site_url && s.site_url) profileData.recruiting_site_url = s.site_url;
+                if (s.hs_coach_name) profileData.hs_coach_name = s.hs_coach_name;
+                if (s.hs_coach_contact) profileData.hs_coach_contact = s.hs_coach_contact;
+                if (s.travel_coach_name) profileData.travel_coach_name = s.travel_coach_name;
+                if (s.travel_coach_contact) profileData.travel_coach_contact = s.travel_coach_contact;
+                if (s.athlete_name) profileData.athlete_name = s.athlete_name;
+                if (s.athlete_email) profileData.athlete_email = s.athlete_email;
+                if (s.position) profileData.athlete_position = s.position;
+                if (s.grad_year) profileData.athlete_grad_year = parseInt(s.grad_year, 10) || null;
               }
             } catch(e) { console.log("Site lookup:", e); }
             if (Object.keys(profileData).length) {
@@ -775,7 +784,7 @@ function OutreachTracker({profile, user}) {
 
 // ── PROFILE EDITOR ──
 function ProfileEditor({profile, setProfile, user}) {
-  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||""});
+  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||"",hs_coach_name:profile?.hs_coach_name||"",hs_coach_contact:profile?.hs_coach_contact||"",travel_coach_name:profile?.travel_coach_name||"",travel_coach_contact:profile?.travel_coach_contact||""});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const handleSave=async()=>{setSaving(true);try{const saveData={...form,athlete_grad_year:form.athlete_grad_year?parseInt(form.athlete_grad_year,10):null,updated_at:new Date().toISOString()};const d=await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`,{method:"PATCH",body:saveData,prefer:"return=representation"});if(d?.[0])setProfile(d[0]);setSaved(true);setTimeout(()=>setSaved(false),2500);}catch(e){alert("Error: "+e.message);}setSaving(false);};
@@ -794,6 +803,14 @@ function ProfileEditor({profile, setProfile, user}) {
           <div><label style={lbl}>Recruiting Site URL</label><input value={form.recruiting_site_url} onChange={e=>setForm(f=>({...f,recruiting_site_url:e.target.value}))} placeholder="https://dmedina.me" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This link gets included in every generated email</div></div>
 
           <div><label style={lbl}>Netlify Site ID <span style={{fontSize:10,color:C.gold,fontWeight:400,letterSpacing:0}}>(admin)</span></label><input value={form.netlify_site_id} onChange={e=>setForm(f=>({...f,netlify_site_id:e.target.value}))} placeholder="e.g. a1b2c3d4-e5f6-7890" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>Find in Netlify: Site configuration &gt; General &gt; Site ID. Required for Publish to work.</div></div>
+        </div>
+      </div>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32,marginTop:16}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:4}}>COACH REFERENCES</div>
+        <div style={{fontSize:13,color:C.textMuted,marginBottom:28}}>These show on your recruiting site's contact section. College coaches like seeing references they can reach out to.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:18}}>
+          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>HS Coach Name</label><input value={form.hs_coach_name} onChange={e=>setForm(f=>({...f,hs_coach_name:e.target.value}))} placeholder="Coach Smith" style={inp}/></div><div style={{flex:1}}><label style={lbl}>HS Coach Email / Phone</label><input value={form.hs_coach_contact} onChange={e=>setForm(f=>({...f,hs_coach_contact:e.target.value}))} placeholder="coach@school.edu" style={inp}/></div></div>
+          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Travel / Club Coach</label><input value={form.travel_coach_name} onChange={e=>setForm(f=>({...f,travel_coach_name:e.target.value}))} placeholder="Coach Johnson" style={inp}/></div><div style={{flex:1}}><label style={lbl}>Travel Coach Email / Phone</label><input value={form.travel_coach_contact} onChange={e=>setForm(f=>({...f,travel_coach_contact:e.target.value}))} placeholder="(805) 555-6789" style={inp}/></div></div>
         </div>
         <button onClick={handleSave} disabled={saving} style={{marginTop:28,width:"100%",padding:"14px 0",background:saved?C.success:C.red,border:"none",borderRadius:8,color:C.cream,cursor:saving?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",transition:"background 0.3s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           {saved?<Fragment><Icon name="check" size={18}/> SAVED</Fragment>:saving?"SAVING...":"SAVE PROFILE"}
