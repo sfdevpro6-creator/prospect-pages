@@ -145,36 +145,56 @@ async function basicFetch(url, headers) {
  * This replaces the raw <table> HTML so the rest of htmlToText gets clean rows.
  */
 function processTablesClean(html) {
+  // Sport patterns to match in table headers — PP's 7 sports only
+  const SPORT_PATTERNS = [
+    /\bbaseball\b/i, /\bsoftball\b/i, /\bfootball\b/i,
+    /\bsoccer\b/i, /\btrack\b/i, /\bcross\s*country\b/i,
+    /\bbasketball\b/i, /\bvolleyball\b/i,
+  ];
+
+  function isSportTable(firstRowText) {
+    return SPORT_PATTERNS.some(p => p.test(firstRowText));
+  }
+
   // Match all <table> blocks
   return html.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (tableHtml) => {
     const rows = [];
-    // Match each <tr>
     const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     let trMatch;
+    let isFirst = true;
+    let tableIsSport = false;
+
     while ((trMatch = trRegex.exec(tableHtml)) !== null) {
       const cells = [];
-      // Match each <td> or <th>
       const tdRegex = /<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi;
       let tdMatch;
       while ((tdMatch = tdRegex.exec(trMatch[1])) !== null) {
         let cell = tdMatch[1];
-        // Extract mailto hrefs before stripping tags
         cell = cell.replace(/<a[^>]*href\s*=\s*["']mailto:([^"'?]+)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, " $1 ");
-        // Extract tel hrefs
         cell = cell.replace(/<a[^>]*href\s*=\s*["']tel:([^"']+)["'][^>]*>[\s\S]*?<\/a>/gi, " $1 ");
-        // Strip all remaining HTML tags
         cell = cell.replace(/<[^>]+>/g, " ");
-        // Decode entities
         cell = cell.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
                    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ").replace(/&#\d+;/g, " ");
-        // Collapse whitespace to single space
         cell = cell.replace(/\s+/g, " ").trim();
         cells.push(cell);
       }
+
+      // Check the first row to decide if this table is a PP sport
+      if (isFirst) {
+        isFirst = false;
+        const headerText = cells.join(" ");
+        tableIsSport = isSportTable(headerText);
+        // If not a sport table, skip the entire table
+        if (!tableIsSport) return "";
+      }
+
       if (cells.length && cells.some(c => c.length > 0)) {
         rows.push(cells.join("\t"));
       }
     }
+
+    // If no rows matched or table wasn't a sport, return empty
+    if (!tableIsSport || !rows.length) return "";
     return "\n" + rows.join("\n") + "\n";
   });
 }
