@@ -199,23 +199,23 @@ function injectPhotos(html, photos) {
       `<!-- PP-HERO-PHOTO -->\n    <div class="hero-photo-card">\n      <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n    </div>\n    <!-- /PP-HERO-PHOTO -->`
     );
 
-    // Replace photo-placeholder text
+    // Replace photo-placeholder text inside hero-player-img
     result = result.replace(
       /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
       `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
     );
 
-    // ALWAYS update .hero-bg CSS with the photo as background
-    result = result.replace(
-      /\.hero-bg\s*\{[\s\S]*?\}/,
-      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
-    );
-
-    // ALWAYS update hero-player-img if it exists (Dark Pro template right-side cutout)
-    result = result.replace(
-      /<div class="hero-player-img"[^>]*>\s*<div class="photo-placeholder">[^<]*<\/div>\s*<\/div>/,
-      `<div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:45%; z-index:1; overflow:hidden; display:flex; align-items:flex-end; justify-content:center;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n  </div>`
-    );
+    // If hero-player-img exists (Dark Pro layout), photo goes there as right-side cutout
+    // If NOT, photo goes into .hero-bg as full background
+    if (result.includes('hero-player-img')) {
+      // hero-player-img already handled by placeholder replacement above
+    } else {
+      // No cutout layout — use as full background image
+      result = result.replace(
+        /\.hero-bg\s*\{[\s\S]*?\}/,
+        `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
+      );
+    }
   }
 
   if (photos.headshot_url) {
