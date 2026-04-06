@@ -21,7 +21,7 @@ exports.handler = async (event) => {
     if (!q || q.length < 2) return { statusCode: 200, headers, body: JSON.stringify([]) };
 
     const res = await fetch(
-      `${PP_URL}/rest/v1/colleges?select=id,name,state,division,conference&name=ilike.*${encodeURIComponent(q)}*&limit=15&order=name.asc`,
+      `${PP_URL}/rest/v1/colleges?select=id,name,state,division,conference,athletics_url,website&name=ilike.*${encodeURIComponent(q)}*&limit=15&order=name.asc`,
       {
         headers: {
           apikey: SUPA_KEY,
