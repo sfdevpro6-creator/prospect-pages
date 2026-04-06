@@ -255,6 +255,10 @@ function injectSocialLinks(html, profileData) {
   let result = html;
   const ig = profileData.athlete_instagram;
   const yt = profileData.athlete_youtube;
+
+  // ALWAYS strip ALL existing social link divs in footer to prevent duplication
+  result = result.replace(/<div style="display:flex;gap:8px;justify-content:center;margin-top:1rem;">[\s\S]*?<\/div>\s*\n?/g, '');
+
   if (!ig && !yt) return result;
 
   // Build social links HTML
@@ -269,7 +273,6 @@ function injectSocialLinks(html, profileData) {
   }
 
   if (socialHtml) {
-    // Inject before footer-pp or at end of footer container
     const socialWrap = `<div style="display:flex;gap:8px;justify-content:center;margin-top:1rem;">${socialHtml}</div>`;
     if (result.includes('footer-pp')) {
       result = result.replace(/<div class="footer-pp">/, socialWrap + '\n    <div class="footer-pp">');
@@ -330,13 +333,32 @@ exports.handler = async (event) => {
         const userId = profile.id;
         if (userId) {
           const profiles = await supaFetch(
-            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube`
+            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube,athlete_bio`
           );
           if (profiles && profiles.length) {
             const beforeLen = html.length;
             html = injectPhotos(html, profiles[0]);
             if (html.length !== beforeLen) photoReplacements++;
             html = injectSocialLinks(html, profiles[0]);
+
+            // Inject bio if available — check profiles first, then sites table
+            let bioText = profiles[0].athlete_bio || '';
+            if (!bioText && siteId) {
+              try {
+                const siteRows = await supaFetch(`/rest/v1/sites?netlify_site_id=eq.${siteId}&select=generated_bio`);
+                if (siteRows && siteRows.length && siteRows[0].generated_bio) {
+                  bioText = siteRows[0].generated_bio;
+                }
+              } catch (e) { console.log('Bio fallback:', e.message); }
+            }
+            if (bioText) {
+              const safeBio = bioText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const bioParas = safeBio.split(/\n+/).filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('\n            ');
+              html = html.replace(
+                /<div class="about-bio reveal">[\s\S]*?<\/div>/,
+                `<div class="about-bio reveal">\n            ${bioParas}\n          </div>`
+              );
+            }
           }
         }
       } catch (e) {
