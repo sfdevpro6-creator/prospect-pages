@@ -193,23 +193,29 @@ function injectPhotos(html, photos) {
   let result = html;
 
   if (photos.hero_photo_url) {
-    // New layout: replace photo card placeholder
+    // Update the PP-HERO-PHOTO marker if present
     result = result.replace(
       /<!-- PP-HERO-PHOTO -->[\s\S]*?<!-- \/PP-HERO-PHOTO -->/,
       `<!-- PP-HERO-PHOTO -->\n    <div class="hero-photo-card">\n      <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n    </div>\n    <!-- /PP-HERO-PHOTO -->`
     );
-    // Fallback for legacy sites without PP-HERO-PHOTO markers
-    if (!result.includes('PP-HERO-PHOTO')) {
-      result = result.replace(
-        /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
-        `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
-      );
-      // Legacy background approach fallback — match multiline CSS block
-      result = result.replace(
-        /\.hero-bg\s*\{[\s\S]*?\}/,
-        `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
-      );
-    }
+
+    // Replace photo-placeholder text
+    result = result.replace(
+      /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
+      `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
+    );
+
+    // ALWAYS update .hero-bg CSS with the photo as background
+    result = result.replace(
+      /\.hero-bg\s*\{[\s\S]*?\}/,
+      `.hero-bg {\n  position: absolute; inset: 0;\n  background: url('${photos.hero_photo_url}') center 20% / cover no-repeat;\n}`
+    );
+
+    // ALWAYS update hero-player-img if it exists (Dark Pro template right-side cutout)
+    result = result.replace(
+      /<div class="hero-player-img"[^>]*>\s*<div class="photo-placeholder">[^<]*<\/div>\s*<\/div>/,
+      `<div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:45%; z-index:1; overflow:hidden; display:flex; align-items:flex-end; justify-content:center;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n  </div>`
+    );
   }
 
   if (photos.headshot_url) {
