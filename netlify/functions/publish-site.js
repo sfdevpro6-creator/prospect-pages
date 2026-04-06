@@ -318,6 +318,7 @@ exports.handler = async (event) => {
     html = injectPPMarkers(html);
 
     // Step 1c: Inject photos and social links from profile
+    let photoReplacements = 0;
     if (profile && SUPABASE_SERVICE_KEY) {
       try {
         const userId = profile.id;
@@ -326,7 +327,9 @@ exports.handler = async (event) => {
             `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube`
           );
           if (profiles && profiles.length) {
+            const beforeLen = html.length;
             html = injectPhotos(html, profiles[0]);
+            if (html.length !== beforeLen) photoReplacements++;
             html = injectSocialLinks(html, profiles[0]);
           }
         }
@@ -456,7 +459,7 @@ exports.handler = async (event) => {
       }
     }
 
-    if (replacements === 0) {
+    if (replacements === 0 && photoReplacements === 0) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'No PP markers found in site HTML. Make sure the template has PP markers.' }) };
     }
 
