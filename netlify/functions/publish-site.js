@@ -342,7 +342,7 @@ exports.handler = async (event) => {
         const userId = profile.id;
         if (userId) {
           const profiles = await supaFetch(
-            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube,athlete_bio`
+            `/rest/v1/profiles?id=eq.${userId}&select=hero_photo_url,headshot_url,additional_photos,athlete_instagram,athlete_youtube,athlete_bio,hs_coach_name,hs_coach_contact,travel_coach_name,travel_coach_contact`
           );
           if (profiles && profiles.length) {
             const beforeLen = html.length;
@@ -367,6 +367,30 @@ exports.handler = async (event) => {
                 /<div class="about-bio reveal">[\s\S]*?<\/div>/,
                 `<div class="about-bio reveal">\n            ${bioParas}\n          </div>`
               );
+            }
+
+            // Inject updated coach references
+            const p = profiles[0];
+            if (p.hs_coach_name || p.travel_coach_name) {
+              let coachHtml = '<div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06);">';
+              coachHtml += '<div style="font-family:var(--font-condensed); font-size:0.65rem; font-weight:600; letter-spacing:0.25em; text-transform:uppercase; color:var(--accent); margin-bottom:0.8rem;">Coach References</div>';
+              if (p.hs_coach_name) {
+                const contactLink = p.hs_coach_contact ? (p.hs_coach_contact.includes('@') ? `mailto:${p.hs_coach_contact}` : `tel:${p.hs_coach_contact}`) : '';
+                coachHtml += `<div class="contact-item" style="border-bottom:none; padding-bottom:0;"><div class="contact-item-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="contact-item-label">HS Coach</div><div class="contact-item-value">${p.hs_coach_name}</div>${p.hs_coach_contact ? `<div class="contact-item-value" style="margin-top:0.2rem;"><a href="${contactLink}">${p.hs_coach_contact}</a></div>` : ''}</div></div>`;
+              }
+              if (p.travel_coach_name) {
+                const contactLink = p.travel_coach_contact ? (p.travel_coach_contact.includes('@') ? `mailto:${p.travel_coach_contact}` : `tel:${p.travel_coach_contact}`) : '';
+                coachHtml += `<div class="contact-item" style="border-bottom:none; padding-bottom:0; margin-top:0.8rem;"><div class="contact-item-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="contact-item-label">Travel Coach</div><div class="contact-item-value">${p.travel_coach_name}</div>${p.travel_coach_contact ? `<div class="contact-item-value" style="margin-top:0.2rem;"><a href="${contactLink}">${p.travel_coach_contact}</a></div>` : ''}</div></div>`;
+              }
+              coachHtml += '</div>';
+
+              // Replace existing coach references section or inject before closing contact-info div
+              if (html.includes('Coach References</div>')) {
+                html = html.replace(/<div style="margin-top:1\.5rem; padding-top:1\.5rem; border-top:1px solid[^"]*">[\s\S]*?Coach References<\/div>[\s\S]*?<\/div><\/div>(?=\s*<\/div>\s*<div class="contact-form")/, coachHtml);
+              } else {
+                // No existing coach refs — inject before closing contact-info div
+                html = html.replace(/<\/div>\s*(<div class="contact-form")/, coachHtml + '</div>\n      $1');
+              }
             }
           }
         }
