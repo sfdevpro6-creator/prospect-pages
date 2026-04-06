@@ -1266,39 +1266,17 @@
     // ── Pending Verification ──
     let pendingColleges = [];
 
-    async function fetchAllCoachCollegeIds() {
-      // Paginate through coaches in batches of 1000 to beat Supabase row cap
-      const ids = new Set();
-      let offset = 0;
-      const batchSize = 1000;
-      while (true) {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/coaches?select=college_id&order=college_id.asc&limit=${batchSize}&offset=${offset}`,
-          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
-        );
-        const rows = await res.json();
-        if (!Array.isArray(rows) || !rows.length) break;
-        rows.forEach(r => ids.add(String(r.college_id)));
-        if (rows.length < batchSize) break;
-        offset += batchSize;
-      }
-      return ids;
-    }
-
     async function loadPendingColleges() {
       const panel = document.getElementById("pending-panel");
       panel.classList.add("active");
 
       try {
-        const colRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/colleges?select=id,name,state,division,conference,athletics_url,website&division=in.(D1,D2,D3,NAIA)&order=division.asc,name.asc&limit=2000`,
+        // Fetch colleges where updater_verified_at IS NULL (not yet verified via Coach Updater)
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/colleges?select=id,name,state,division,conference,athletics_url,website&division=in.(D1,D2,D3,NAIA)&updater_verified_at=is.null&order=division.asc,name.asc&limit=2000`,
           { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
         );
-        const allColleges = await colRes.json();
-
-        const verifiedIds = await fetchAllCoachCollegeIds();
-
-        pendingColleges = allColleges.filter(c => !verifiedIds.has(String(c.id)));
+        pendingColleges = await res.json();
 
         renderPendingList();
       } catch (e) {
