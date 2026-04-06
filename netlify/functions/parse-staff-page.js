@@ -1,6 +1,94 @@
 // parse-staff-page.js — Netlify function
 // Takes raw staff page text + school name, sends to Claude Haiku, returns structured coach JSON
 
+/**
+ * Pre-filter scraped text to only keep sections matching PP's 7 sports.
+ * Staff directory pages list 20-40 departments (admin, marketing, compliance, etc.)
+ * before the sport sections. Without filtering, admin fills the char budget and
+ * actual sport coaching sections get truncated before reaching Haiku.
+ *
+ * Strategy: split text into sections by header lines, keep only sections whose
+ * header matches a sport keyword. If no sections are detected (unstructured text),
+ * return the original text and let Haiku handle it.
+ */
+function preFilterSportsOnly(text) {
+  // Sport keywords to KEEP
+  const SPORT_PATTERNS = [
+    /\bbaseball\b/i, /\bsoftball\b/i, /\bfootball\b/i,
+    /\bsoccer\b/i, /\btrack\b/i, /\bcross\s*country\b/i,
+    /\bbasketball\b/i, /\bvolleyball\b/i,
+  ];
+
+  // Known NON-sport department headers to detect and SKIP
+  const NON_SPORT_PATTERNS = [
+    /\badministration\b/i, /\bcommunications?\b/i, /\bsupport\s+staff\b/i,
+    /\bstrength\b/i, /\bconditioning\b/i, /\bsports?\s+medicine\b/i,
+    /\btraining\b/i, /\bcompliance\b/i, /\bacademic\b/i,
+    /\bmarketing\b/i, /\bticket/i, /\bsales\b/i, /\bsponsorship\b/i,
+    /\bfacilities\b/i, /\btechnology\b/i, /\bfinance\b/i,
+    /\brecruiting\s+support\b/i, /\bequipment\b/i, /\bdevelopment\b/i,
+    /\bhospitality\b/i, /\bevents?\s+management\b/i, /\bcreative\b/i,
+    /\bteam\s+shop\b/i, /\bcommunity\b/i, /\blogistics\b/i,
+    /\bphysical\s+education\b/i, /\bcombatives\b/i, /\bspirit\b/i,
+    /\bice\s+hockey\b/i, /\bhockey\b/i, /\bswimming\b/i, /\bdiving\b/i,
+    /\bgymnastics\b/i, /\bwrestling\b/i, /\btennis\b/i, /\bgolf\b/i,
+    /\blacrosse\b/i, /\browing\b/i, /\bfencing\b/i, /\brifle\b/i,
+    /\bwater\s+polo\b/i, /\bboxing\b/i, /\bskiing\b/i,
+    /\bfield\s+hockey\b/i,
+  ];
+
+  function isSportHeader(line) {
+    return SPORT_PATTERNS.some(p => p.test(line));
+  }
+
+  function isDepartmentHeader(line) {
+    return SPORT_PATTERNS.some(p => p.test(line)) || NON_SPORT_PATTERNS.some(p => p.test(line));
+  }
+
+  // Split into sections. A "section header" must:
+  // 1. Be short (under 80 chars)
+  // 2. Match a known department/sport name pattern
+  // 3. Not contain tabs or @ (not a data row)
+  const lines = text.split("\n");
+  const sections = [];
+  let current = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const isHeader = trimmed.length > 0 && trimmed.length < 80
+      && !trimmed.includes("\t") && !trimmed.includes("@")
+      && isDepartmentHeader(trimmed);
+
+    if (isHeader) {
+      if (current) sections.push(current);
+      current = { header: trimmed, lines: [] };
+    } else if (current) {
+      current.lines.push(line);
+    } else {
+      // Lines before any detected header — keep them
+      if (!sections.length) {
+        if (!current) current = { header: "__preamble__", lines: [] };
+        current.lines.push(line);
+      }
+    }
+  }
+  if (current) sections.push(current);
+
+  // If we couldn't detect enough sections, return original
+  if (sections.filter(s => s.header !== "__preamble__").length < 2) return text;
+
+  // Keep only sport sections (and preamble)
+  const sportSections = sections.filter(s => s.header === "__preamble__" || isSportHeader(s.header));
+
+  if (!sportSections.length) return text;
+
+  return sportSections.map(s => {
+    if (s.header === "__preamble__") return s.lines.join("\n");
+    return s.header + "\n" + s.lines.join("\n");
+  }).join("\n\n");
+}
+
+
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -21,12 +109,15 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: "Paste at least a few lines of staff page content" }) };
     }
 
+    // Pre-filter: keep only sections matching PP's 7 sports
+    const filteredText = preFilterSportsOnly(raw_text);
+
     const prompt = `You are parsing a college athletics staff directory page into structured coaching data.
 
 SCHOOL: ${school_name || "Unknown"}
 
 RAW STAFF PAGE CONTENT:
-${raw_text.slice(0, 25000)}
+${filteredText.slice(0, 30000)}
 
 Extract ONLY coaching staff. Respond with valid JSON only — no markdown, no backticks, no explanation.
 
