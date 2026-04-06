@@ -199,11 +199,20 @@ function injectPhotos(html, photos) {
       `<!-- PP-HERO-PHOTO -->\n    <div class="hero-photo-card">\n      <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n    </div>\n    <!-- /PP-HERO-PHOTO -->`
     );
 
-    // Replace photo-placeholder text inside hero-player-img
-    result = result.replace(
-      /<div class="photo-placeholder">Photo Coming Soon<\/div>/,
-      `<img src="${photos.hero_photo_url}" alt="Athlete action photo">`
-    );
+    // Replace content inside hero-player-img (placeholder OR previously injected img)
+    if (result.includes('hero-player-img') && /<div class="hero-player-img"/.test(result)) {
+      // hero-player-img div exists — replace its contents
+      result = result.replace(
+        /(<div class="hero-player-img"[^>]*>)\s*(?:<div class="photo-placeholder">[^<]*<\/div>|<img[^>]*>)\s*(<\/div>)/,
+        `$1\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n  $2`
+      );
+    } else if (result.includes('.hero-player-img')) {
+      // CSS exists but div doesn't — inject the div after hero-overlay-lines
+      result = result.replace(
+        /(<div class="hero-overlay-lines"><\/div>)/,
+        `$1\n  <div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:45%; z-index:1; overflow:hidden; display:flex; align-items:flex-end; justify-content:center;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo" style="width:100%; height:100%; object-fit:cover; object-position:center top;">\n  </div>`
+      );
+    }
 
     // If hero-player-img exists (Dark Pro layout), photo goes there as right-side cutout
     // If NOT, photo goes into .hero-bg as full background
