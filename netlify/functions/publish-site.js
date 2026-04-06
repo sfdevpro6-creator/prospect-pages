@@ -201,16 +201,16 @@ function injectPhotos(html, photos) {
 
     // Replace content inside hero-player-img (placeholder OR previously injected img)
     if (result.includes('hero-player-img') && /<div class="hero-player-img"/.test(result)) {
-      // hero-player-img div exists — replace its contents
+      // hero-player-img div exists — replace the whole div with updated styles
       result = result.replace(
-        /(<div class="hero-player-img"[^>]*>)\s*(?:<div class="photo-placeholder">[^<]*<\/div>|<img[^>]*>)\s*(<\/div>)/,
-        `$1\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo">\n  $2`
+        /<div class="hero-player-img"[^>]*>[\s\S]*?<\/div>/,
+        `<div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:55%; z-index:1; overflow:hidden;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo" style="width:100%; height:100%; object-fit:cover; object-position:center center; mask-image:linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.95) 50%); -webkit-mask-image:linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.95) 50%);">\n  </div>`
       );
     } else if (result.includes('.hero-player-img')) {
       // CSS exists but div doesn't — inject the div after hero-overlay-lines
       result = result.replace(
         /(<div class="hero-overlay-lines"><\/div>)/,
-        `$1\n  <div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:45%; z-index:1; overflow:hidden; display:flex; align-items:flex-end; justify-content:center;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo" style="width:100%; height:100%; object-fit:cover; object-position:center top;">\n  </div>`
+        `$1\n  <div class="hero-player-img" style="position:absolute; right:0; top:0; bottom:0; width:55%; z-index:1; overflow:hidden;">\n    <img src="${photos.hero_photo_url}" alt="Athlete action photo" style="width:100%; height:100%; object-fit:cover; object-position:center center; mask-image:linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.95) 50%); -webkit-mask-image:linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.95) 50%);">\n  </div>`
       );
     }
 
