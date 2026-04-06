@@ -502,35 +502,25 @@
     /* ── Pending Verification Panel ── */
     .pending-panel { display: none; }
     .pending-panel.active { display: block; }
-    .pending-toggle {
-      display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; user-select: none;
+    .pending-row {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
     }
-    .pending-toggle .arrow { transition: transform 0.2s; font-size: 12px; color: var(--text-dim); }
-    .pending-toggle.collapsed .arrow { transform: rotate(-90deg); }
-    .pending-body { margin-top: 12px; }
-    .pending-toggle.collapsed + .pending-body { display: none; }
-    .pending-div-group { margin-bottom: 14px; }
-    .pending-div-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 12px; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius) var(--radius) 0 0; cursor: pointer; user-select: none;
+    .pending-group { display: flex; align-items: center; gap: 6px; }
+    .pending-group label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      color: var(--accent); white-space: nowrap;
     }
-    .pending-div-header span { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--accent); }
-    .pending-div-header .cnt { font-size: 11px; color: var(--text-dim); font-weight: 500; }
-    .pending-div-header .arrow-sm { font-size: 10px; color: var(--text-dim); transition: transform 0.2s; }
-    .pending-div-header.collapsed .arrow-sm { transform: rotate(-90deg); }
-    .pending-div-list { border: 1px solid var(--border); border-top: none; }
-    .pending-div-header.collapsed + .pending-div-list { display: none; }
-    .pending-school {
-      display: flex; align-items: center; gap: 10px;
-      padding: 6px 12px; font-size: 13px; cursor: pointer;
-      border-bottom: 1px solid var(--border); transition: background 0.15s;
+    .pending-select {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      font-size: 13px; font-family: inherit; padding: 7px 28px 7px 10px;
+      border-radius: var(--radius); outline: none; cursor: pointer;
+      min-width: 180px; max-width: 280px;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2371717a' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
     }
-    .pending-school:last-child { border-bottom: none; border-radius: 0 0 var(--radius) var(--radius); }
-    .pending-school:hover { background: var(--accent-dim); }
-    .pending-school .ps-name { font-weight: 500; flex: 1; }
-    .pending-school .ps-meta { font-size: 11px; color: var(--text-dim); }
+    .pending-select:focus { border-color: var(--accent); }
+    .pending-select:hover { border-color: var(--text-dim); }
     .pending-summary {
       display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
     }
@@ -607,13 +597,10 @@
 
     <!-- Pending Verification Panel -->
     <div class="section pending-panel" id="pending-panel">
-      <div class="pending-toggle" id="pending-toggle" onclick="togglePending()">
-        <div class="section-title" style="margin-bottom:0">Pending Verification <span id="pending-total" style="color:var(--yellow)"></span></div>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="pending-body" id="pending-body">
-        <div class="pending-summary" id="pending-summary"></div>
-        <div id="pending-list"><div class="current-loading"><span class="spinner"></span> Loading colleges...</div></div>
+      <div class="section-title">Pending Verification <span id="pending-total" style="color:var(--yellow)"></span></div>
+      <div class="pending-summary" id="pending-summary"></div>
+      <div class="pending-row" id="pending-row">
+        <span style="font-size:12px;color:var(--text-dim)"><span class="spinner"></span> Loading...</span>
       </div>
     </div>
 
@@ -1277,10 +1264,25 @@
     }
 
     // ── Pending Verification ──
-    let pendingColleges = []; // stored for removal after save
+    let pendingColleges = [];
 
-    function togglePending() {
-      document.getElementById("pending-toggle").classList.toggle("collapsed");
+    async function fetchAllCoachCollegeIds() {
+      // Paginate through coaches in batches of 1000 to beat Supabase row cap
+      const ids = new Set();
+      let offset = 0;
+      const batchSize = 1000;
+      while (true) {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaches?select=college_id&order=college_id.asc&limit=${batchSize}&offset=${offset}`,
+          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        const rows = await res.json();
+        if (!Array.isArray(rows) || !rows.length) break;
+        rows.forEach(r => ids.add(String(r.college_id)));
+        if (rows.length < batchSize) break;
+        offset += batchSize;
+      }
+      return ids;
     }
 
     async function loadPendingColleges() {
@@ -1288,45 +1290,36 @@
       panel.classList.add("active");
 
       try {
-        // Fetch all colleges in D1/D2/D3/NAIA
         const colRes = await fetch(
           `${SUPABASE_URL}/rest/v1/colleges?select=id,name,state,division,conference,athletics_url,website&division=in.(D1,D2,D3,NAIA)&order=division.asc,name.asc&limit=2000`,
           { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
         );
         const allColleges = await colRes.json();
 
-        // Fetch distinct college_ids that have coaches
-        const coachRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/coaches?select=college_id&limit=10000`,
-          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
-        );
-        const coachRows = await coachRes.json();
-        const verifiedIds = new Set(coachRows.map(r => String(r.college_id)));
+        const verifiedIds = await fetchAllCoachCollegeIds();
 
-        // Diff
         pendingColleges = allColleges.filter(c => !verifiedIds.has(String(c.id)));
 
         renderPendingList();
       } catch (e) {
-        document.getElementById("pending-list").innerHTML = `<div class="current-empty" style="color:var(--red)">Error loading: ${e.message}</div>`;
+        document.getElementById("pending-row").innerHTML = `<span style="font-size:12px;color:var(--red)">Error: ${e.message}</span>`;
       }
     }
 
     function renderPendingList() {
-      const container = document.getElementById("pending-list");
+      const container = document.getElementById("pending-row");
       const summary = document.getElementById("pending-summary");
       const total = document.getElementById("pending-total");
 
       if (!pendingColleges.length) {
         total.textContent = "(0)";
         summary.innerHTML = "";
-        container.innerHTML = '<div class="current-empty" style="color:var(--accent)">All schools verified!</div>';
+        container.innerHTML = '<span style="font-size:13px;color:var(--accent)">All schools verified!</span>';
         return;
       }
 
       total.textContent = `(${pendingColleges.length})`;
 
-      // Group by division
       const byDiv = {};
       pendingColleges.forEach(c => {
         const d = c.division || "Other";
@@ -1344,43 +1337,28 @@
       for (const div of divOrder) {
         if (!byDiv[div]) continue;
         const list = byDiv[div];
-        html += `<div class="pending-div-group">
-          <div class="pending-div-header" onclick="this.classList.toggle('collapsed')">
-            <span>${div} (${list.length})</span>
-            <span class="arrow-sm">▼</span>
-          </div>
-          <div class="pending-div-list">`;
+        html += `<div class="pending-group">
+          <label>${div} (${list.length})</label>
+          <select class="pending-select" data-div="${div}" onchange="handlePendingSelect(this)">
+            <option value="">Select school...</option>`;
         for (const c of list) {
-          const safeUrl = esc(c.athletics_url || c.website || "");
-          html += `<div class="pending-school" data-pid="${c.id}" data-pname="${esc(c.name)}" data-purl="${safeUrl}"> 
-            <span class="ps-name">${esc(c.name)}</span>
-            <span class="ps-meta">${esc(c.state || "")} · ${esc(c.conference || "")}</span>
-          </div>`;
+          const label = `${c.name}${c.state ? " (" + c.state + ")" : ""}`;
+          html += `<option value="${c.id}" data-name="${esc(c.name)}" data-url="${esc(c.athletics_url || c.website || "")}">${esc(label)}</option>`;
         }
-        html += `</div></div>`;
+        html += `</select></div>`;
       }
       container.innerHTML = html;
-
-      // Attach click handlers
-      container.querySelectorAll(".pending-school").forEach(el => {
-        el.addEventListener("click", () => {
-          selectPendingCollege({
-            id: el.dataset.pid,
-            name: el.dataset.pname,
-            athletics_url: el.dataset.purl || "",
-          });
-        });
-      });
     }
 
-    function selectPendingCollege(college) {
+    function handlePendingSelect(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt.value) return;
       selectCollege({
-        id: String(college.id),
-        name: college.name,
-        athletics_url: college.athletics_url || "",
+        id: String(opt.value),
+        name: opt.dataset.name,
+        athletics_url: opt.dataset.url || "",
       });
-      // Scroll to top
-      document.querySelector(".main").scrollTo({ top: 0, behavior: "smooth" });
+      sel.value = ""; // reset dropdown
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
