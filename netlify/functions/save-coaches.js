@@ -109,6 +109,23 @@ exports.handler = async (event) => {
     const insertedCount = Array.isArray(inserted) ? inserted.length : 0;
     console.log(`Inserted ${insertedCount} coaches`);
 
+    // Step 5: Stamp college as verified via Coach Updater
+    try {
+      await fetch(`${PP_URL}/rest/v1/colleges?id=eq.${college_id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SUPA_KEY,
+          Authorization: `Bearer ${SUPA_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ updater_verified_at: new Date().toISOString() }),
+      });
+      console.log(`Stamped college ${college_id} as updater-verified`);
+    } catch (e) {
+      console.log(`Warning: could not stamp college: ${e.message}`);
+    }
+
     return {
       statusCode: 200,
       headers,
