@@ -498,6 +498,54 @@
       color: var(--text-dim);
       font-size: 13px;
     }
+
+    /* ── Pending Verification Panel ── */
+    .pending-panel { display: none; }
+    .pending-panel.active { display: block; }
+    .pending-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+    }
+    .pending-toggle .arrow { transition: transform 0.2s; font-size: 12px; color: var(--text-dim); }
+    .pending-toggle.collapsed .arrow { transform: rotate(-90deg); }
+    .pending-body { margin-top: 12px; }
+    .pending-toggle.collapsed + .pending-body { display: none; }
+    .pending-div-group { margin-bottom: 14px; }
+    .pending-div-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0; cursor: pointer; user-select: none;
+    }
+    .pending-div-header span { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--accent); }
+    .pending-div-header .cnt { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+    .pending-div-header .arrow-sm { font-size: 10px; color: var(--text-dim); transition: transform 0.2s; }
+    .pending-div-header.collapsed .arrow-sm { transform: rotate(-90deg); }
+    .pending-div-list { border: 1px solid var(--border); border-top: none; }
+    .pending-div-header.collapsed + .pending-div-list { display: none; }
+    .pending-school {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 12px; font-size: 13px; cursor: pointer;
+      border-bottom: 1px solid var(--border); transition: background 0.15s;
+    }
+    .pending-school:last-child { border-bottom: none; border-radius: 0 0 var(--radius) var(--radius); }
+    .pending-school:hover { background: var(--accent-dim); }
+    .pending-school .ps-name { font-weight: 500; flex: 1; }
+    .pending-school .ps-meta { font-size: 11px; color: var(--text-dim); }
+    .pending-summary {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .pending-summary .ps-chip {
+      padding: 4px 10px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; font-size: 12px; color: var(--text-dim);
+    }
+    .pending-summary .ps-chip strong { color: var(--yellow); }
+
+    /* ── School URL link ── */
+    .selected-college .school-url {
+      font-size: 12px; color: var(--accent); text-decoration: none;
+      margin-left: 8px; white-space: nowrap;
+    }
+    .selected-college .school-url:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -557,6 +605,18 @@
 
     <div id="status-bar" class="status-bar"></div>
 
+    <!-- Pending Verification Panel -->
+    <div class="section pending-panel" id="pending-panel">
+      <div class="pending-toggle" id="pending-toggle" onclick="togglePending()">
+        <div class="section-title" style="margin-bottom:0">Pending Verification <span id="pending-total" style="color:var(--yellow)"></span></div>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="pending-body" id="pending-body">
+        <div class="pending-summary" id="pending-summary"></div>
+        <div id="pending-list"><div class="current-loading"><span class="spinner"></span> Loading colleges...</div></div>
+      </div>
+    </div>
+
     <!-- Step 1: Select College -->
     <div class="section">
       <div class="section-title">1 — Select School</div>
@@ -566,6 +626,7 @@
       </div>
       <div class="selected-college" id="selected-college">
         <span class="name" id="selected-name"></span>
+        <a class="school-url" id="selected-url" href="#" target="_blank" style="display:none">Open Athletics Site ↗</a>
         <span class="id-badge" id="selected-id"></span>
         <button class="clear-btn" id="clear-college" title="Clear selection">&times;</button>
       </div>
@@ -674,6 +735,7 @@
           pinGate.style.display = "none";
           mainApp.classList.add("active");
           document.getElementById("college-search").focus();
+          loadPendingColleges();
         } else {
           pinError.style.display = "block";
           pinInput.value = "";
@@ -712,7 +774,7 @@
     function renderDropdown(colleges) {
       if (!colleges.length) { dropdown.classList.remove("open"); return; }
       dropdown.innerHTML = colleges.map(c => `
-        <div class="dropdown-item" data-id="${c.id}" data-name="${c.name}">
+        <div class="dropdown-item" data-id="${c.id}" data-name="${c.name}" data-url="${esc(c.athletics_url || c.website || "")}">
           <div class="name">${c.name}</div>
           <div class="meta">${c.state || ""} · ${c.division || ""} · ${c.conference || ""} · ID: ${c.id}</div>
         </div>
@@ -725,6 +787,7 @@
           selectCollege({
             id: item.dataset.id,
             name: item.dataset.name,
+            athletics_url: item.dataset.url || "",
           });
         });
       });
@@ -737,6 +800,16 @@
       document.getElementById("selected-name").textContent = college.name;
       document.getElementById("selected-id").textContent = `ID: ${college.id}`;
       document.getElementById("selected-college").classList.add("active");
+      // Show athletics URL if available
+      const urlEl = document.getElementById("selected-url");
+      if (college.athletics_url) {
+        let href = college.athletics_url;
+        if (!href.startsWith("http")) href = "https://" + href;
+        urlEl.href = href;
+        urlEl.style.display = "inline";
+      } else {
+        urlEl.style.display = "none";
+      }
       updateParseBtn();
       loadCurrentCoaches(college.id);
     }
@@ -1184,7 +1257,10 @@
         setTimeout(() => { saveLabel.textContent = "Save to Database"; }, 3000);
 
         // Refresh current coaches panel
-        if (selectedCollege) loadCurrentCoaches(selectedCollege.id);
+        if (selectedCollege) {
+          loadCurrentCoaches(selectedCollege.id);
+          removePendingCollege(selectedCollege.id);
+        }
 
       } catch (e) {
         showStatus(`Save failed: ${e.message}`, "error");
@@ -1198,6 +1274,119 @@
       const bar = document.getElementById("status-bar");
       bar.className = `status-bar ${type}`;
       bar.textContent = msg;
+    }
+
+    // ── Pending Verification ──
+    let pendingColleges = []; // stored for removal after save
+
+    function togglePending() {
+      document.getElementById("pending-toggle").classList.toggle("collapsed");
+    }
+
+    async function loadPendingColleges() {
+      const panel = document.getElementById("pending-panel");
+      panel.classList.add("active");
+
+      try {
+        // Fetch all colleges in D1/D2/D3/NAIA
+        const colRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/colleges?select=id,name,state,division,conference,athletics_url,website&division=in.(D1,D2,D3,NAIA)&order=division.asc,name.asc&limit=2000`,
+          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        const allColleges = await colRes.json();
+
+        // Fetch distinct college_ids that have coaches
+        const coachRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaches?select=college_id&limit=10000`,
+          { headers: { apikey: SUPABASE_KEY_VAL, Authorization: `Bearer ${SUPABASE_KEY_VAL}` } }
+        );
+        const coachRows = await coachRes.json();
+        const verifiedIds = new Set(coachRows.map(r => String(r.college_id)));
+
+        // Diff
+        pendingColleges = allColleges.filter(c => !verifiedIds.has(String(c.id)));
+
+        renderPendingList();
+      } catch (e) {
+        document.getElementById("pending-list").innerHTML = `<div class="current-empty" style="color:var(--red)">Error loading: ${e.message}</div>`;
+      }
+    }
+
+    function renderPendingList() {
+      const container = document.getElementById("pending-list");
+      const summary = document.getElementById("pending-summary");
+      const total = document.getElementById("pending-total");
+
+      if (!pendingColleges.length) {
+        total.textContent = "(0)";
+        summary.innerHTML = "";
+        container.innerHTML = '<div class="current-empty" style="color:var(--accent)">All schools verified!</div>';
+        return;
+      }
+
+      total.textContent = `(${pendingColleges.length})`;
+
+      // Group by division
+      const byDiv = {};
+      pendingColleges.forEach(c => {
+        const d = c.division || "Other";
+        if (!byDiv[d]) byDiv[d] = [];
+        byDiv[d].push(c);
+      });
+
+      const divOrder = ["D1", "D2", "D3", "NAIA", "Other"];
+      summary.innerHTML = divOrder
+        .filter(d => byDiv[d])
+        .map(d => `<div class="ps-chip"><strong>${byDiv[d].length}</strong> ${d}</div>`)
+        .join("");
+
+      let html = "";
+      for (const div of divOrder) {
+        if (!byDiv[div]) continue;
+        const list = byDiv[div];
+        html += `<div class="pending-div-group">
+          <div class="pending-div-header" onclick="this.classList.toggle('collapsed')">
+            <span>${div} (${list.length})</span>
+            <span class="arrow-sm">▼</span>
+          </div>
+          <div class="pending-div-list">`;
+        for (const c of list) {
+          const safeUrl = esc(c.athletics_url || c.website || "");
+          html += `<div class="pending-school" data-pid="${c.id}" data-pname="${esc(c.name)}" data-purl="${safeUrl}"> 
+            <span class="ps-name">${esc(c.name)}</span>
+            <span class="ps-meta">${esc(c.state || "")} · ${esc(c.conference || "")}</span>
+          </div>`;
+        }
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+
+      // Attach click handlers
+      container.querySelectorAll(".pending-school").forEach(el => {
+        el.addEventListener("click", () => {
+          selectPendingCollege({
+            id: el.dataset.pid,
+            name: el.dataset.pname,
+            athletics_url: el.dataset.purl || "",
+          });
+        });
+      });
+    }
+
+    function selectPendingCollege(college) {
+      selectCollege({
+        id: String(college.id),
+        name: college.name,
+        athletics_url: college.athletics_url || "",
+      });
+      // Scroll to top
+      document.querySelector(".main").scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function removePendingCollege(collegeId) {
+      pendingColleges = pendingColleges.filter(c => String(c.id) !== String(collegeId));
+      renderPendingList();
     }
   </script>
 
