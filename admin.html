@@ -200,6 +200,34 @@ function SiteDetail({ site, onBack, onUpdate }) {
     }
   }, [site.generated_html, previewMode]);
 
+  const [deployStatus, setDeployStatus] = useState(null);
+  const [deployError, setDeployError] = useState(null);
+
+  const deploySite = async () => {
+    setDeployStatus("deploying");
+    setDeployError(null);
+    try {
+      const res = await fetch("/.netlify/functions/deploy-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: site.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDeployError(data.error || "Deploy failed");
+        setDeployStatus("error");
+        return;
+      }
+      setDeployStatus("success");
+      if (data.site_url) {
+        onUpdate({ ...site, site_url: data.site_url, netlify_site_id: data.netlify_site_id || site.netlify_site_id, status: "published" });
+      }
+    } catch (e) {
+      setDeployError(e.message);
+      setDeployStatus("error");
+    }
+  };
+
   const cardStyle = { background:C.cardBg, border:`1px solid ${C.border}`, borderRadius:10, padding:20, marginBottom:16 };
   const labelStyle = { fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1.2, color:C.textMuted, marginBottom:6 };
   const valStyle = { fontSize:14, color:C.cream };
@@ -216,8 +244,16 @@ function SiteDetail({ site, onBack, onUpdate }) {
           </div>
           <StatusBadge status={site.status}/>
         </div>
-        <div style={{display:"flex",gap:8}}>
-          {site.status !== "published" && (
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {deployError && <span style={{fontSize:12,color:"#e63a2e",marginRight:8}}>{deployError}</span>}
+          {site.site_url && <a href={site.site_url} target="_blank" rel="noopener" style={{fontSize:13,color:C.gold,marginRight:8,textDecoration:"none"}}>{site.site_url} ↗</a>}
+          {site.status === "published" && site.site_url && (
+            <button onClick={deploySite} disabled={deployStatus==="deploying"} style={{padding:"10px 20px",background:"#7C3AED",border:"none",borderRadius:8,color:"#fff",cursor:deployStatus==="deploying"?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>{deployStatus==="deploying"?"DEPLOYING...":"RE-DEPLOY"}</button>
+          )}
+          {!site.site_url && (
+            <button onClick={deploySite} disabled={deployStatus==="deploying"} style={{padding:"10px 20px",background:C.red,border:"none",borderRadius:8,color:"#fff",cursor:deployStatus==="deploying"?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>{deployStatus==="deploying"?"DEPLOYING...":"PUBLISH TO NETLIFY"}</button>
+          )}
+          {site.status !== "published" && site.site_url && (
             <button onClick={()=>updateStatus("published")} style={{padding:"10px 20px",background:C.success,border:"none",borderRadius:8,color:"#fff",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Mark Published</button>
           )}
           {site.status === "published" && (
@@ -240,6 +276,15 @@ function SiteDetail({ site, onBack, onUpdate }) {
             </div>
             <div style={{fontSize:11,color:C.textDim,marginTop:6}}>Give this to the family so they can sign up for the dashboard</div>
           </div>
+
+          {/* Live URL */}
+          {site.site_url && (
+            <div style={cardStyle}>
+              <div style={labelStyle}>Live Site</div>
+              <a href={site.site_url} target="_blank" rel="noopener" style={{fontSize:16,fontWeight:700,color:C.gold,textDecoration:"none",wordBreak:"break-all"}}>{site.site_url} ↗</a>
+              {site.netlify_site_id && <div style={{fontSize:11,color:C.textDim,marginTop:6,fontFamily:"monospace"}}>{site.netlify_site_id}</div>}
+            </div>
+          )}
 
           {/* Parent info */}
           <div style={cardStyle}>
