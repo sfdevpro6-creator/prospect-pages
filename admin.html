@@ -9,16 +9,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0D1B2A; }
+  body { background: #0D1B2A; overflow: hidden; }
   ::placeholder { color: #5A6B7D; }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1E3048; border-radius: 3px; }
-  @media (min-width: 769px) { body { overflow: hidden; } }
-  @media (max-width: 768px) {
-    body { overflow: auto; -webkit-overflow-scrolling: touch; }
-    input, select, textarea { font-size: 16px !important; }
-  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -28,12 +23,6 @@
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef, Fragment } = React;
-
-function useIsMobile(bp = 768) {
-  const [m, setM] = useState(window.innerWidth < bp);
-  useEffect(() => { const c = () => setM(window.innerWidth < bp); window.addEventListener("resize", c); return () => window.removeEventListener("resize", c); }, [bp]);
-  return m;
-}
 
 const SUPABASE_URL = "https://ildcajsjreayvinutwyr.supabase.co";
 const SUPABASE_KEY = "sb_publishable_axuGAsFPyrmkew9R8QD31w_4pv_pKs6";
@@ -84,65 +73,7 @@ const PPLogo = ({ size = 36 }) => (
   </svg>
 );
 
-// ── SITE NAV DROPDOWN ──
-function SiteNav({ activePage = "admin" }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, []);
-
-  const links = [
-    { href: "/", label: "Home", key: "home", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-    { href: "/admin", label: "Admin Panel", key: "admin", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-    { href: "/coach-updater.html", label: "Coach Updater", key: "coaches", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-    { divider: true },
-    { href: "/dashboard", label: "Client Dashboard", key: "dashboard", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> },
-    { href: "/upload.html", label: "Intake Form", key: "intake", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg> },
-  ];
-
-  const btnStyle = {
-    display:"flex",alignItems:"center",gap:6,padding:"8px 14px",background:"transparent",
-    border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",
-    fontFamily:"'Barlow',sans-serif",fontSize:12,fontWeight:600,letterSpacing:"0.02em",
-    transition:"all 0.2s",
-  };
-  const menuStyle = {
-    display:open?"block":"none",position:"absolute",top:"calc(100% + 6px)",right:0,
-    background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:8,
-    minWidth:200,padding:6,zIndex:100,boxShadow:"0 12px 40px rgba(0,0,0,0.5)",
-  };
-
-  return (
-    <div ref={ref} style={{position:"relative"}}>
-      <button onClick={(e)=>{e.stopPropagation();setOpen(!open)}} style={btnStyle}>
-        Navigate
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{transition:"transform 0.2s",transform:open?"rotate(180deg)":"none"}}><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div style={menuStyle}>
-        {links.map((l,i) => l.divider ? (
-          <div key={i} style={{height:1,background:C.border,margin:"4px 8px"}}/>
-        ) : (
-          <a key={l.key} href={l.href} style={{
-            display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
-            color:activePage===l.key?C.gold:C.textMuted,textDecoration:"none",
-            borderRadius:6,fontSize:13,fontWeight:500,transition:"all 0.15s",
-            background:activePage===l.key?"rgba(212,168,67,0.1)":"transparent",
-          }}
-          onMouseEnter={e=>{if(activePage!==l.key){e.currentTarget.style.background="rgba(212,168,67,0.08)";e.currentTarget.style.color=C.cream;}}}
-          onMouseLeave={e=>{if(activePage!==l.key){e.currentTarget.style.background="transparent";e.currentTarget.style.color=C.textMuted;}}}
-          >
-            <span style={{opacity:0.6,flexShrink:0}}>{l.icon}</span>
-            {l.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
+// ── ADMIN LOGIN ──
 function AdminLogin({ onLogin }) {
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
@@ -167,7 +98,6 @@ function AdminLogin({ onLogin }) {
     } catch (e) {
       // Fallback: PIN-based access
       if (pin === ADMIN_PIN) {
-        localStorage.setItem("pp_admin_authed", "1");
         onLogin({ email: "admin", id: "admin" });
       } else {
         setError("Invalid credentials");
@@ -179,8 +109,8 @@ function AdminLogin({ onLogin }) {
   const inp = { width:"100%",padding:"14px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:15,fontFamily:"'Barlow',sans-serif",outline:"none" };
 
   return (
-    <div style={{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow',sans-serif",color:C.cream,padding:"20px 16px"}}>
-      <div style={{width:"100%",maxWidth:380}}>
+    <div style={{minHeight:"100vh",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow',sans-serif",color:C.cream}}>
+      <div style={{width:380,padding:40}}>
         <div style={{textAlign:"center",marginBottom:32}}>
           <PPLogo size={48}/>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:3,marginTop:16}}>ADMIN PANEL</div>
@@ -205,6 +135,7 @@ function StatusBadge({ status }) {
     pending: { bg: "#EAB30820", text: "#EAB308", border: "#EAB30840" },
     generated: { bg: "#3B82F620", text: "#3B82F6", border: "#3B82F640" },
     published: { bg: "#22C55E20", text: "#22C55E", border: "#22C55E40" },
+    archived: { bg: "#6B728020", text: "#6B7280", border: "#6B728040" },
   };
   const c = colors[status] || colors.pending;
   return (
@@ -220,58 +151,30 @@ function SiteDetail({ site, onBack, onUpdate }) {
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [previewMode, setPreviewMode] = useState("preview");
-  const [deploying, setDeploying] = useState(false);
-  const [deployError, setDeployError] = useState("");
   const iframeRef = useRef(null);
-  const isMobile = useIsMobile();
 
   const saveBio = async () => {
     setSaving(true);
     try {
-      // Also update the bio inside the generated HTML
-      let updatedHtml = site.generated_html || "";
-      if (updatedHtml && site.generated_bio) {
-        // Replace old bio with new bio inside the about-bio paragraph
-        updatedHtml = updatedHtml.replace(site.generated_bio, bio);
-      }
+      // Rebuild HTML with new bio
+      // For now, just update the bio field — full rebuild would require re-calling the function
       await supaFetch(`/rest/v1/sites?id=eq.${site.id}`, {
         method: "PATCH",
-        body: { generated_bio: bio, generated_html: updatedHtml },
+        body: { generated_bio: bio },
       });
-      onUpdate({ ...site, generated_bio: bio, generated_html: updatedHtml });
+      onUpdate({ ...site, generated_bio: bio });
     } catch (e) { alert("Save failed: " + e.message); }
     setSaving(false);
     setEditing(false);
   };
 
-  const deploySite = async () => {
-    setDeploying(true);
-    setDeployError("");
-    try {
-      const res = await fetch("/.netlify/functions/deploy-site", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site_id: site.id }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        onUpdate({ ...site, status: "published", site_url: data.site_url, netlify_site_id: data.netlify_site_id });
-      } else {
-        setDeployError(data.error || "Deploy failed");
-      }
-    } catch (e) {
-      setDeployError(e.message);
-    }
-    setDeploying(false);
-  };
-
-  const unpublish = async () => {
+  const updateStatus = async (newStatus) => {
     try {
       await supaFetch(`/rest/v1/sites?id=eq.${site.id}`, {
         method: "PATCH",
-        body: { status: "generated" },
+        body: { status: newStatus },
       });
-      onUpdate({ ...site, status: "generated" });
+      onUpdate({ ...site, status: newStatus });
     } catch (e) { alert("Update failed: " + e.message); }
   };
 
@@ -304,31 +207,26 @@ function SiteDetail({ site, onBack, onUpdate }) {
   return (
     <div style={{fontFamily:"'Barlow',sans-serif",color:C.cream}}>
       {/* Header */}
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
           <button onClick={onBack} style={{padding:"8px 16px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:1}}>← BACK</button>
           <div>
-            <h2 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:2,margin:0}}>{site.athlete_name || "Unnamed"}</h2>
-            <div style={{fontSize:12,color:C.textMuted}}>{site.sport} • Class of {site.grad_year} • {site.city_state}</div>
+            <h2 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{site.athlete_name || "Unnamed"}</h2>
+            <div style={{fontSize:13,color:C.textMuted}}>{site.sport} • Class of {site.grad_year} • {site.city_state}</div>
           </div>
           <StatusBadge status={site.status}/>
         </div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          {deployError && <div style={{fontSize:12,color:C.red,maxWidth:250}}>{deployError}</div>}
-          {site.site_url && <a href={site.site_url} target="_blank" style={{fontSize:12,color:C.gold,textDecoration:"none"}}>{site.site_url} ↗</a>}
+        <div style={{display:"flex",gap:8}}>
           {site.status !== "published" && (
-            <button onClick={deploySite} disabled={deploying} style={{padding:"10px 20px",background:deploying?"#666":C.success,border:"none",borderRadius:8,color:"#fff",cursor:deploying?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase",opacity:deploying?0.7:1}}>{deploying?"DEPLOYING...":"PUBLISH TO NETLIFY"}</button>
+            <button onClick={()=>updateStatus("published")} style={{padding:"10px 20px",background:C.success,border:"none",borderRadius:8,color:"#fff",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Mark Published</button>
           )}
           {site.status === "published" && (
-            <Fragment>
-              <button onClick={deploySite} disabled={deploying} style={{padding:"10px 20px",background:deploying?"#666":"#3B82F6",border:"none",borderRadius:8,color:"#fff",cursor:deploying?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase",opacity:deploying?0.7:1}}>{deploying?"DEPLOYING...":"RE-DEPLOY"}</button>
-              <button onClick={unpublish} style={{padding:"10px 20px",background:C.warn,border:"none",borderRadius:8,color:"#000",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Unpublish</button>
-            </Fragment>
+            <button onClick={()=>updateStatus("generated")} style={{padding:"10px 20px",background:C.warn,border:"none",borderRadius:8,color:"#000",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1.5,textTransform:"uppercase"}}>Unpublish</button>
           )}
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:20}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
         {/* Left column: Details */}
         <div>
           {/* Invite Code */}
@@ -342,15 +240,6 @@ function SiteDetail({ site, onBack, onUpdate }) {
             </div>
             <div style={{fontSize:11,color:C.textDim,marginTop:6}}>Give this to the family so they can sign up for the dashboard</div>
           </div>
-
-          {/* Live site URL */}
-          {site.site_url && (
-            <div style={cardStyle}>
-              <div style={labelStyle}>Live Site</div>
-              <a href={site.site_url} target="_blank" style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,fontWeight:700,color:C.success,textDecoration:"none",letterSpacing:0.5,wordBreak:"break-all"}}>{site.site_url} ↗</a>
-              <div style={{fontSize:11,color:C.textDim,marginTop:6}}>This site is live and accessible to coaches</div>
-            </div>
-          )}
 
           {/* Parent info */}
           <div style={cardStyle}>
@@ -481,13 +370,12 @@ function SiteDetail({ site, onBack, onUpdate }) {
 }
 
 // ── MAIN ADMIN APP ──
-function AdminApp({ user, onLogout }) {
+function AdminApp({ user }) {
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSite, setSelectedSite] = useState(null);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("generated");
   const [search, setSearch] = useState("");
-  const isMobile = useIsMobile();
 
   const loadSites = async () => {
     setLoading(true);
@@ -508,7 +396,8 @@ function AdminApp({ user, onLogout }) {
   };
 
   const filtered = sites.filter(s => {
-    if (filter !== "all" && s.status !== filter) return false;
+    if (filter === "all") return s.status !== "archived";
+    if (filter !== s.status) return false;
     if (search) {
       const q = search.toLowerCase();
       return (s.athlete_name || "").toLowerCase().includes(q) ||
@@ -520,16 +409,40 @@ function AdminApp({ user, onLogout }) {
   });
 
   const counts = {
-    all: sites.length,
+    all: sites.filter(s => s.status !== "archived").length,
     pending: sites.filter(s => s.status === "pending").length,
     generated: sites.filter(s => s.status === "generated").length,
     published: sites.filter(s => s.status === "published").length,
+    archived: sites.filter(s => s.status === "archived").length,
+  };
+
+  const deleteSite = async (siteId, permanent) => {
+    if (permanent) {
+      if (!confirm("Permanently delete this site? This cannot be undone.")) return;
+      try {
+        await supaFetch(`/rest/v1/sites?id=eq.${siteId}`, { method: "DELETE" });
+        setSites(prev => prev.filter(s => s.id !== siteId));
+        if (selectedSite?.id === siteId) setSelectedSite(null);
+      } catch (e) { alert("Delete failed: " + e.message); }
+    } else {
+      try {
+        const d = await supaFetch(`/rest/v1/sites?id=eq.${siteId}`, { method: "PATCH", body: { status: "archived" }, prefer: "return=representation" });
+        if (d?.[0]) handleUpdate(d[0]);
+      } catch (e) { alert("Archive failed: " + e.message); }
+    }
+  };
+
+  const restoreSite = async (siteId) => {
+    try {
+      const d = await supaFetch(`/rest/v1/sites?id=eq.${siteId}`, { method: "PATCH", body: { status: "generated" }, prefer: "return=representation" });
+      if (d?.[0]) handleUpdate(d[0]);
+    } catch (e) { alert("Restore failed: " + e.message); }
   };
 
   if (selectedSite) {
     return (
       <div style={{display:"flex",minHeight:"100vh",background:C.navy,fontFamily:"'Barlow',sans-serif",color:C.cream}}>
-        <main style={{flex:1,overflow:"auto",maxHeight:isMobile?"none":"100vh",padding:isMobile?"16px":"24px 32px"}}>
+        <main style={{flex:1,overflow:"auto",maxHeight:"100vh",padding:"24px 32px"}}>
           <SiteDetail site={selectedSite} onBack={()=>setSelectedSite(null)} onUpdate={handleUpdate}/>
         </main>
       </div>
@@ -538,47 +451,43 @@ function AdminApp({ user, onLogout }) {
 
   return (
     <div style={{display:"flex",minHeight:"100vh",background:C.navy,fontFamily:"'Barlow',sans-serif",color:C.cream}}>
-      <main style={{flex:1,overflow:"auto",maxHeight:isMobile?"none":"100vh"}}>
+      <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         {/* Header */}
-        <header style={{padding:isMobile?"12px 16px":"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid,gap:12,flexWrap:"wrap"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <PPLogo size={isMobile?26:32}/>
+        <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
+          <div style={{display:"flex",alignItems:"center",gap:16}}>
+            <PPLogo size={32}/>
             <div>
-              <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:isMobile?22:28,letterSpacing:2,margin:0}}>ADMIN PANEL</h1>
-              {!isMobile&&<p style={{margin:0,fontSize:13,color:C.textMuted}}>Manage all athlete sites</p>}
+              <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>ADMIN PANEL</h1>
+              <p style={{margin:0,fontSize:13,color:C.textMuted}}>Manage all athlete sites</p>
             </div>
           </div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <SiteNav activePage="admin"/>
-            <button onClick={loadSites} style={{padding:"8px 16px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:12,fontFamily:"'Barlow',sans-serif"}}>Refresh</button>
-            {onLogout && <button onClick={onLogout} style={{padding:"8px 16px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textDim,cursor:"pointer",fontSize:12,fontFamily:"'Barlow',sans-serif"}}>Logout</button>}
-          </div>
+          <button onClick={loadSites} style={{padding:"8px 16px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:12,fontFamily:"'Barlow',sans-serif"}}>Refresh</button>
         </header>
 
-        <div style={{padding:isMobile?"16px":"24px 32px"}}>
+        <div style={{padding:"24px 32px"}}>
           {/* Stats bar */}
-          <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:12,marginBottom:24}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
             {[
               { label:"Total Sites", value:counts.all, color:C.cream },
               { label:"Pending", value:counts.pending, color:C.warn },
               { label:"Generated", value:counts.generated, color:"#3B82F6" },
               { label:"Published", value:counts.published, color:C.success },
             ].map(s => (
-              <div key={s.label} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:isMobile?"12px 14px":"16px 20px"}}>
-                <div style={{fontSize:isMobile?26:32,fontFamily:"'Bebas Neue',sans-serif",color:s.color,letterSpacing:1}}>{s.value}</div>
+              <div key={s.label} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 20px"}}>
+                <div style={{fontSize:32,fontFamily:"'Bebas Neue',sans-serif",color:s.color,letterSpacing:1}}>{s.value}</div>
                 <div style={{fontSize:11,color:C.textDim,textTransform:"uppercase",letterSpacing:1.5,fontWeight:600}}>{s.label}</div>
               </div>
             ))}
           </div>
 
           {/* Filters + Search */}
-          <div style={{display:"flex",gap:12,marginBottom:20,alignItems:"center",flexWrap:"wrap"}}>
-            <div style={{display:"flex",background:C.navyLight,borderRadius:8,padding:3,flexWrap:"wrap",gap:2}}>
-              {["all","pending","generated","published"].map(f => (
-                <button key={f} onClick={()=>setFilter(f)} style={{padding:isMobile?"6px 10px":"8px 16px",border:"none",borderRadius:6,cursor:"pointer",background:filter===f?C.red:"transparent",color:C.cream,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:isMobile?11:13,letterSpacing:1.5,textTransform:"uppercase"}}>{f} ({counts[f]})</button>
+          <div style={{display:"flex",gap:12,marginBottom:20,alignItems:"center"}}>
+            <div style={{display:"flex",background:C.navyLight,borderRadius:8,padding:3}}>
+              {["all","generated","published","archived"].map(f => (
+                <button key={f} onClick={()=>setFilter(f)} style={{padding:"8px 16px",border:"none",borderRadius:6,cursor:"pointer",background:filter===f?C.red:"transparent",color:filter===f?C.cream:f==="archived"?C.textDim:C.cream,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:13,letterSpacing:1.5,textTransform:"uppercase"}}>{f} ({counts[f]})</button>
               ))}
             </div>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{flex:1,minWidth:isMobile?"100%":200,padding:"10px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none"}}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, sport, email..." style={{flex:1,padding:"10px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none"}}/>
           </div>
 
           {/* Sites list */}
@@ -593,8 +502,8 @@ function AdminApp({ user, onLogout }) {
           ) : (
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {filtered.map(site => (
-                <div key={site.id} onClick={()=>setSelectedSite(site)} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:isMobile?"14px 16px":"16px 20px",cursor:"pointer",transition:"all 0.15s",display:"grid",gridTemplateColumns:isMobile?"1fr auto":"1fr auto auto auto",gap:isMobile?8:20,alignItems:"center"}} onMouseOver={e=>e.currentTarget.style.borderColor=C.gold+"60"} onMouseOut={e=>e.currentTarget.style.borderColor=C.border}>
-                  <div>
+                <div key={site.id} style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 20px",transition:"all 0.15s",display:"grid",gridTemplateColumns:"1fr auto auto auto auto",gap:16,alignItems:"center"}} onMouseOver={e=>e.currentTarget.style.borderColor=C.gold+"60"} onMouseOut={e=>e.currentTarget.style.borderColor=C.border}>
+                  <div onClick={()=>setSelectedSite(site)} style={{cursor:"pointer"}}>
                     <div style={{fontSize:16,fontWeight:700,marginBottom:2}}>{site.athlete_name || "Unnamed Athlete"}</div>
                     <div style={{fontSize:12,color:C.textMuted}}>{site.sport} • {site.city_state} • Class of {site.grad_year}</div>
                     <div style={{fontSize:11,color:C.textDim,marginTop:2}}>Parent: {site.parent_name} ({site.parent_email})</div>
@@ -607,6 +516,14 @@ function AdminApp({ user, onLogout }) {
                   <div style={{fontSize:11,color:C.textDim,whiteSpace:"nowrap"}}>
                     {new Date(site.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                   </div>
+                  {site.status === "archived" ? (
+                    <div style={{display:"flex",gap:6}}>
+                      <button onClick={(e)=>{e.stopPropagation();restoreSite(site.id);}} style={{padding:"6px 12px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:11,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}} title="Restore">↩ RESTORE</button>
+                      <button onClick={(e)=>{e.stopPropagation();deleteSite(site.id, true);}} style={{padding:"6px 12px",background:"transparent",border:"1px solid #e63a2e40",borderRadius:6,color:"#e63a2e",cursor:"pointer",fontSize:11,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}} title="Permanently delete">✕</button>
+                    </div>
+                  ) : (
+                    <button onClick={(e)=>{e.stopPropagation();deleteSite(site.id, false);}} style={{padding:"6px 12px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textDim,cursor:"pointer",fontSize:11,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}} title="Archive">🗑</button>
+                  )}
                 </div>
               ))}
             </div>
@@ -619,20 +536,9 @@ function AdminApp({ user, onLogout }) {
 
 // ── ENTRY POINT ──
 function App() {
-  const [authed, setAuthed] = useState(() => {
-    // Restore session from localStorage
-    if (localStorage.getItem("pp_admin_token")) return { email: "supabase", id: "supabase" };
-    if (localStorage.getItem("pp_admin_authed") === "1") return { email: "admin", id: "admin" };
-    return false;
-  });
+  const [authed, setAuthed] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem("pp_admin_token");
-    localStorage.removeItem("pp_admin_authed");
-    setAuthed(false);
-  };
-
-  return authed ? <AdminApp user={authed} onLogout={handleLogout}/> : <AdminLogin onLogin={(u) => setAuthed(u)}/>;
+  return authed ? <AdminApp user={authed}/> : <AdminLogin onLogin={(u) => setAuthed(u)}/>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
