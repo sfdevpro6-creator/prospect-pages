@@ -1110,7 +1110,7 @@ function PhotoManager({profile, setProfile, user}) {
     setUploading("hero");
     uploadToCloudinary(file, async (url) => {
       try {
-        const d = await supaFetch(\`/rest/v1/profiles?id=eq.\${user.id}\`, { method: "PATCH", body: { hero_photo_url: url }, prefer: "return=representation" });
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { hero_photo_url: url }, prefer: "return=representation" });
         if (d?.[0]) setProfile(d[0]);
       } catch (e) { alert("Save failed: " + e.message); }
     });
@@ -1120,7 +1120,7 @@ function PhotoManager({profile, setProfile, user}) {
     setUploading("headshot");
     uploadToCloudinary(file, async (url) => {
       try {
-        const d = await supaFetch(\`/rest/v1/profiles?id=eq.\${user.id}\`, { method: "PATCH", body: { headshot_url: url }, prefer: "return=representation" });
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { headshot_url: url }, prefer: "return=representation" });
         if (d?.[0]) setProfile(d[0]);
       } catch (e) { alert("Save failed: " + e.message); }
     });
@@ -1131,7 +1131,7 @@ function PhotoManager({profile, setProfile, user}) {
     uploadToCloudinary(file, async (url) => {
       const updated = [...additionalPhotos, { url, caption: "", uploaded_at: new Date().toISOString() }];
       try {
-        const d = await supaFetch(\`/rest/v1/profiles?id=eq.\${user.id}\`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
+        const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
         if (d?.[0]) { setProfile(d[0]); setAdditionalPhotos(updated); }
       } catch (e) { alert("Save failed: " + e.message); }
     });
@@ -1141,7 +1141,7 @@ function PhotoManager({profile, setProfile, user}) {
     if (!confirm("Remove this photo?")) return;
     const updated = additionalPhotos.filter((_, i) => i !== idx);
     try {
-      const d = await supaFetch(\`/rest/v1/profiles?id=eq.\${user.id}\`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
+      const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { additional_photos: updated }, prefer: "return=representation" });
       if (d?.[0]) { setProfile(d[0]); setAdditionalPhotos(updated); }
     } catch (e) { alert("Remove failed: " + e.message); }
   };
@@ -1149,7 +1149,7 @@ function PhotoManager({profile, setProfile, user}) {
   const removePhoto = async (field) => {
     if (!confirm("Remove this photo?")) return;
     try {
-      const d = await supaFetch(\`/rest/v1/profiles?id=eq.\${user.id}\`, { method: "PATCH", body: { [field]: null }, prefer: "return=representation" });
+      const d = await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`, { method: "PATCH", body: { [field]: null }, prefer: "return=representation" });
       if (d?.[0]) setProfile(d[0]);
     } catch (e) { alert("Remove failed: " + e.message); }
   };
@@ -1157,7 +1157,7 @@ function PhotoManager({profile, setProfile, user}) {
   const DropZone = ({ type, label, hint, icon, onDrop, currentUrl, aspect, field }) => {
     const isUploading = uploading === type;
     return (
-      <div style={{background:C.cardBg,border:\`1px solid \${C.border}\`,borderRadius:10,overflow:"hidden"}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
         {currentUrl ? (
           <div style={{position:"relative"}}>
             <img src={currentUrl} style={{width:"100%",maxHeight:200,aspectRatio:aspect||"16/9",objectFit:"cover",display:"block"}}/>
@@ -1165,7 +1165,7 @@ function PhotoManager({profile, setProfile, user}) {
               <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>onDrop(e.target.files[0]);i.click();}} style={{padding:"6px 12px",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:6,color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1,textTransform:"uppercase"}}>Replace</button>
               <button onClick={()=>removePhoto(field)} style={{padding:"6px 10px",background:"rgba(196,30,58,0.8)",border:"none",borderRadius:6,color:"#fff",cursor:"pointer",fontSize:12}}><Icon name="trash" size={14}/></button>
             </div>
-            <div style={{padding:"12px 16px",borderTop:\`1px solid \${C.border}\`}}>
+            <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
               <div style={{fontSize:13,fontWeight:700,color:C.cream}}>{label}</div>
               <div style={{fontSize:11,color:C.success,marginTop:2}}>Uploaded</div>
             </div>
@@ -1203,17 +1203,17 @@ function PhotoManager({profile, setProfile, user}) {
         <DropZone type="headshot" field="headshot_url" label="Headshot / Portrait" hint="Used in the About section. A clean, well-lit photo works great." icon="🤳" aspect="3/4" onDrop={handleHeadshotUpload} currentUrl={profile?.headshot_url}/>
       </div>
 
-      <div style={{background:C.cardBg,border:\`1px solid \${C.border}\`,borderRadius:10,padding:24,marginTop:16}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:24,marginTop:16}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:2}}>ADDITIONAL PHOTOS</div>
-          <div style={{padding:"4px 12px",background:\`\${C.gold}20\`,border:\`1px solid \${C.gold}40\`,borderRadius:6,fontSize:11,fontWeight:700,color:C.gold,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1}}>{additionalPhotos.length} photos</div>
+          <div style={{padding:"4px 12px",background:`${C.gold}20`,border:`1px solid ${C.gold}40`,borderRadius:6,fontSize:11,fontWeight:700,color:C.gold,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:1}}>{additionalPhotos.length} photos</div>
         </div>
         <div style={{fontSize:13,color:C.textMuted,marginBottom:16}}>Team photos, press clippings, awards, training photos.</div>
 
         {additionalPhotos.length > 0 && (
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))",gap:8,marginBottom:16}}>
             {additionalPhotos.map((photo, i) => (
-              <div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:\`1px solid \${C.border}\`}}>
+              <div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`}}>
                 <img src={photo.url} style={{width:"100%",aspectRatio:"1/1",objectFit:"cover",display:"block"}}/>
                 <button onClick={()=>removeAdditional(i)} style={{position:"absolute",top:4,right:4,width:24,height:24,borderRadius:"50%",background:"rgba(196,30,58,0.85)",border:"none",color:"#fff",cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
               </div>
@@ -1222,7 +1222,7 @@ function PhotoManager({profile, setProfile, user}) {
         )}
 
         {uploading === "additional" ? (
-          <div style={{padding:"20px 16px",background:C.navyLight,border:\`1px solid \${C.border}\`,borderRadius:8,textAlign:"center"}}>
+          <div style={{padding:"20px 16px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:600,color:C.cream,marginBottom:8}}>Uploading...</div>
             <div style={{width:"100%",height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
               <div style={{width:uploadProgress+"%",height:"100%",background:C.red,borderRadius:3,transition:"width 0.3s"}}/>
@@ -1234,14 +1234,14 @@ function PhotoManager({profile, setProfile, user}) {
             onDragLeave={e=>{e.currentTarget.style.borderColor=C.border;}}
             onDrop={e=>{e.preventDefault();e.currentTarget.style.borderColor=C.border;handleAdditionalUpload(e.dataTransfer.files[0]);}}
             onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>handleAdditionalUpload(e.target.files[0]);i.click();}}
-            style={{width:"100%",padding:"16px 0",background:"transparent",border:\`2px dashed \${C.border}\`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",textAlign:"center",transition:"all 0.15s"}}
+            style={{width:"100%",padding:"16px 0",background:"transparent",border:`2px dashed ${C.border}`,borderRadius:8,color:C.textMuted,cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:14,letterSpacing:1,textTransform:"uppercase",textAlign:"center",transition:"all 0.15s"}}
             onMouseOver={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}}
             onMouseOut={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}
           >+ Add Photo</div>
         )}
       </div>
 
-      <div style={{background:\`\${C.gold}10\`,border:\`1px solid \${C.gold}30\`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
+      <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
         <strong style={{color:C.gold}}>How photos work:</strong> Upload your hero/action photo and headshot here. They are saved to the cloud automatically. Hit Publish on the My Stats page to push them live on your recruiting site.
       </div>
     </div>
