@@ -140,23 +140,6 @@ function AuthScreen({ onAuth }) {
             if (codeData.client_name) profileData.full_name = codeData.client_name;
             if (codeData.sport) profileData.athlete_sport = codeData.sport;
             if (codeData.athlete_site_url) profileData.recruiting_site_url = codeData.athlete_site_url;
-            // Look up site record by invite code to get netlify_site_id and coach refs
-            try {
-              const siteRows = await supaFetch(`/rest/v1/sites?invite_code=eq.${encodeURIComponent(inviteCode.trim().toUpperCase())}&select=netlify_site_id,site_url,hs_coach_name,hs_coach_contact,travel_coach_name,travel_coach_contact,athlete_name,athlete_email,position,grad_year`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
-              if (siteRows?.length) {
-                const s = siteRows[0];
-                if (s.netlify_site_id) profileData.netlify_site_id = s.netlify_site_id;
-                if (!profileData.recruiting_site_url && s.site_url) profileData.recruiting_site_url = s.site_url;
-                if (s.hs_coach_name) profileData.hs_coach_name = s.hs_coach_name;
-                if (s.hs_coach_contact) profileData.hs_coach_contact = s.hs_coach_contact;
-                if (s.travel_coach_name) profileData.travel_coach_name = s.travel_coach_name;
-                if (s.travel_coach_contact) profileData.travel_coach_contact = s.travel_coach_contact;
-                if (s.athlete_name) profileData.athlete_name = s.athlete_name;
-                if (s.athlete_email) profileData.athlete_email = s.athlete_email;
-                if (s.position) profileData.athlete_position = s.position;
-                if (s.grad_year) profileData.athlete_grad_year = parseInt(s.grad_year, 10) || null;
-              }
-            } catch(e) { console.log("Site lookup:", e); }
             if (Object.keys(profileData).length) {
               await supaFetch(`/rest/v1/profiles?id=eq.${res.user.id}`, { method: "PATCH", body: profileData, headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${res.access_token}` } });
             }
@@ -784,7 +767,7 @@ function OutreachTracker({profile, user}) {
 
 // ── PROFILE EDITOR ──
 function ProfileEditor({profile, setProfile, user}) {
-  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||"",hs_coach_name:profile?.hs_coach_name||"",hs_coach_contact:profile?.hs_coach_contact||"",travel_coach_name:profile?.travel_coach_name||"",travel_coach_contact:profile?.travel_coach_contact||""});
+  const [form, setForm] = useState({full_name:profile?.full_name||"",athlete_name:profile?.athlete_name||"",athlete_email:profile?.athlete_email||"",athlete_sport:profile?.athlete_sport||"baseball",athlete_grad_year:profile?.athlete_grad_year||"",athlete_position:profile?.athlete_position||"",recruiting_site_url:profile?.recruiting_site_url||"",netlify_site_id:profile?.netlify_site_id||""});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const handleSave=async()=>{setSaving(true);try{const saveData={...form,athlete_grad_year:form.athlete_grad_year?parseInt(form.athlete_grad_year,10):null,updated_at:new Date().toISOString()};const d=await supaFetch(`/rest/v1/profiles?id=eq.${user.id}`,{method:"PATCH",body:saveData,prefer:"return=representation"});if(d?.[0])setProfile(d[0]);setSaved(true);setTimeout(()=>setSaved(false),2500);}catch(e){alert("Error: "+e.message);}setSaving(false);};
@@ -803,14 +786,6 @@ function ProfileEditor({profile, setProfile, user}) {
           <div><label style={lbl}>Recruiting Site URL</label><input value={form.recruiting_site_url} onChange={e=>setForm(f=>({...f,recruiting_site_url:e.target.value}))} placeholder="https://dmedina.me" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>This link gets included in every generated email</div></div>
 
           <div><label style={lbl}>Netlify Site ID <span style={{fontSize:10,color:C.gold,fontWeight:400,letterSpacing:0}}>(admin)</span></label><input value={form.netlify_site_id} onChange={e=>setForm(f=>({...f,netlify_site_id:e.target.value}))} placeholder="e.g. a1b2c3d4-e5f6-7890" style={inp}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>Find in Netlify: Site configuration &gt; General &gt; Site ID. Required for Publish to work.</div></div>
-        </div>
-      </div>
-      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32,marginTop:16}}>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:4}}>COACH REFERENCES</div>
-        <div style={{fontSize:13,color:C.textMuted,marginBottom:28}}>These show on your recruiting site's contact section. College coaches like seeing references they can reach out to.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:18}}>
-          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>HS Coach Name</label><input value={form.hs_coach_name} onChange={e=>setForm(f=>({...f,hs_coach_name:e.target.value}))} placeholder="Coach Smith" style={inp}/></div><div style={{flex:1}}><label style={lbl}>HS Coach Email / Phone</label><input value={form.hs_coach_contact} onChange={e=>setForm(f=>({...f,hs_coach_contact:e.target.value}))} placeholder="coach@school.edu" style={inp}/></div></div>
-          <div style={{display:"flex",gap:16}}><div style={{flex:1}}><label style={lbl}>Travel / Club Coach</label><input value={form.travel_coach_name} onChange={e=>setForm(f=>({...f,travel_coach_name:e.target.value}))} placeholder="Coach Johnson" style={inp}/></div><div style={{flex:1}}><label style={lbl}>Travel Coach Email / Phone</label><input value={form.travel_coach_contact} onChange={e=>setForm(f=>({...f,travel_coach_contact:e.target.value}))} placeholder="(805) 555-6789" style={inp}/></div></div>
         </div>
         <button onClick={handleSave} disabled={saving} style={{marginTop:28,width:"100%",padding:"14px 0",background:saved?C.success:C.red,border:"none",borderRadius:8,color:C.cream,cursor:saving?"wait":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:16,letterSpacing:2,textTransform:"uppercase",transition:"background 0.3s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           {saved?<Fragment><Icon name="check" size={18}/> SAVED</Fragment>:saving?"SAVING...":"SAVE PROFILE"}
@@ -1102,6 +1077,110 @@ function PublishButton({profile, stats, measurables, sport, user}) {
   );
 }
 
+// ── SITE ANALYTICS ──
+function SiteAnalytics({profile}) {
+  const [views, setViews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState("30");
+  const siteId = profile?.netlify_site_id || "";
+
+  useEffect(()=>{ if(siteId) loadViews(); else setLoading(false); },[siteId, range]);
+
+  const loadViews = async () => {
+    setLoading(true);
+    try {
+      const since = new Date(); since.setDate(since.getDate() - parseInt(range));
+      const d = await supaFetch(`/rest/v1/daily_views?site_id=eq.${siteId}&view_date=gte.${since.toISOString().split('T')[0]}&order=view_date.asc`);
+      setViews(d||[]);
+    } catch(e) { console.log("Views:",e); }
+    setLoading(false);
+  };
+
+  const totalViews = views.reduce((sum,v)=>sum+(v.views||0),0);
+  const avgPerDay = views.length ? Math.round(totalViews/views.length) : 0;
+  const peakDay = views.length ? views.reduce((max,v)=>(v.views||0)>max.views?v:max,{views:0}) : null;
+
+  if(!siteId) return (
+    <div style={{maxWidth:700}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32,textAlign:"center"}}>
+        <div style={{fontSize:36,marginBottom:12}}>📊</div>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2,marginBottom:8}}>SITE ANALYTICS</div>
+        <div style={{fontSize:13,color:C.textDim}}>Set your Netlify Site ID in Athlete Profile to start tracking views.</div>
+      </div>
+    </div>
+  );
+
+  const inp={padding:"8px 14px",background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,color:C.cream,fontSize:13,fontFamily:"'Barlow',sans-serif",cursor:"pointer"};
+
+  return (
+    <div style={{maxWidth:700}}>
+      <div style={{background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:10,padding:32}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+          <div>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:2}}>SITE ANALYTICS</div>
+            <div style={{fontSize:13,color:C.textMuted}}>Track how many coaches are viewing your recruiting site.</div>
+          </div>
+          <select value={range} onChange={e=>setRange(e.target.value)} style={inp}>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+
+        {loading ? <div style={{textAlign:"center",padding:40,color:C.textDim}}>Loading...</div> : (
+          <Fragment>
+            {/* Stats row */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:24}}>
+              <div style={{background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 14px",textAlign:"center"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:C.cream}}>{totalViews}</div>
+                <div style={{fontSize:10,color:C.textDim,textTransform:"uppercase",letterSpacing:1,marginTop:2}}>Total Views</div>
+              </div>
+              <div style={{background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 14px",textAlign:"center"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:C.cream}}>{avgPerDay}</div>
+                <div style={{fontSize:10,color:C.textDim,textTransform:"uppercase",letterSpacing:1,marginTop:2}}>Avg / Day</div>
+              </div>
+              <div style={{background:C.navyLight,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 14px",textAlign:"center"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:C.cream}}>{peakDay?.views||0}</div>
+                <div style={{fontSize:10,color:C.textDim,textTransform:"uppercase",letterSpacing:1,marginTop:2}}>Peak Day</div>
+              </div>
+            </div>
+
+            {/* Simple bar chart */}
+            {views.length > 0 ? (
+              <div>
+                <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Daily Views</div>
+                <div style={{display:"flex",alignItems:"flex-end",gap:2,height:120,padding:"0 4px"}}>
+                  {views.map((v,i) => {
+                    const maxV = Math.max(...views.map(x=>x.views||1));
+                    const h = Math.max(4, ((v.views||0)/maxV)*100);
+                    const date = new Date(v.view_date+"T12:00:00");
+                    const label = (date.getMonth()+1)+"/"+date.getDate();
+                    return (
+                      <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}} title={label+": "+v.views+" views"}>
+                        <div style={{fontSize:9,color:C.textDim}}>{v.views}</div>
+                        <div style={{width:"100%",height:h+"%",background:v.views>0?"linear-gradient(to top,#C41E3A,#e63a2e)":C.border,borderRadius:"3px 3px 0 0",minHeight:4,transition:"height 0.3s"}}/>
+                        {(i===0||i===views.length-1||views.length<=14) && <div style={{fontSize:8,color:C.textDim,marginTop:2}}>{label}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{textAlign:"center",padding:"30px 0",color:C.textDim}}>
+                <div style={{fontSize:13}}>No views recorded yet. Views will appear here once coaches start visiting the site.</div>
+              </div>
+            )}
+          </Fragment>
+        )}
+      </div>
+
+      <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"16px 20px",marginTop:16,fontSize:13,color:C.textMuted}}>
+        <strong style={{color:C.gold}}>How tracking works:</strong> Every time someone visits your recruiting site, it's recorded here. Share your site link with coaches and watch the views come in. Views are updated in real-time.
+      </div>
+    </div>
+  );
+}
+
 // ── VIDEO MANAGER ──
 function VideoManager({profile, user}) {
   const [videos, setVideos] = useState([]);
@@ -1365,7 +1444,7 @@ function App() {
           {sidebarOpen&&<div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1}}>PROSPECT</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:2,lineHeight:1,color:C.red}}>PAGES</div></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px"}}>
-          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"videos",icon:"film",label:"Video Manager"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
+          {[{id:"colleges",icon:"school",label:"College Directory"},{id:"email",icon:"mail",label:"AI Email Builder"},{id:"outreach",icon:"send",label:"Outreach Tracker"},{id:"stats",icon:"star",label:"My Stats"},{id:"videos",icon:"film",label:"Video Manager"},{id:"analytics",icon:"globe",label:"Site Analytics"},{id:"profile",icon:"user",label:"Athlete Profile"}].map(item=>(
             <button key={item.id} onClick={()=>setPage(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:sidebarOpen?"12px 16px":"12px 20px",background:page===item.id?C.navyLight:"transparent",border:"none",borderRadius:8,color:page===item.id?C.cream:C.textMuted,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"'Barlow',sans-serif",marginBottom:4,transition:"all 0.15s",borderLeft:page===item.id?`3px solid ${C.red}`:"3px solid transparent"}}><Icon name={item.icon} size={18}/>{sidebarOpen&&<span>{item.label}</span>}</button>
           ))}
         </nav>
@@ -1376,8 +1455,8 @@ function App() {
       <main style={{flex:1,overflow:"auto",maxHeight:"100vh"}}>
         <header style={{padding:"16px 32px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:C.navyMid}}>
           <div>
-            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="videos"&&"VIDEO MANAGER"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
-            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
+            <h1 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,letterSpacing:2,margin:0}}>{page==="colleges"&&"COLLEGE DIRECTORY"}{page==="email"&&"AI EMAIL BUILDER"}{page==="outreach"&&"OUTREACH TRACKER"}{page==="stats"&&"MY STATS"}{page==="videos"&&"VIDEO MANAGER"}{page==="analytics"&&"SITE ANALYTICS"}{page==="profile"&&"ATHLETE PROFILE"}</h1>
+            <p style={{margin:0,fontSize:13,color:C.textMuted}}>{page==="colleges"&&"Search and filter programs by state, division, and sport"}{page==="email"&&"Generate personalized coach outreach emails with AI"}{page==="outreach"&&"Track your emails, follow-ups, and coach responses"}{page==="stats"&&"Update your measurables and performance stats"}{page==="videos"&&"Add, reorder, and categorize your highlight clips"}{page==="analytics"&&"See how many coaches are viewing your recruiting site"}{page==="profile"&&"Your athlete's info used in email templates"}</p>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{(profile?.full_name||user?.email||"?")[0].toUpperCase()}</div>
@@ -1389,6 +1468,7 @@ function App() {
           {page==="outreach"&&<OutreachTracker profile={profile} user={user}/>}
           {page==="stats"&&<StatsEditor profile={profile} setProfile={setProfile} user={user}/>}
           {page==="videos"&&<VideoManager profile={profile} user={user}/>}
+          {page==="analytics"&&<SiteAnalytics profile={profile}/>}
               {page==="profile"&&<ProfileEditor profile={profile} setProfile={setProfile} user={user}/>}
         </div>
       </main>
